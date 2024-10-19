@@ -1,0 +1,66 @@
+h1 {
+    margin-top: 3.5px;
+    margin-left: 13px;
+}
+
+.top-category {
+    margin-bottom: 5vh;
+    padding: 3px 13px 3px 39px;
+}
+
+.bottom-category{
+    padding: 3px 13px 3px 36px;
+}
+
+.category {
+    list-style: none;
+    font-family: 'Roboto', sans-serif;
+    font-size: 22px;
+}
+
+i {
+    margin-right: 1.4vw;
+}
+
+li {
+    padding: 1.5vh 0.8vw;
+    border: solid 1px transparent;
+    border-radius: 10px;
+    width: 200px;
+    margin-bottom: 4px;
+}
+
+li:hover{
+    cursor:pointer;
+}
+
+
+input {
+    display: inline-block;
+    z-index: 1;
+    position: relative;
+    transform: scale(2);
+    visibility: hidden;
+}
+
+
+.storage-info {
+    height: 21.5vh;
+}
+
+.menu {
+    margin-left: 9.1px;
+    margin-top: 4.2px;
+    margin-bottom: 5.3px;
+    font-size: 1.5rem;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+    transition: padding-left 0.4s ease;
+}
+
+.active {
+    background-color: bisque;
+}
