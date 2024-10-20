@@ -1,7 +1,7 @@
 <div class="drawer">
     <div class="drawer-top">
         <div class="menu">
-            <i class="menu fa-solid fa-bars"></i>
+            <i (click)="drawerClick()" class="menu-i fa-solid fa-bars"></i>
         </div>
     <h1><pre>Cloud Storage
   Platform</pre></h1>
@@ -9,17 +9,39 @@
     <div class="storage-info">
 
     </div>
-    <ul class="category top-category">
+    <ul class="category top-category maindrawer-top">
         <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/recents']" [routerLinkActive]="['active']"><i class="fa-regular fa-clock"></i>Recents</a></li>
         <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/home']" [routerLinkActive]="['active']"><i class="fa-solid fa-house"></i>Home</a></li>
         <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/favorites']" [routerLinkActive]="['active']"><i class="fa-regular fa-heart"></i>Favorites</a></li>
         <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/trash']" [routerLinkActive]="['active']"><i class="fa-regular fa-trash-can"></i>Trash</a></li>
     </ul>
-    <ul class="category bottom-category">
-        <li (click)="typeItemSelected($event, 0)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="0-NavCheckbox" type="checkbox"/><a><i class="fa-regular fa-image"></i>Images</a></li>
-        <li (click)="typeItemSelected($event, 1)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="1-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-music"></i>Audio</a></li>
-        <li (click)="typeItemSelected($event, 2)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="2-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-video"></i>Video</a></li>
-        <li (click)="typeItemSelected($event, 3)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="3-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-file"></i>Documents</a></li>
-        <li (click)="typeItemSelected($event, 4)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="4-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-palette"></i>GIF</a></li>
+    <ul class="category bottom-category maindrawer-bottom">
+        <li id="Images" (click)="typeItemSelected($event, 0)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="0-NavCheckbox" type="checkbox"/><a><i class="fa-regular fa-image"></i>Images</a></li>
+        <li id="Audio" (click)="typeItemSelected($event, 1)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="1-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-music"></i>Audio</a></li>
+        <li id="Video" (click)="typeItemSelected($event, 2)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="2-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-video"></i>Video</a></li>
+        <li id="Documents" (click)="typeItemSelected($event, 3)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="3-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-file"></i>Documents</a></li>
+        <li id="GIF" (click)="typeItemSelected($event, 4)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="4-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-palette"></i>GIF</a></li>
     </ul>
+</div>
+
+
+<div class="sticky-holder">
+    <div class="mini-drawer">
+        <div class="menu m-menu">
+            <i (click)="miniDrawerClick()" class="menu-i fa-solid fa-bars"></i>
+        </div>
+        <ul class="category top-category m-top-cat">
+            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/recents']" [routerLinkActive]="['active']"><i class="fa-regular fa-clock"></i></a></li>
+            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/home']" [routerLinkActive]="['active']"><i class="fa-solid fa-house"></i></a></li>
+            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/favorites']" [routerLinkActive]="['active']"><i class="fa-regular fa-heart"></i></a></li>
+            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/trash']" [routerLinkActive]="['active']"><i class="fa-regular fa-trash-can"></i></a></li>
+        </ul>
+        <ul class="category bottom-category m-bottom-cat">
+            <li id="Images" (click)="typeItemSelectedMini($event,'Images', 0)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="m-cat-tab category-tab Images"><a><i class="fa-regular fa-image"></i></a></li>
+            <li id="Audio" (click)="typeItemSelectedMini($event,'Audio', 1)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="m-cat-tab category-tab Audio"><a><i class="fa-solid fa-music "></i></a></li>
+            <li id="Video" (click)="typeItemSelectedMini($event,'Video', 2)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="m-cat-tab category-tab Video"><a><i class="fa-solid fa-video"></i></a></li>
+            <li id="Documents" (click)="typeItemSelectedMini($event,'Documents', 3)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="m-cat-tab category-tab Documents"><a><i class="fa-solid fa-file"></i></a></li>
+            <li id="GIF" (click)="typeItemSelectedMini($event,'GIF', 4)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="m-cat-tab category-tab GIF"><a><i class="fa-solid fa-palette"></i></a></li>
+        </ul>
+    </div>
 </div>

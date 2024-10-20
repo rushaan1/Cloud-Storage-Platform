@@ -1,3 +1,7 @@
 .navigation-drawer{
-    width: 25%;
+    height: 100vh;
+}
+
+.drawer-component{
+    height: 100vh;
 }
