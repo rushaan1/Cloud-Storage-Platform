@@ -8,11 +8,23 @@
 
 .navigation-drawer{
     /* remove min-width with media query for mobile */
-    /*TODO add transition with this for main content when navbar and mini navbar switches*/
     min-width: 321px;
     transition: min-width 1s ease;
+    /*IMPORTANT: Keep in mind navigation drawer is not fixed only drawer div is fixed so when scrolling down navigation drawer will be at top */
 }
 
 .content{
     display: flex;
+}
+
+.top-panel{
+    height: 65px;
+    position: sticky;
+    top: 0px;
+}
+
+.panel{
+    height: 100%;
+    display: block;
+    top: 0px;
 }

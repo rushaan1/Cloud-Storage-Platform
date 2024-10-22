@@ -15,7 +15,10 @@ export class NavigationDrawerComponent implements OnInit {
   ngOnInit(): void {
     const miniDrawer = document.getElementsByClassName("mini-drawer")[0] as HTMLElement;
     miniDrawer.style.translate = "-100%";
+    setTimeout(()=>{
+      (document.getElementsByClassName("bg")[0] as HTMLElement).style.width = "50%";
     console.log(miniDrawer.style.translate);
+    },100);
   }
 
   hoverTransitionTrigger(event: MouseEvent) {

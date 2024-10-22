@@ -4,13 +4,15 @@ import { NavigationDrawerComponent } from '../navigation-drawer/navigation-drawe
 import { RouterLink } from '@angular/router';
 import { AppRoutingModule } from '../app-routing.module';
 import { ViewerComponent } from '../viewer/viewer.component';
+import { PanelComponent } from '../panel/panel.component';
 
 
 
 @NgModule({
   declarations: [
     NavigationDrawerComponent,
-    ViewerComponent
+    ViewerComponent,
+    PanelComponent
   ],
   imports: [
     CommonModule,
@@ -18,7 +20,8 @@ import { ViewerComponent } from '../viewer/viewer.component';
   ],
   exports:[
     NavigationDrawerComponent,
-    ViewerComponent
+    ViewerComponent,
+    PanelComponent
   ]
 })
 export class WorkspaceModule { }
