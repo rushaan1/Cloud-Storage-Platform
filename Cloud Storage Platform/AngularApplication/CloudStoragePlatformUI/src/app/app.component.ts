@@ -17,5 +17,11 @@ export class AppComponent implements OnInit {
     this.miniset = event;
     const navDrawer = document.getElementsByClassName("navigation-drawer")[0] as HTMLElement;
     navDrawer.style.width = event ? "50px" : "321px";
+    if (event){
+      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "90px";
+    }
+    else{
+      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "321px";
+    }
   }
 }

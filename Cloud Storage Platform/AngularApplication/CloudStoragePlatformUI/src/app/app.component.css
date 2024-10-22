@@ -5,3 +5,14 @@
 .drawer-component{
     height: 100vh;
 }
+
+.navigation-drawer{
+    /* remove min-width with media query for mobile */
+    /*TODO add transition with this for main content when navbar and mini navbar switches*/
+    min-width: 321px;
+    transition: min-width 1s ease;
+}
+
+.content{
+    display: flex;
+}
