@@ -18,10 +18,12 @@ export class AppComponent implements OnInit {
     const navDrawer = document.getElementsByClassName("navigation-drawer")[0] as HTMLElement;
     navDrawer.style.width = event ? "50px" : "321px";
     if (event){
-      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "90px";
+      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "54px";
+      navDrawer.style.height = "";
     }
     else{
-      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "321px";
+      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "290px";
+      navDrawer.style.height = `${document.documentElement.scrollHeight}px`;
     }
   }
 }

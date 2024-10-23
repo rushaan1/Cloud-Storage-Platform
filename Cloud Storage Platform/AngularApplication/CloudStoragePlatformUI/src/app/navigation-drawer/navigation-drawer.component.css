@@ -121,8 +121,9 @@ a {
     top: 0px;
     visibility: hidden;
     height: 100vh;
-    position:sticky;
+    position:fixed;
     height: 100vh;
+    overflow-y:scroll;
     /* transform: -100%; */
 }
 

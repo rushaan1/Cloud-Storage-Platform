@@ -1,7 +1,20 @@
 <div class="content-panel">
     <div class="panel-main">
         <div class="panel-main-flex">
-            <input class="searchbox" type="text" id="search" name="search" placeholder="Search the cloud">
+            <div class="search margin-left">
+                <input (focus)="searchDarkenBorder()" (blur)="searchLightenBorder()" class="searchbox" type="text" id="search" name="search" placeholder="Search the cloud">
+                <div class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+            </div>
+            <button class="upload">
+                <i class="fa-solid fa-arrow-up"></i>
+                Upload File
+            </button>
+            <div class="user-info margin-left">
+                <span>Sample Username</span>
+                <div class="pfp"></div>
+            </div>
         </div>
     </div>
 </div>

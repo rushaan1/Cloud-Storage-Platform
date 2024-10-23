@@ -8,8 +8,9 @@
 
 .navigation-drawer{
     /* remove min-width with media query for mobile */
-    min-width: 321px;
     transition: min-width 1s ease;
+    z-index: 2;
+    background-color: #F5F5F5;
     /*IMPORTANT: Keep in mind navigation drawer is not fixed only drawer div is fixed so when scrolling down navigation drawer will be at top */
 }
 
@@ -28,3 +29,30 @@
     display: block;
     top: 0px;
 }
+
+
+
+
+
+
+/* .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5); 
+    z-index: 1000; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .overlay-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 1001;
+  } */
+  
