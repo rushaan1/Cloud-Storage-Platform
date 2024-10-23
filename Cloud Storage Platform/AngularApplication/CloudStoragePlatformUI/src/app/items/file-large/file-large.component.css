@@ -1,0 +1,24 @@
+.file-item-icon{
+    background: url('../../item-icons/document-icon.png');
+    background-size: cover;
+    height: 90px;
+    width: 90px;
+}
+.picture{
+    background: url('../../item-icons/pic-icon.png');
+    background-size: cover;
+}
+
+.video{
+    background: url('../../item-icons/video-icon.png');
+    background-size: cover;
+}
+
+.folder{
+    background: url('../../item-icons/folder-icon.png');
+    background-size: cover;
+}
+
+.file{
+    margin: 15px;
+}

@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { AppRoutingModule } from '../app-routing.module';
 import { ViewerComponent } from '../viewer/viewer.component';
 import { PanelComponent } from '../panel/panel.component';
+import { ItemsModule } from '../items/items.module';
 
 
 
@@ -16,7 +17,8 @@ import { PanelComponent } from '../panel/panel.component';
   ],
   imports: [
     CommonModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ItemsModule
   ],
   exports:[
     NavigationDrawerComponent,

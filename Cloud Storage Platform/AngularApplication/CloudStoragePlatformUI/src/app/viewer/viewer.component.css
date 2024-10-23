@@ -1,3 +1,6 @@
 .content{
     text-wrap: wrap;
 }
+.file-large-item-from-viewer{
+    display: inline-block;
+}

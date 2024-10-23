@@ -11,11 +11,11 @@
     transition: min-width 1s ease;
     z-index: 2;
     background-color: #F5F5F5;
-    /*IMPORTANT: Keep in mind navigation drawer is not fixed only drawer div is fixed so when scrolling down navigation drawer will be at top */
 }
 
 .content{
     display: flex;
+    width: 99.5%;
 }
 
 .top-panel{
@@ -28,6 +28,10 @@
     height: 100%;
     display: block;
     top: 0px;
+}
+
+.dashboard{
+    width: 100%;
 }
 
 
