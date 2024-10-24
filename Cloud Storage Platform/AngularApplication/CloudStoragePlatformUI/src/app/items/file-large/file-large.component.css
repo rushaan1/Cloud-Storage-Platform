@@ -21,4 +21,49 @@
 
 .file{
     margin: 15px;
+    position: relative;
+}
+
+.file-options{
+    text-align: right;
+}
+
+.fa-ellipsis{
+    margin-right: 34px;
+    padding: 4px;
+}
+
+.fa-ellipsis:hover{
+    background-color: lightgray;
+}
+
+.file-options-menu{
+    display: flex;
+    position: absolute;
+    width: 84px;
+    height: 200px;
+    font-size: 12px;
+    justify-content: flex-start;
+    background-color: white;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+    top: 30px;
+    right: 0px;
+    border: 2px solid lightgray;    
+}
+
+.file-option{
+    padding-top: 12px;
+    padding-bottom: 12px;
+    width: 100%;
+    text-align: center;
+}
+
+#trash-file-option{
+    margin-top: 6px;
+}
+
+.file-option:hover{
+    background-color: lightgray;
 }

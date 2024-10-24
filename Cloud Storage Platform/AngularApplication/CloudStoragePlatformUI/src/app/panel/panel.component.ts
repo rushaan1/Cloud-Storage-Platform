@@ -13,4 +13,19 @@ export class PanelComponent {
   searchLightenBorder(){
     (document.getElementsByClassName("search")[0] as HTMLElement).style.borderColor = "gray";
   }
+
+  styleChange(){
+    if (localStorage["style"]!=undefined && localStorage["style"]!=null && localStorage["style"]!=""){
+      if (localStorage["style"]=="large"){
+        localStorage["style"] = "list";
+      }
+      else{
+        localStorage["style"] = "large";
+      }
+    }
+    else{
+      localStorage["style"] = "list";
+    }
+    console.log(localStorage["style"]);
+  }
 }

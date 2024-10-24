@@ -3,4 +3,11 @@
 }
 .file-large-item-from-viewer{
     display: inline-block;
+    text-wrap: wrap;
+    width: 150px;
+}
+
+.file-large-item-from-viewer:hover{
+    background-color: rgba(211, 211, 211, 0.593);
+    cursor: pointer;
 }
