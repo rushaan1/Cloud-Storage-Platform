@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'file-large-item',
@@ -8,10 +8,14 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 export class FileLargeComponent implements OnInit {
   @Input() type: string = "";
   @Input() name: string = "";
+  @Input() favorite: boolean = false;
+  @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
+  @ViewChild("selectFile") selectFileCheckbox!:ElementRef<HTMLInputElement>;
   originalName = "";
   fileOptionsShouldBeVisible = false;
   renaming = false;
+  moving = false;
 
   ngOnInit(): void {
     this.originalName = this.name;
@@ -27,6 +31,7 @@ export class FileLargeComponent implements OnInit {
 
   expandOptions() {
     const menu = document.getElementsByClassName("file-options-menu")[0] as HTMLElement;
+    this.moving = false;
     if (this.fileOptionsShouldBeVisible == false) {
       menu.style.visibility = "visible";
       menu.style.height = "200px";
@@ -69,5 +74,10 @@ export class FileLargeComponent implements OnInit {
       this.fileNameInput?.nativeElement?.focus();
       this.fileNameInput?.nativeElement?.select();
     }, 50);
+  }
+
+  move(){
+    this.moving = true;
+
   }
 }

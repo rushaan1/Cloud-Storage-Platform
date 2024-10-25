@@ -101,3 +101,23 @@
     width: 85px;
     text-align: center;
 }
+
+.mover{
+    margin-top: 100%;
+    width: 80.5px;
+}
+
+.fa-heart{
+    position: absolute;
+    display: inline;
+    top: 2px;
+    left: 32px;
+    font-size: 20px;
+}
+
+#selectFile{
+    display: inline;
+    position: absolute;
+    top: 5px;
+    visibility: hidden;
+}
