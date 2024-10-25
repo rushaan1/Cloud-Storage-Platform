@@ -37,6 +37,9 @@
     background-color: lightgray;
 }
 
+.file-name-text{
+    margin-left: 1.5px;
+}
 
 
 
@@ -81,4 +84,12 @@
 .file-options-visible{
     opacity: 1;
     transition-delay: 0.2s;
+}
+
+.file-name-text-input{
+    display: inline-block;
+    background: transparent;
+    border: none;
+    text-wrap: wrap;
+    width: 118.51px;
 }

@@ -1,7 +1,7 @@
 <div [title]="originalName" class="file">
     <div class="file-options-menu">
         <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="trash-file-option">Move to trash</div>
-        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Rename</div>
+        <div (click)="fileNameInput.focus(); fileNameInput.select(); expandOptions(); this.renaming = this.renaming? false:true;" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Rename</div>
         <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="share-file-option">Share</div>
         <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="move-file-option">Move to...</div>
         <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="favorite-file-option">Favorite</div>
@@ -11,6 +11,6 @@
         <i class="fa-solid fa-ellipsis"></i>
     </div>
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>
-    <div>{{name}}</div>
+    <div class="file-name-text"><input #fileNameInput (keydown.enter)="renameEnter()" class="file-name-text-input" [disabled]="!renaming" type="text" [value]="this.name"/></div>
     <!-- <div class="three-dot-menu"></div> -->
 </div>

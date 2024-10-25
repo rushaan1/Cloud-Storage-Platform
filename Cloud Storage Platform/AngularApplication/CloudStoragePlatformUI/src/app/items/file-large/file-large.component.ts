@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'file-large-item',
@@ -8,8 +8,10 @@ import { Component, Input, OnInit } from '@angular/core';
 export class FileLargeComponent implements OnInit {
   @Input() type: string = "";
   @Input() name: string = "";
+  @ViewChild("fileNameInput") fileNameInput!: ElementRef;
   originalName="";
   fileOptionsShouldBeVisible = false;
+  renaming = false;
 
   ngOnInit(): void {
     this.originalName = this.name;
@@ -41,5 +43,12 @@ export class FileLargeComponent implements OnInit {
       console.log(options[i].textContent);
       options[i].style.marginTop = `${31*i}px`;
     }
+  }
+
+  renameEnter(){
+    if (!this.renameEnter){
+      return;
+    }
+    this.renaming = false;
   }
 }
