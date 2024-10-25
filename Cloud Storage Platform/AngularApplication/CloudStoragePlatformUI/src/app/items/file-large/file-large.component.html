@@ -1,12 +1,13 @@
 <div [title]="originalName" class="file">
     <div class="file-options-menu">
-        <div class="file-option" id="trash-file-option">Move to trash</div>
-        <div class="file-option" id="rename-file-option">Rename</div>
-        <div class="file-option" id="move-file-option">Move to...</div>
-        <div class="file-option" id="favorite-file-option">Favorite</div>
-        <div class="file-option" id="rename-file-option">Info</div>
+        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="trash-file-option">Move to trash</div>
+        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Rename</div>
+        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="share-file-option">Share</div>
+        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="move-file-option">Move to...</div>
+        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="favorite-file-option">Favorite</div>
+        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Info</div>
     </div>
-    <div class="file-options">
+    <div (click)="expandOptions()" title="Options" class="file-options">
         <i class="fa-solid fa-ellipsis"></i>
     </div>
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>
