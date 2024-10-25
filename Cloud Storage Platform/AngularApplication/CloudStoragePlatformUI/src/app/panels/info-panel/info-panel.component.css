@@ -1,0 +1,17 @@
+.info-panel{
+    position: sticky;
+    width: 100%;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: #F5F5F5;
+    border-top: 2px solid lightgray;
+    /* transition: transform 1s ease-in; */
+    transform: translateY(-100%);
+    transition: transform 1s ease-in;
+}
+
+.infoText{
+    margin-left: 5.5px;
+}

@@ -11,3 +11,9 @@
     background-color: rgba(211, 211, 211, 0.593);
     cursor: pointer;
 }
+
+.info-panel-component{
+    position: sticky;
+    top: 65px;
+    z-index: 5;
+}

@@ -4,8 +4,10 @@ import { NavigationDrawerComponent } from '../navigation-drawer/navigation-drawe
 import { RouterLink } from '@angular/router';
 import { AppRoutingModule } from '../app-routing.module';
 import { ViewerComponent } from '../viewer/viewer.component';
-import { PanelComponent } from '../panel/panel.component';
+import { PanelComponent } from '../panels/panel/panel.component';
 import { ItemsModule } from '../items/items.module';
+import { InfoPanelComponent } from '../panels/info-panel/info-panel.component';
+import { SelectedMenuOptionsComponent } from '../panels/selected-menu-options/selected-menu-options.component';
 
 
 
@@ -13,7 +15,9 @@ import { ItemsModule } from '../items/items.module';
   declarations: [
     NavigationDrawerComponent,
     ViewerComponent,
-    PanelComponent
+    PanelComponent,
+    InfoPanelComponent,
+    SelectedMenuOptionsComponent
   ],
   imports: [
     CommonModule,
@@ -23,7 +27,8 @@ import { ItemsModule } from '../items/items.module';
   exports:[
     NavigationDrawerComponent,
     ViewerComponent,
-    PanelComponent
+    PanelComponent,
+    InfoPanelComponent
   ]
 })
 export class WorkspaceModule { }
