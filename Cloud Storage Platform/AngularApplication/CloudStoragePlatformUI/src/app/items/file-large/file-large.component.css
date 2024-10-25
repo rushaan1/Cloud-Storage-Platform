@@ -90,6 +90,14 @@
     display: inline-block;
     background: transparent;
     border: none;
+    text-align: center;
+    width: 85px;
+    padding: 5px;
+}
+
+.file-name-text-div{
     text-wrap: wrap;
-    width: 118.51px;
+    display: inline-block;
+    width: 85px;
+    text-align: center;
 }
