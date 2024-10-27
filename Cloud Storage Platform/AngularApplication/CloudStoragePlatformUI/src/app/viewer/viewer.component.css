@@ -26,3 +26,24 @@
 .text-only{
     display: block !important;
 }
+
+move-selection{
+    margin-left: 50px;
+}
+.panel-selected-menu-btn{
+    margin-left: 5px;
+    padding: 2px 6.5px 2px 6.5px;
+}
+.items-select-txt{
+    margin-left: 5px;
+}
+
+.trash-btn{
+    background-color: white;
+    border: solid gray 1px;
+    height: 25px;
+}
+
+.trash-btn:hover{
+    background-color: lightgray;
+}

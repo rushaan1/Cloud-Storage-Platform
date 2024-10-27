@@ -9,6 +9,7 @@ import { ItemSelectionService } from '../services/item-selection.service';
 export class ViewerComponent implements AfterViewChecked {
   constructor(public itemSelectionService:ItemSelectionService){}
   previouslySelected = false;
+  itemsSelected = 0;
 
   ngAfterViewChecked(): void {
     const infoPanelComponent = document.getElementById("infoPanel") as HTMLElement;
@@ -16,6 +17,7 @@ export class ViewerComponent implements AfterViewChecked {
     if (isSelected){
       this.previouslySelected = isSelected;
       infoPanelComponent.style.display = "inline";
+      this.itemsSelected = this.itemSelectionService.selectedItems.length;
     }
     else{
       if (this.previouslySelected!=isSelected){
@@ -29,5 +31,11 @@ export class ViewerComponent implements AfterViewChecked {
 
   anyItemsSelected():boolean{
     return (this.itemSelectionService.selectedItems.length>0);
+  }
+
+  unselect(){
+    this.itemSelectionService.deSelectAll();
+    //TODO event bus needed to set selected variable of file to false, unselect and hidden
+    //TODO 
   }
 }

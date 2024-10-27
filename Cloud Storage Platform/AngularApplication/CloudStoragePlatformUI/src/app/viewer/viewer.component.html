@@ -1,8 +1,11 @@
 <div class="content">
     <!-- <info-panel [hasMenuContent]="false" [infoText]="'innit'" class="text-only info-panel-component"></info-panel> -->
     <info-panel [hasMenuContent]="true" id="infoPanel" class="info-panel-component">
+        <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
+        <span class="items-select-txt">{{itemsSelected}} Item(s) Selected</span>
         <move-selection></move-selection>
+        <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
     </info-panel>
     <file-large-item class="file-large-item-from-viewer" [type]="'folder'" [name]="'Study stuff innit'"></file-large-item>
-    <!--TODO: Fix opacity transition for selections file large menu-->
+    
 </div>
