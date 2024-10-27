@@ -15,8 +15,8 @@
         <move-selection [ngClass]="(fileOptionsShouldBeVisible && this.moving) ? 'file-options-visible':''" class="move-selection move-opacity-settings"></move-selection>
     </div>
 
-    <div (click)="expandOptions()" title="Options" class="file-options">
-        <i class="fa-solid fa-ellipsis"></i>
+    <div title="Options" class="file-options">
+        <i (click)="expandOptions()" class="fa-solid fa-ellipsis"></i>
     </div>
 
     <!--150x180.25-->

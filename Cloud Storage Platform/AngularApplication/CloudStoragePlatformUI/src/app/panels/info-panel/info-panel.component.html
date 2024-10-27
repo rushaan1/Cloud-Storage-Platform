@@ -1,4 +1,4 @@
-<div #infoPanel class="info-panel">
+<div [ngClass]="(!hasMenuContent)?'visible-info-panel':''" #infoPanel class="info-panel">
     <div *ngIf="!hasMenuContent" class="margin-left infoText">{{infoText}}</div>
     <ng-content class="margin-left"></ng-content>
 </div>

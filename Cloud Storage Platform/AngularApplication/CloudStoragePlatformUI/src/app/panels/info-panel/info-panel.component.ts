@@ -1,21 +1,54 @@
-import { AfterContentInit, AfterViewInit, Component, ContentChild, ElementRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, ContentChild, ElementRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ItemSelectionService } from '../../services/item-selection.service';
 
 @Component({
   selector: 'info-panel',
   templateUrl: './info-panel.component.html',
   styleUrl: './info-panel.component.css'
 })
-export class InfoPanelComponent implements AfterViewInit, AfterContentInit {
+export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
   @Input() infoText:string = "";
+  @Input() hasMenuContent!:boolean;
   @ViewChild("infoPanel") infoPanel!:ElementRef<HTMLDivElement>;
   @ContentChild(TemplateRef) projectedContent?: TemplateRef<any>;
-  hasMenuContent = false;
+  previouslySelected = false;
+  transitionDone = false;
+  afterContentInit = false;
+
+  constructor(public itemSelectionService:ItemSelectionService){}
+
+  // ngAfterContentInit(): void {
+  //   this.hasMenuContent = !!this.projectedContent;
+  //   this.afterContentInit = true;
+  //   // if (!this.hasMenuContent && !this.transitionDone){
+  //   //   setTimeout(()=>{this.infoPanel.nativeElement.style.transform = "translate(0%)";
+  //   //     this.transitionDone = true;},35)
+  //   // }
+  // }
 
   ngAfterViewInit(): void {
-    this.infoPanel.nativeElement.style.transform = "translateY(0%)";
   }
 
-  ngAfterContentInit(): void {
-    this.hasMenuContent = !!this.projectedContent;
+  ngAfterViewChecked(){
+    let itemSelected = this.anyItemsSelected();
+    if (itemSelected){
+      if (this.previouslySelected != itemSelected){
+        setTimeout(() => {
+          this.infoPanel.nativeElement.classList.add("visible-info-panel");
+        },50); 
+        this.previouslySelected = itemSelected;
+      }
+      else{
+        this.previouslySelected = itemSelected;
+      }
+    }
+    else if (this.hasMenuContent){
+      this.infoPanel.nativeElement.classList.remove("visible-info-panel");
+      this.previouslySelected = itemSelected;
+    }
+  }
+
+  anyItemsSelected():boolean{
+    return (this.itemSelectionService.selectedItems.length>0);
   }
 }

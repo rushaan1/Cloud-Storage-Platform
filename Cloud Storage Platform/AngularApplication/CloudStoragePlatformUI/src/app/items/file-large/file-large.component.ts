@@ -110,10 +110,12 @@ export class FileLargeComponent implements OnInit {
     if (this.selected){
       this.itemSelectionService.deSelectItem();
       this.selected = false;
+      this.selectFileCheckbox.nativeElement.classList.remove("visible-checkbox");
     }
     else{
       this.itemSelectionService.selectItem();
       this.selected = true;
+      this.selectFileCheckbox.nativeElement.classList.add("visible-checkbox");
     }
   }
 }

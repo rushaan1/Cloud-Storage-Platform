@@ -144,3 +144,7 @@
     top: 5px;
     visibility: hidden;
 }
+
+.visible-checkbox{
+    visibility: visible !important;
+}

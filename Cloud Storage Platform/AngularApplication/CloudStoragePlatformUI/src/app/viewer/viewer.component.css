@@ -16,4 +16,13 @@
     position: sticky;
     top: 65px;
     z-index: 5;
+    display: none;
+}
+
+#infoPanel{
+    z-index: 4;
+}
+
+.text-only{
+    display: block !important;
 }
