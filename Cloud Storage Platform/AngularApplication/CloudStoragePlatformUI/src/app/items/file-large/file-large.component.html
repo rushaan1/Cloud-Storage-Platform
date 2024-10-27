@@ -20,7 +20,7 @@
     </div>
 
     <!--150x180.25-->
-    <input #selectFile type="checkbox" name="selectFile" id="selectFile"/>
+    <input (click)="selectItemClick()" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
     <i *ngIf="this.favorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
     
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>

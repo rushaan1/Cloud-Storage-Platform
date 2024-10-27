@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ItemSelectionService } from '../../services/item-selection.service';
 
 @Component({
   selector: 'file-large-item',
@@ -10,6 +11,7 @@ export class FileLargeComponent implements OnInit {
   @Input() name: string = "";
   @Input() favorite: boolean = false;
   @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() itemSelected: EventEmitter<boolean> = new EventEmitter<boolean>();
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild("selectFile") selectFileCheckbox!:ElementRef<HTMLInputElement>;
 
@@ -20,6 +22,9 @@ export class FileLargeComponent implements OnInit {
   fileOptionsShouldBeVisible = false;
   renaming = false;
   moving = false;
+  selected = false;
+
+  constructor(private itemSelectionService:ItemSelectionService){}
 
   ngOnInit(): void {
     this.originalName = this.name;
@@ -99,5 +104,16 @@ export class FileLargeComponent implements OnInit {
     this.moving = false;
     setTimeout(()=>{this.applyMargin(this.fileOptionsMenu.nativeElement.querySelectorAll("div"));},20);
     setTimeout(()=>{this.changeMoveVisiblity("hidden");},25);
+  }
+
+  selectItemClick(){
+    if (this.selected){
+      this.itemSelectionService.deSelectItem();
+      this.selected = false;
+    }
+    else{
+      this.itemSelectionService.selectItem();
+      this.selected = true;
+    }
   }
 }

@@ -1,6 +1,6 @@
 <div class="content">
     <!-- <info-panel class="info-panel-component"></info-panel> -->
-    <info-panel class="info-panel-component">
+    <info-panel *ngIf="anyItemsSelected()" class="info-panel-component">
         <move-selection></move-selection>
     </info-panel>
     <file-large-item class="file-large-item-from-viewer" [type]="'folder'" [name]="'Study stuff innit'"></file-large-item>
