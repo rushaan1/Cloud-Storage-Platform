@@ -1,18 +1,18 @@
 <div (mouseleave)="selectFileCheckbox.nativeElement.style.visibility = 'hidden'" (mouseover)="selectFileCheckbox.nativeElement.style.visibility = 'visible'" [title]="originalName" class="file">
-    <div class="file-options-menu">
+    <div #fileOptionsMenu class="file-options-menu">
         <div *ngIf="!this.moving" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="trash-file-option">Move to trash</div>
         <div (click)="setupInput();" *ngIf="!this.moving" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Rename</div>
         <div *ngIf="!this.moving" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="share-file-option">Share</div>
         <div (click)="move()" *ngIf="!this.moving" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="move-file-option">Move to...</div>
         <div *ngIf="!this.moving" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="favorite-file-option">Favorite</div>
         <div *ngIf="!this.moving" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Info</div>
-        <select class="mover" *ngIf="this.moving">
-            <option selected>Move to</option>
-            <option>Testing toooooo big...</option>
-            <option>Testing...</option>
-            <option>Testing...</option>
-            <option>Testing...</option>
-        </select>
+        
+        
+        <button (click)="back()" #backBtn [ngClass]="(fileOptionsShouldBeVisible && this.moving) ? 'file-options-visible':''" class="back-btn-moving move-opacity-settings">
+            <i class="fa-solid fa-circle-arrow-left"></i>
+        </button>
+        <span #selectTxt [ngClass]="(fileOptionsShouldBeVisible && this.moving) ? 'file-options-visible':''" class="moving-select-text move-opacity-settings">Select</span>
+        <move-selection [ngClass]="(fileOptionsShouldBeVisible && this.moving) ? 'file-options-visible':''" class="move-selection move-opacity-settings"></move-selection>
     </div>
 
     <div (click)="expandOptions()" title="Options" class="file-options">

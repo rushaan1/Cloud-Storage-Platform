@@ -1,3 +1,4 @@
 <div #infoPanel class="info-panel">
-    <div class="infoText">{{infoText}}</div>
+    <div *ngIf="!hasMenuContent" class="margin-left infoText">{{infoText}}</div>
+    <ng-content class="margin-left"></ng-content>
 </div>

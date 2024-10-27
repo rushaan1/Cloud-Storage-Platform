@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'file-large-item',
@@ -12,6 +12,10 @@ export class FileLargeComponent implements OnInit {
   @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild("selectFile") selectFileCheckbox!:ElementRef<HTMLInputElement>;
+
+  @ViewChild("backBtn") backBtn!:ElementRef<HTMLElement>;
+  @ViewChild("selectTxt") selectFile!:ElementRef<HTMLElement>;
+  @ViewChild("fileOptionsMenu") fileOptionsMenu!:ElementRef<HTMLDivElement>;
   originalName = "";
   fileOptionsShouldBeVisible = false;
   renaming = false;
@@ -22,6 +26,12 @@ export class FileLargeComponent implements OnInit {
     this.nameResizing();
   }
 
+  changeMoveVisiblity(visibility:string){
+    this.backBtn.nativeElement.style.visibility = visibility;
+    this.selectFile.nativeElement.style.visibility = visibility;
+    (document.getElementsByClassName("move-selection")[0] as HTMLElement).style.visibility = visibility;
+  }
+
   nameResizing(){
     if (this.name.length >= 32) {
       let portionToBeExcluded = this.name.slice(32, this.name.length);
@@ -30,8 +40,12 @@ export class FileLargeComponent implements OnInit {
   }
 
   expandOptions() {
-    const menu = document.getElementsByClassName("file-options-menu")[0] as HTMLElement;
     this.moving = false;
+    if (this.fileOptionsShouldBeVisible){
+      setTimeout(()=>{this.changeMoveVisiblity("hidden")},300);
+    }
+    
+    const menu = this.fileOptionsMenu.nativeElement;
     if (this.fileOptionsShouldBeVisible == false) {
       menu.style.visibility = "visible";
       menu.style.height = "200px";
@@ -43,7 +57,7 @@ export class FileLargeComponent implements OnInit {
       this.fileOptionsShouldBeVisible = false;
       setTimeout(() => {
         menu.style.visibility = "hidden";
-      }, 800);
+      }, 400);
     }
   }
 
@@ -78,6 +92,12 @@ export class FileLargeComponent implements OnInit {
 
   move(){
     this.moving = true;
+    setTimeout(()=>{this.changeMoveVisiblity("visible");},25);
+  }
 
+  back(){
+    this.moving = false;
+    setTimeout(()=>{this.applyMargin(this.fileOptionsMenu.nativeElement.querySelectorAll("div"));},20);
+    setTimeout(()=>{this.changeMoveVisiblity("hidden");},25);
   }
 }

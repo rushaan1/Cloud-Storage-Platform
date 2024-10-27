@@ -8,7 +8,7 @@ import { PanelComponent } from '../panels/panel/panel.component';
 import { ItemsModule } from '../items/items.module';
 import { InfoPanelComponent } from '../panels/info-panel/info-panel.component';
 import { SelectedMenuOptionsComponent } from '../panels/selected-menu-options/selected-menu-options.component';
-
+import { MoveSelectionComponent } from '../items/move-selection/move-selection.component';
 
 
 @NgModule({
@@ -17,7 +17,7 @@ import { SelectedMenuOptionsComponent } from '../panels/selected-menu-options/se
     ViewerComponent,
     PanelComponent,
     InfoPanelComponent,
-    SelectedMenuOptionsComponent
+    SelectedMenuOptionsComponent,
   ],
   imports: [
     CommonModule,
