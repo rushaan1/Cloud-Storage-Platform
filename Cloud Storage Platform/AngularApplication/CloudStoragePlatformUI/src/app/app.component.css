@@ -6,8 +6,9 @@
     height: 100vh;
 }
 
+/*When integrating backend make sure to have dynamic routing with variable route paramters for every fodler*/
 .navigation-drawer{
-    /* remove min-width with media query for mobile */
+    /*TODO WHEN ADDING RESPONSIVENESS remove min-width with media query for mobile */
     transition: min-width 1s ease;
     z-index: 2;
     background-color: #F5F5F5;

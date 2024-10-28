@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
+import { EventService } from '../../services/event-service.service';
 
 @Component({
   selector: 'file-large-item',
@@ -24,11 +25,16 @@ export class FileLargeComponent implements OnInit {
   moving = false;
   selected = false;
 
-  constructor(private itemSelectionService:ItemSelectionService){}
+  constructor(private itemSelectionService:ItemSelectionService, private eventService:EventService){}
 
   ngOnInit(): void {
     this.originalName = this.name;
     this.nameResizing();
+    this.eventService.listen("unselector all", ()=>{
+      if (this.selected){
+        this.selectItemClick(true);
+      }
+    });
   }
 
   changeMoveVisiblity(visibility:string){
@@ -106,11 +112,15 @@ export class FileLargeComponent implements OnInit {
     setTimeout(()=>{this.changeMoveVisiblity("hidden");},25);
   }
 
-  selectItemClick(){
+
+  selectItemClick(unselectorAll:boolean=false){
     if (this.selected){
       this.itemSelectionService.deSelectItem();
       this.selected = false;
       this.selectFileCheckbox.nativeElement.classList.remove("visible-checkbox");
+      if (unselectorAll){
+        this.selectFileCheckbox.nativeElement.checked = false;
+      }
     }
     else{
       this.itemSelectionService.selectItem();

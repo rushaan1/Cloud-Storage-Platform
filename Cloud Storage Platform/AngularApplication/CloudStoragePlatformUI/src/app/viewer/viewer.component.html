@@ -6,6 +6,8 @@
         <move-selection></move-selection>
         <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
     </info-panel>
-    <file-large-item class="file-large-item-from-viewer" [type]="'folder'" [name]="'Study stuff innit'"></file-large-item>
+    <div class="files-and-folders">
+        <file-large-item *ngFor="let file of files" class="file-large-item-from-viewer" [type]="'folder'" [name]="file"></file-large-item>
+    </div>
     
 </div>

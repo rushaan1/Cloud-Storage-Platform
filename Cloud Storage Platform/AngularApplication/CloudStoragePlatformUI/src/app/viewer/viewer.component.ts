@@ -1,5 +1,6 @@
 import { AfterViewChecked, Component, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../services/item-selection.service';
+import { EventService } from '../services/event-service.service';
 
 @Component({
   selector: 'viewer',
@@ -7,9 +8,10 @@ import { ItemSelectionService } from '../services/item-selection.service';
   styleUrl: './viewer.component.css'
 })
 export class ViewerComponent implements AfterViewChecked {
-  constructor(public itemSelectionService:ItemSelectionService){}
+  constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
   previouslySelected = false;
   itemsSelected = 0;
+  files = ["file innit gawk gawk sigma porch innit", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3"];
 
   ngAfterViewChecked(): void {
     const infoPanelComponent = document.getElementById("infoPanel") as HTMLElement;
@@ -34,8 +36,6 @@ export class ViewerComponent implements AfterViewChecked {
   }
 
   unselect(){
-    this.itemSelectionService.deSelectAll();
-    //TODO event bus needed to set selected variable of file to false, unselect and hidden
-    //TODO 
+    this.eventService.emit("unselector all", 0);
   }
 }

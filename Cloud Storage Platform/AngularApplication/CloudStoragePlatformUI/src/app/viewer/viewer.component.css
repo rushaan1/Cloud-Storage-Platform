@@ -4,7 +4,7 @@
 .file-large-item-from-viewer{
     display: inline-block;
     text-wrap: wrap;
-    width: 150px;
+    width: 120px;
 }
 
 .file-large-item-from-viewer:hover{
@@ -46,4 +46,11 @@ move-selection{
 
 .trash-btn:hover{
     background-color: lightgray;
+}
+
+.files-and-folders{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
