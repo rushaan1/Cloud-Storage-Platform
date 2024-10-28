@@ -30,6 +30,10 @@ namespace CloudStoragePlatform.Web
             app.MapControllers();
 
             app.Run();
+
+            /*
+             * TODO services: Add file, remove file, edit file name, replace file, get all contents with main folder, get specific files from specific folder, sorting, filtering, move files, favorite, unfavorite, share functionality
+             */
         }
     }
 }

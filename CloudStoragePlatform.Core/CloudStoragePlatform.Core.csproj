@@ -7,4 +7,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\IdentityEntites\" />
+    <Folder Include="Domain\RepositoryContracts\" />
+    <Folder Include="Services\" />
+    <Folder Include="ServiceContracts\" />
+  </ItemGroup>
+
 </Project>
