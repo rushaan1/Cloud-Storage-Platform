@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Core.Enums
 {
-    public enum SortOrderOptions
+    public enum FileTypes
     {
+        Images, 
+        Audio,
+        Video,
+        Documents,
+        GIF
     }
 }

@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Core.DTO
 {
-    public class FolderAddRequest
+    public class FileRenameRequest
     {
         [Required]
-        public string FolderName { get; set; }
+        public Guid FileId { get; set; }
         [Required]
-        public string FolderPath { get; set; }
+        public string FileNewName { get; set; }
     }
 }
