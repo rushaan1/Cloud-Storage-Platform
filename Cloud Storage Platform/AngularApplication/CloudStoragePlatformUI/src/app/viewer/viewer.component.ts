@@ -11,7 +11,7 @@ export class ViewerComponent implements AfterViewChecked {
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
   previouslySelected = false;
   itemsSelected = 0;
-  files = ["file innit gawk gawk sigma porch innit", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3"];
+  files = ["file innit gawk gawk sigma porch init", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3"];
 
   ngAfterViewChecked(): void {
     const infoPanelComponent = document.getElementById("infoPanel") as HTMLElement;

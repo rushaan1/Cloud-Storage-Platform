@@ -39,24 +39,28 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
             modelBuilder.Entity<Folder>()
                 .HasOne(f => f.Metadata)
                 .WithOne(m => m.Folder)
-                .HasForeignKey<Folder>(f => f.MetadataId);
+                .HasForeignKey<Folder>(f => f.MetadataId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Core.Domain.Entities.File>()
                 .HasOne(f => f.Metadata)
                 .WithOne(m => m.File)
-                .HasForeignKey<Core.Domain.Entities.File>(f => f.MetadataId);
+                .HasForeignKey<Core.Domain.Entities.File>(f => f.MetadataId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
 
             modelBuilder.Entity<Folder>()
                 .HasOne(f => f.Sharing)
                 .WithOne(s => s.Folder)
-                .HasForeignKey<Folder>(f => f.SharingId);
+                .HasForeignKey<Folder>(f => f.SharingId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Core.Domain.Entities.File>()
                 .HasOne(f => f.Sharing)
                 .WithOne(s => s.File)
-                .HasForeignKey<Core.Domain.Entities.File>(f => f.SharingId);
+                .HasForeignKey<Core.Domain.Entities.File>(f => f.SharingId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
 

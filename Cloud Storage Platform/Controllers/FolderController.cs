@@ -7,5 +7,6 @@ namespace Cloud_Storage_Platform.Controllers
     [ApiController]
     public class FolderController : ControllerBase
     {
+
     }
 }

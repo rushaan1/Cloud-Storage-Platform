@@ -24,10 +24,7 @@ namespace CloudStoragePlatform.Web
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                //app.UseSwaggerUI(options => 
-                //{
-                //    options.SwaggerEndpoint("/swagger/swagger.json", "1");
-                //});
+                app.UseSwaggerUI();
             }
             app.UseRouting();
             app.UseCors();
