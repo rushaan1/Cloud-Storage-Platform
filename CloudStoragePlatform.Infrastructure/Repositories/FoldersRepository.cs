@@ -28,15 +28,15 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return await _db.Folders.ToListAsync();
         }
 
-        public List<Folder> GetAllSubFolders(Folder folder)
-        {
-            return folder!.SubFolders.ToList();
-        }
+        //public List<Folder> GetAllSubFolders(Folder folder)
+        //{
+        //    return folder!.SubFolders.ToList();
+        //}
 
-        public List<Core.Domain.Entities.File> GetAllSubFiles(Folder folder)
-        {
-            return folder!.Files.ToList();
-        }
+        //public List<Core.Domain.Entities.File> GetAllSubFiles(Folder folder)
+        //{
+        //    return folder!.Files.ToList();
+        //}
 
         public async Task<Folder?> GetFolderByFolderId(Guid id) 
         {
@@ -48,12 +48,12 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return await _db.Folders.FirstOrDefaultAsync(f => f.FolderPath == path);
         }
 
-        public async Task<Folder> UpdateFolder(Folder folder, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing, bool updateSubFolders, bool updateSubFiles) 
+        public async Task<Folder?> UpdateFolder(Folder folder, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing, bool updateSubFolders, bool updateSubFiles) 
         {
             Folder? matchingFolder = await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == folder.FolderId);
             if (matchingFolder== null) 
             {
-                return folder;
+                return null;
             }
             if (updateProperties) 
             {
@@ -121,14 +121,8 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return matchingFolder;
         }
 
-        public async Task<bool> DeleteFolderById(Guid folderId) 
-        {
-            Folder? folder = await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == folderId);
-            if (folder == null) 
-            {
-                return false;
-            }
-            
+        public async Task<bool> DeleteFolder(Folder folder) 
+        {   
             _db.Shares.Remove(folder.Sharing);
             _db.MetaDatasets.Remove(folder.Metadata);
 

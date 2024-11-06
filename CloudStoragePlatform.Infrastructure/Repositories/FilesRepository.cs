@@ -40,12 +40,12 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
         }
 
 
-        public async Task<Core.Domain.Entities.File> UpdateFolder(Core.Domain.Entities.File file, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing)
+        public async Task<Core.Domain.Entities.File?> UpdateFolder(Core.Domain.Entities.File file, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing)
         {
             Core.Domain.Entities.File? matchingFile = await _db.Files.FirstOrDefaultAsync(f => f.FileId == file.FileId);
             if (matchingFile == null)
             {
-                return file;
+                return null;
             }
             if (updateProperties)
             {
@@ -81,14 +81,8 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
         }
 
 
-        public async Task<bool> DeleteFileById(Guid fileId)
+        public async Task<bool> DeleteFile(Core.Domain.Entities.File file)
         {
-            Core.Domain.Entities.File? file = await _db.Files.FirstOrDefaultAsync(f => f.FileId == fileId);
-            if (file == null)
-            {
-                return false;
-            }
-
             _db.Shares.Remove(file.Sharing);
             _db.MetaDatasets.Remove(file.Metadata);
 
