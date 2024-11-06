@@ -22,6 +22,6 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public FileTypes FileType { get; set; }
         
         public Guid ParentFolderId { get; set; }
-        public Folder ParentFolder { get; set; }
+        public virtual Folder ParentFolder { get; set; }
     }
 }

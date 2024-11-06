@@ -16,6 +16,13 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
         public DbSet<Metadata> MetaDatasets { get; set; }
         public DbSet<Recents> Recents { get; set; }
         public ApplicationDbContext(DbContextOptions options) : base(options) {}
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseLazyLoadingProxies();
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder) 
         {
             base.OnModelCreating(modelBuilder);

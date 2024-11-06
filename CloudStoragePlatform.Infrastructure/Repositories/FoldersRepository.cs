@@ -23,57 +23,29 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return folder;
         }
 
-        public async Task<List<Folder>> GetAllFolders(bool includeNavigationProperties) 
+        public async Task<List<Folder>> GetAllFolders() 
         {
-            var folders = await _db.Folders.ToListAsync();
-            await LoadingHelperMethods.LoadFolderNavigationPropertiesForMultipleEntities(_db, folders, includeNavigationProperties);
-            return folders;
+            return await _db.Folders.ToListAsync();
         }
 
-        public async Task<List<Folder>> GetAllSubFolders(Folder folder, bool includeNavigationProperties)
+        public List<Folder> GetAllSubFolders(Folder folder)
         {
-            await _db.Entry(folder!).Collection(f => f.SubFolders).LoadAsync();
-            var folders = folder!.SubFolders?.ToList();
-            if (folders == null) 
-            {
-                return new List<Folder>();
-            }
-            await LoadingHelperMethods.LoadFolderNavigationPropertiesForMultipleEntities(_db, folders, includeNavigationProperties);
-            return folders;
+            return folder!.SubFolders.ToList();
         }
 
-        public async Task<List<Core.Domain.Entities.File>> GetAllSubFiles(Folder folder, bool includeNavigationProperties)
+        public List<Core.Domain.Entities.File> GetAllSubFiles(Folder folder)
         {
-            await _db.Entry(folder!).Collection(f => f.Files).LoadAsync();
-            var files = folder!.Files?.ToList();
-            if (files == null) 
-            {
-                return new List<Core.Domain.Entities.File>();
-            }
-            await LoadingHelperMethods.LoadFileNavigationPropertiesForMultipleEntities(_db, files, includeNavigationProperties);
-            return files;
+            return folder!.Files.ToList();
         }
 
-        public async Task<Folder?> GetFolderByFolderId(Guid id, bool includeNavigationProperties) 
+        public async Task<Folder?> GetFolderByFolderId(Guid id) 
         {
-            Folder? folder = await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == id);
-            if (folder == null) 
-            {
-                return null;
-            }
-            await LoadingHelperMethods.LoadFolderNavigationProperties(_db, folder, includeNavigationProperties);
-            return folder;
+            return await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == id);
         }
 
-        public async Task<Folder?> GetFolderByFolderPath(string path, bool includeNavigationProperties)
+        public async Task<Folder?> GetFolderByFolderPath(string path)
         {
-            Folder? folder = await _db.Folders.FirstOrDefaultAsync(f => f.FolderPath == path);
-            if (folder == null)
-            {
-                return null;
-            }
-            await LoadingHelperMethods.LoadFolderNavigationProperties(_db, folder, includeNavigationProperties);
-            return folder;
+            return await _db.Folders.FirstOrDefaultAsync(f => f.FolderPath == path);
         }
 
         public async Task<Folder> UpdateFolder(Folder folder, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing, bool updateSubFolders, bool updateSubFiles) 
@@ -156,8 +128,6 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             {
                 return false;
             }
-
-            await LoadingHelperMethods.LoadFolderNavigationProperties(_db, folder, true);
             
             _db.Shares.Remove(folder.Sharing);
             _db.MetaDatasets.Remove(folder.Metadata);

@@ -11,7 +11,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
     {
         [Key]
         public Guid RecentId { get; set; }
-        public ICollection<Folder>? RecentFolders { get; set; } = new List<Folder>();
-        public ICollection<File>? RecentFiles { get; set; } = new List<File>();
+        public virtual ICollection<Folder>? RecentFolders { get; set; } = new List<Folder>();
+        public virtual ICollection<File>? RecentFiles { get; set; } = new List<File>();
     }
 }

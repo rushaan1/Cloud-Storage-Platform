@@ -19,7 +19,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public Guid? FolderParentId { get; set; }
         public Folder? ParentFolder { get; set; }
         public long? FolderSize { get; set; }
-        public ICollection<Folder> SubFolders { get; set; } = new List<Folder>();
-        public ICollection<File> Files { get; set; } = new List<File>();
+        public virtual ICollection<Folder> SubFolders { get; set; } = new List<Folder>();
+        public virtual ICollection<File> Files { get; set; } = new List<File>();
     }
 }

@@ -13,6 +13,7 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+                options.UseLazyLoadingProxies();
             });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

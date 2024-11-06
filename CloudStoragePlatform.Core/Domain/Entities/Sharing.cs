@@ -11,8 +11,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
     {
         [Key]
         public Guid SharingId { get; set; }
-        public File? File { get; set; }
-        public Folder? Folder { get; set; }
+        public virtual File? File { get; set; }
+        public virtual Folder? Folder { get; set; }
         public string? ShareLinkUrl { get; set; }
         public DateTime? ShareLinkExpiry { get; set; } 
         public int? CurrentShareLinkTimesSeen { get; set; } 

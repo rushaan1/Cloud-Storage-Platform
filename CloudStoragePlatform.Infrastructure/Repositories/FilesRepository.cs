@@ -24,33 +24,19 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return file;
         }
 
-        public async Task<List<Core.Domain.Entities.File>> GetAllFiles(bool includeNavigationProperties)
+        public async Task<List<Core.Domain.Entities.File>> GetAllFiles()
         {
-            var files = await _db.Files.ToListAsync();
-            await LoadingHelperMethods.LoadFileNavigationPropertiesForMultipleEntities(_db, files, includeNavigationProperties);
-            return files;
+            return await _db.Files.ToListAsync();
         }
 
-        public async Task<Core.Domain.Entities.File?> GetFileByFileId(Guid id, bool includeNavigationProperties)
+        public async Task<Core.Domain.Entities.File?> GetFileByFileId(Guid id)
         {
-            Core.Domain.Entities.File? file = await _db.Files.FirstOrDefaultAsync(f => f.FileId == id);
-            if (file == null)
-            {
-                return null;
-            }
-            await LoadingHelperMethods.LoadFileNavigationProperties(_db, file, includeNavigationProperties);
-            return file;
+            return await _db.Files.FirstOrDefaultAsync(f => f.FileId == id);
         }
 
-        public async Task<Core.Domain.Entities.File?> GetFileByFilePath(string path, bool includeNavigationProperties)
+        public async Task<Core.Domain.Entities.File?> GetFileByFilePath(string path)
         {
-            Core.Domain.Entities.File? file = await _db.Files.FirstOrDefaultAsync(f => f.FilePath == path);
-            if (file == null)
-            {
-                return null;
-            }
-            await LoadingHelperMethods.LoadFileNavigationProperties(_db, file, includeNavigationProperties);
-            return file;
+            return await _db.Files.FirstOrDefaultAsync(f => f.FilePath == path);
         }
 
 
@@ -102,8 +88,6 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             {
                 return false;
             }
-
-            await LoadingHelperMethods.LoadFileNavigationProperties(_db, file, true);
 
             _db.Shares.Remove(file.Sharing);
             _db.MetaDatasets.Remove(file.Metadata);
