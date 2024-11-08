@@ -1,4 +1,5 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Infrastructure.Repositories
 {
-    public class FilesRepository
+    public class FilesRepository : IFilesRepository
     {
         private readonly ApplicationDbContext _db;
         public FilesRepository(ApplicationDbContext db)
@@ -40,7 +41,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
         }
 
 
-        public async Task<Core.Domain.Entities.File?> UpdateFolder(Core.Domain.Entities.File file, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing)
+        public async Task<Core.Domain.Entities.File?> UpdateFile(Core.Domain.Entities.File file, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing)
         {
             Core.Domain.Entities.File? matchingFile = await _db.Files.FirstOrDefaultAsync(f => f.FileId == file.FileId);
             if (matchingFile == null)

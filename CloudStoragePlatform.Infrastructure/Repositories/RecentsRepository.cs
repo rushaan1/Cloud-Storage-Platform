@@ -1,4 +1,5 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Infrastructure.Repositories
 {
-    public class RecentsRepository
+    public class RecentsRepository : IRecentsRepository
     {
         private readonly ApplicationDbContext _db;
         public RecentsRepository(ApplicationDbContext db)
@@ -17,19 +18,19 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             _db = db;
         }
 
-        public async Task<Recents?> GetRecentsById(Guid id) 
+        public async Task<Recents?> GetRecentsById(Guid id)
         {
             return await _db.Recents.FirstOrDefaultAsync(r => r.RecentId == id);
         }
 
-        public async Task<Recents?> UpdateRecents(Recents recents, bool updateFolders, bool updateFiles) 
+        public async Task<Recents?> UpdateRecents(Recents recents, bool updateFolders, bool updateFiles)
         {
-            Recents? matchingRecents = await _db.Recents.FirstOrDefaultAsync(r=>r.RecentId==recents.RecentId);
-            if (matchingRecents == null) 
+            Recents? matchingRecents = await _db.Recents.FirstOrDefaultAsync(r => r.RecentId == recents.RecentId);
+            if (matchingRecents == null)
             {
                 return null;
             }
-            if (updateFolders) 
+            if (updateFolders)
             {
                 List<Folder> toRemove = matchingRecents.RecentFolders.Where(rfo => !recents.RecentFolders.Contains(rfo)).ToList();
                 List<Folder> toAdd = recents.RecentFolders.Where(rfo => !matchingRecents.RecentFolders.Contains(rfo)).ToList();
@@ -42,7 +43,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
                     matchingRecents.RecentFolders.Add(item);
                 }
             }
-            if (updateFiles) 
+            if (updateFiles)
             {
                 List<Core.Domain.Entities.File> toRemove = matchingRecents.RecentFiles.Where(rfi => !recents.RecentFiles.Contains(rfi)).ToList();
                 List<Core.Domain.Entities.File> toAdd = recents.RecentFiles.Where(rfi => !matchingRecents.RecentFiles.Contains(rfi)).ToList();

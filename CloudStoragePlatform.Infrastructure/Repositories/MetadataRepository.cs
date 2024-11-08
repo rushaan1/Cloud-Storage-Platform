@@ -1,4 +1,5 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Infrastructure.Repositories
 {
-    public class MetadataRepository
+    public class MetadataRepository : IMetadataRepository
     {
         private readonly ApplicationDbContext _db;
         public MetadataRepository(ApplicationDbContext db)
@@ -22,7 +23,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return await _db.MetaDatasets.FirstOrDefaultAsync(f => f.MetadataId == id);
         }
 
-        public async Task<Metadata?> UpdateSharing(Metadata metadata)
+        public async Task<Metadata?> UpdateMetadata(Metadata metadata)
         {
             Metadata? matchingMetadata = await _db.MetaDatasets.FirstOrDefaultAsync(m => m.MetadataId == metadata.MetadataId);
             if (matchingMetadata == null)

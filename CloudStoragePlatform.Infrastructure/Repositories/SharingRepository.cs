@@ -1,4 +1,5 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Infrastructure.Repositories
 {
-    public class SharingRepository
+    public class SharingRepository : ISharingRepository
     {
         private readonly ApplicationDbContext _db;
         public SharingRepository(ApplicationDbContext db)
