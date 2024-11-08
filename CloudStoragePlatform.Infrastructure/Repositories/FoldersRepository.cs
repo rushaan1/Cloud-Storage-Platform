@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,15 +29,20 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return await _db.Folders.ToListAsync();
         }
 
-        //public List<Folder> GetAllSubFolders(Folder folder)
-        //{
-        //    return folder!.SubFolders.ToList();
-        //}
+        public async Task<List<Folder>> GetFilteredFolders(Expression<Func<Folder, bool>> predicate) 
+        {
+            return await _db.Folders.Where(predicate).ToListAsync();
+        }
 
-        //public List<Core.Domain.Entities.File> GetAllSubFiles(Folder folder)
-        //{
-        //    return folder!.Files.ToList();
-        //}
+        public async Task<List<Folder>> GetFilteredSubFolders(Folder parent, Func<Folder, bool> predicate)
+        {
+            return await Task.Run(()=>parent.SubFolders.Where(predicate).ToList());
+        }
+
+        public async Task<List<Core.Domain.Entities.File>> GetFilteredSubFiles(Folder parent, Func<Core.Domain.Entities.File, bool> predicate)
+        {
+            return await Task.Run(()=>parent.Files.Where(predicate).ToList());
+        }
 
         public async Task<Folder?> GetFolderByFolderId(Guid id) 
         {
