@@ -18,7 +18,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             _db = db;
         }
 
-        public async Task<Metadata?> GetMetadataByMetadatId(Guid id)
+        public async Task<Metadata?> GetMetadataByMetadataId(Guid id)
         {
             return await _db.MetaDatasets.FirstOrDefaultAsync(f => f.MetadataId == id);
         }

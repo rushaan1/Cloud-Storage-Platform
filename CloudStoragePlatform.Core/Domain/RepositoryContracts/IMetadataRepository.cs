@@ -14,7 +14,7 @@ namespace CloudStoragePlatform.Core.Domain.RepositoryContracts
         /// </summary>
         /// <param name="id">The Guid of the metadata.</param>
         /// <returns>The Metadata.</returns>
-        Task<Metadata?> GetMetadataByMetadatId(Guid id);
+        Task<Metadata?> GetMetadataByMetadataId(Guid id);
         /// <summary>
         /// Update an existing metadata.
         /// </summary>
