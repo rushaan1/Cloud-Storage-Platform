@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Core.ServiceContracts
 {
-    public interface IFolderRetrievalService
+    public interface IFoldersRetrievalService
     {
         Task<FolderResponse> GetFolderByFolderId(Guid id);
         Task<FolderResponse> GetFolderByFolderPath(string path);

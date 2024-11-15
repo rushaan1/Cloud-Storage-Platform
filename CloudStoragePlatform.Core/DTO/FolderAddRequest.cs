@@ -11,6 +11,9 @@ namespace CloudStoragePlatform.Core.DTO
     {
         [Required]
         public string FolderName { get; set; }
+        /// <summary>
+        /// MUST INCLUDE NEW FOLDER'S NAME!
+        /// </summary>
         [Required]
         public string FolderPath { get; set; }
     }
