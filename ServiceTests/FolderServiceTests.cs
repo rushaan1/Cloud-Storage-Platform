@@ -8,12 +8,15 @@ using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
 using FluentAssertions;
 using Moq;
+using Org.BouncyCastle.Asn1.X509;
 using Xunit;
 namespace ServiceTests
 {
     public class FolderServiceTests
     {
         private readonly IFoldersModificationService _foldersModificationService;
+        private readonly IFoldersRetrievalService _foldersRetrievalService;
+
         private readonly IFixture _fixture;
         private readonly Mock<IFoldersRepository> _foldersRepositoryMock;
         string initialPath = @"C:\CloudStoragePlatformUnitTests\home";
@@ -26,7 +29,10 @@ namespace ServiceTests
 
             _foldersRepositoryMock = new Mock<IFoldersRepository>();
             _foldersModificationService = new FoldersModificationService(_foldersRepositoryMock.Object);
+            _foldersRetrievalService = new FoldersRetrievalService(_foldersRepositoryMock.Object);
         }
+
+        #region FolderModificationService
 
         #region AddFolder
         [Fact]
@@ -169,6 +175,7 @@ namespace ServiceTests
         #endregion
 
 
+
         #region MoveFolder
         [Fact]
         public async Task MoveFolder_FolderDoesntExists() 
@@ -217,6 +224,7 @@ namespace ServiceTests
         }
 
 
+
         [Fact]
         public async Task MoveFolder_SuccessfullyMoved() 
         {
@@ -253,6 +261,214 @@ namespace ServiceTests
                 Directory.Delete(newPathForFOLDER);
             }
         }
+        #endregion
+
+
+
+        #region AddOrRemoveFavorite
+        public async Task AddOrRemoveFavorite_FolderDoesntExists() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync((Folder) null!);
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.AddOrRemoveFavorite(guid);
+            };
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+
+
+        public async Task AddOrRemoveFavorite_AddedToFavSuccesfully() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            Folder folder = new Folder() { FolderId = guid, IsFavorite=false };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            //Act
+            FolderResponse fr = await _foldersModificationService.AddOrRemoveFavorite(guid);
+
+            //Assert
+            fr.FolderId.Should().Be(guid);
+            fr.IsFavorite.Should().BeTrue();
+        }
+
+
+
+        public async Task AddOrRemoveFavorite_RemovedFromFavSuccesfully() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            Folder folder = new Folder() { FolderId = guid, IsFavorite = true };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+
+            //Act
+            FolderResponse fr = await _foldersModificationService.AddOrRemoveFavorite(guid);
+
+            //Assert
+            fr.FolderId.Should().Be(guid);  
+            fr.IsFavorite.Should().BeFalse();
+        }
+        #endregion
+
+
+
+        #region AddOrRemoveTrash
+        public async Task AddOrRemoveTrash_FolderDoesntExists() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync((Folder) null!);
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.AddOrRemoveTrash(guid);
+            };
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+
+
+        public async Task AddOrRemoveTrash_AddedToTrashSuccessfully() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            Folder folder = new Folder() { FolderId = guid, IsTrash = false };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            //Act
+            FolderResponse fr = await _foldersModificationService.AddOrRemoveTrash(guid);
+
+            //Assert
+            fr.FolderId.Should().Be(guid);
+            fr.IsFavorite.Should().BeTrue();
+        }
+
+
+
+        public async Task AddOrRemoveTrash_RemovedFromTrashSuccessfully() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            Folder folder = new Folder() { FolderId = guid, IsTrash = true };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            //Act
+            FolderResponse fr = await _foldersModificationService.AddOrRemoveTrash(guid);
+
+            //Assert
+            fr.FolderId.Should().Be(guid);
+            fr.IsFavorite.Should().BeFalse();
+        }
+        #endregion
+
+
+
+        #region DeleteFolder
+        public async Task DeleteFolder_FolderDoesntExists() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync((Folder) null!);
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.DeleteFolder(guid);
+            };
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+
+
+        public async Task DeleteFolder_FolderDeletedSuccessfully()
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            string folderName = _fixture.Create<string>();
+            string folderPath = Path.Combine(initialPath, folderName);
+            Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath};
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            Directory.CreateDirectory(folderPath);
+            System.IO.File.Create(Path.Combine(folderPath, _fixture.Create<string>()+".txt"));
+
+            try
+            {
+                //Act
+                bool deleted = await _foldersModificationService.DeleteFolder(guid);
+
+                //Assert
+                deleted.Should().BeTrue();
+                Directory.EnumerateDirectories(initialPath).Should().BeEmpty();
+                Directory.EnumerateFiles(initialPath).Should().BeEmpty();
+            }
+            catch (Exception ex) 
+            {
+                Directory.Delete(folderPath, true);
+            }
+        }
+        #endregion
+        #endregion
+
+        #region FoldersRetrievalService
+
+        #region GetFoldersByFolderId
+        public async Task GetFolderByFolderId_FolderNotFound(Guid id) 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync((Folder) null!);
+
+            //Act
+            Func<Task> action = async () => 
+            {
+                await _foldersRetrievalService.GetFolderByFolderId(guid);
+            };
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+        public async Task GetFolderByFolderId_Success(Guid id)
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            Folder folder = new Folder() { FolderId = guid };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            //Act
+            FolderResponse fr = await _foldersRetrievalService.GetFolderByFolderId(guid);
+
+            //Assert
+            fr.Should().NotBeNull();
+            fr.FolderId.Should().Be(guid);
+        }
+        #endregion
+
         #endregion
     }
 }

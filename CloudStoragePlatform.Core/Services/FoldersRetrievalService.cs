@@ -1,5 +1,6 @@
 ﻿using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
+using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.ServiceContracts;
 using System;
 using System.Collections.Generic;
@@ -9,39 +10,41 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Core.Services
 {
-    public class FoldersModificationService : IFoldersModificationService
+    public class FoldersRetrievalService : IFoldersRetrievalService
     {
         private readonly IFoldersRepository _foldersRepository;
-        public FoldersModificationService(IFoldersRepository foldersRepository) 
+        public FoldersRetrievalService(IFoldersRepository foldersRepository)
         {
             _foldersRepository = foldersRepository;
         }
-        public Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
+
+
+        public Task<List<FolderResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOptions)
         {
             throw new NotImplementedException();
         }
 
-        public Task<FolderResponse> AddOrRemoveFavorite(Guid folderId)
+        public Task<List<FolderResponse>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOptions)
         {
             throw new NotImplementedException();
         }
 
-        public Task<FolderResponse> AddOrRemoveTrash(Guid folderId)
+        public Task<List<FolderResponse>> GetFilteredFolders(string searchString)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> DeleteFolder(Guid folderId)
+        public Task<FolderResponse> GetFolderByFolderId(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath)
+        public Task<FolderResponse> GetFolderByFolderPath(string path)
         {
             throw new NotImplementedException();
         }
 
-        public Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest)
+        public Task<MetadataResponse> GetMetadata(Guid folderId)
         {
             throw new NotImplementedException();
         }

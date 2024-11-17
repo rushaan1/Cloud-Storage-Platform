@@ -17,9 +17,9 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         /// <param name="folderId"></param>
         /// <param name="newFolderPath">MUST ONLY INCLUDE THE DESTINATION FOLDER PATH WITHOUT THE FOLDER TO BE MOVED'S PATH</param>
         /// <returns></returns>
-        Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath);
-        Task<FolderResponse> AddToFavorites(Guid folderId);
-        Task<FolderResponse> AddToTrash(Guid folderId);
+        Task<FolderResponse> MoveFolder(Guid folderI, string newFolderPath);
+        Task<FolderResponse> AddOrRemoveFavorite(Guid folderId);
+        Task<FolderResponse> AddOrRemoveTrash(Guid folderId);
         Task<bool> DeleteFolder(Guid folderId);
     }
 }
