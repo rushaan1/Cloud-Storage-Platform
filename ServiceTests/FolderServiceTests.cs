@@ -266,6 +266,7 @@ namespace ServiceTests
 
 
         #region AddOrRemoveFavorite
+        [Fact]
         public async Task AddOrRemoveFavorite_FolderDoesntExists() 
         {
             //Arrange
@@ -285,7 +286,7 @@ namespace ServiceTests
         }
 
 
-
+        [Fact]
         public async Task AddOrRemoveFavorite_AddedToFavSuccesfully() 
         {
             //Arrange
@@ -303,7 +304,7 @@ namespace ServiceTests
         }
 
 
-
+        [Fact]
         public async Task AddOrRemoveFavorite_RemovedFromFavSuccesfully() 
         {
             //Arrange
@@ -325,6 +326,7 @@ namespace ServiceTests
 
 
         #region AddOrRemoveTrash
+        [Fact]
         public async Task AddOrRemoveTrash_FolderDoesntExists() 
         {
             //Arrange
@@ -343,7 +345,7 @@ namespace ServiceTests
         }
 
 
-
+        [Fact]
         public async Task AddOrRemoveTrash_AddedToTrashSuccessfully() 
         {
             //Arrange
@@ -361,7 +363,7 @@ namespace ServiceTests
         }
 
 
-
+        [Fact]
         public async Task AddOrRemoveTrash_RemovedFromTrashSuccessfully() 
         {
             //Arrange
@@ -382,6 +384,7 @@ namespace ServiceTests
 
 
         #region DeleteFolder
+        [Fact]
         public async Task DeleteFolder_FolderDoesntExists() 
         {
             //Arrange
@@ -400,7 +403,7 @@ namespace ServiceTests
         }
 
 
-
+        [Fact]
         public async Task DeleteFolder_FolderDeletedSuccessfully()
         {
             //Arrange
@@ -424,7 +427,7 @@ namespace ServiceTests
                 Directory.EnumerateDirectories(initialPath).Should().BeEmpty();
                 Directory.EnumerateFiles(initialPath).Should().BeEmpty();
             }
-            catch (Exception ex) 
+            catch (Exception) 
             {
                 Directory.Delete(folderPath, true);
             }
@@ -432,10 +435,17 @@ namespace ServiceTests
         #endregion
         #endregion
 
+
+
+
+
+
+
         #region FoldersRetrievalService
 
         #region GetFoldersByFolderId
-        public async Task GetFolderByFolderId_FolderNotFound(Guid id) 
+        [Fact]
+        public async Task GetFolderByFolderId_FolderNotFound() 
         {
             //Arrange
             Guid guid = _fixture.Create<Guid>();
@@ -451,8 +461,8 @@ namespace ServiceTests
             //Assert
             await action.Should().ThrowAsync<ArgumentException>();
         }
-
-        public async Task GetFolderByFolderId_Success(Guid id)
+        [Fact]
+        public async Task GetFolderByFolderId_Success()
         {
             //Arrange
             Guid guid = _fixture.Create<Guid>();
