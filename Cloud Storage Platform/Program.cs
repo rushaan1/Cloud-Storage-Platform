@@ -43,12 +43,19 @@ namespace CloudStoragePlatform.Web
              */
 
 
+            /*
+             * Additional Points:
+             * Sort reversing (asc & desc) should be handled by client, by default its asc
+             */
+
 
             /* TODO Filters
              * Filters that must be used:
              * When receving creation/rename request that includes a folder/file path all invalid folder name characters must be removed
              * When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added
              * When sending response having folder/file path, C:\CloudStoragePlatform\ must be removed
+             * Not Confirmed (need to be thought of) Making the folders always come first than files regardless of sorting 
+             * Home Folder (root) must be excluded when returning a list of folders
              */
         }
     }

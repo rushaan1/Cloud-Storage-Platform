@@ -8,5 +8,6 @@ namespace CloudStoragePlatform.Core.Enums
 {
     public enum SortOrderOptions
     {
+        ALPHABETICAL, DATEADDED, DATEUPDATED, SIZE
     }
 }

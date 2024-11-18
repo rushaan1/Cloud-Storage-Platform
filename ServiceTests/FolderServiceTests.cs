@@ -3,6 +3,7 @@ using Castle.Core.Configuration;
 using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
+using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.Exceptions;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
@@ -479,6 +480,187 @@ namespace ServiceTests
         }
         #endregion
 
+        #region GetFolderByFolderPath
+        [Fact]
+        public async Task GetFolderByFolderPath_FolderNotFound()
+        {
+            // Arrange
+            string path = _fixture.Create<string>();
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync((Folder)null!);
+
+            // Act
+            Func<Task> action = async () =>
+            {
+                await _foldersRetrievalService.GetFolderByFolderPath(path);
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Fact]
+        public async Task GetFolderByFolderPath_Success()
+        {
+            // Arrange
+            string name = _fixture.Create<string>();
+            string path = Path.Combine(initialPath, name);
+            Folder folder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = path };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync(folder);
+            Directory.CreateDirectory(path);
+
+            try
+            {
+                // Act
+                FolderResponse fr = await _foldersRetrievalService.GetFolderByFolderPath(path);
+
+                // Assert
+                fr.Should().NotBeNull();
+                fr.FolderId.Should().Be(folder.FolderId);
+                fr.FolderPath.Should().Be(path);
+            }
+            finally 
+            {
+                Directory.Delete(path);
+            }
+        }
+        #endregion
+
+        #region GetAllFoldersInHomeFolder
+        [Fact] 
+        public async Task GetAllFoldersInHomeFolder_NoFoldersFound_ReturnsEmptyList()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(new Folder());
+
+            // Act
+            List<FolderResponse> result = await _foldersRetrievalService.GetAllFoldersInHomeFolder(sortOptions);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetAllFoldersInHomeFolder_Success_AlphabeticalAscending()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            
+            var folders = new List<Folder>
+            {
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "A", FolderPath = Path.Combine(initialPath, "A") },
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "B", FolderPath = Path.Combine(initialPath, "B") }
+            };
+            Folder homeFolder = new Folder() {FolderId=_fixture.Create<Guid>(), FolderPath=initialPath, SubFolders=folders};
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(homeFolder);
+
+            // Act
+            List<FolderResponse> result = await _foldersRetrievalService.GetAllFoldersInHomeFolder(sortOptions);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(2);
+            result[0].FolderName.Should().Be("A");
+            result[1].FolderName.Should().Be("B");
+        }
+
+        [Fact]
+        public async Task GetAllFoldersInHomeFolder_Success_SizeAscending()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.SIZE;
+            
+            var folders = new List<Folder>
+    {
+        new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "SmallFolder", FolderPath = Path.Combine(initialPath, "Small"), FolderSize = 1024 },
+        new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "BigFolder", FolderPath = Path.Combine(initialPath, "Big"), FolderSize = 2048 }
+    };
+            Folder homeFolder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders };
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(homeFolder);
+
+            // Act
+            List<FolderResponse> result = await _foldersRetrievalService.GetAllFoldersInHomeFolder(sortOptions);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(2);
+            result[0].FolderName.Should().Be("SmallFolder");
+            result[1].FolderName.Should().Be("BigFolder");
+        }
+
+        #endregion
+
+        #region GetAllSubFolders
+        [Fact]
+        public async Task GetAllSubFolders_FolderDoesntExists()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync((Folder) null!);
+
+            // Act
+            Func<Task> action = async () => 
+            {
+                List<FolderResponse> result = await _foldersRetrievalService.GetAllSubFolders(_fixture.Create<Guid>(), sortOptions);
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Fact]
+        public async Task GetAllSubFolders_NoSubFolders()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var folder = new Folder() { FolderId = _fixture.Create<Guid>() };
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            // Act
+            List<FolderResponse> result = await _foldersRetrievalService.GetAllSubFolders(folder.FolderId, sortOptions);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetAllSubFolders_Success_AlphabeticalAscending()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            
+            var folders = new List<Folder>
+            {
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "A", FolderPath = Path.Combine(initialPath, "A") },
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "B", FolderPath = Path.Combine(initialPath, "B") }
+            };
+            Folder folder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders };
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            // Act
+            List<FolderResponse> result = await _foldersRetrievalService.GetAllSubFolders(folder.FolderId, sortOptions);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(2);
+            result[0].FolderName.Should().Be("A");
+            result[1].FolderName.Should().Be("B");
+        }
+
+        #endregion
         #endregion
     }
 }
