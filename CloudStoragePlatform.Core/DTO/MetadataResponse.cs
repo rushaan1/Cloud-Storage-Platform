@@ -25,5 +25,6 @@ namespace CloudStoragePlatform.Core.DTO
         public int? OpenCount { get; set; }
 
         public int? ShareCount { get; set; }
+        public long? Size { get; set; }
     }
 }

@@ -16,9 +16,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public string FileName { get; set; }
         
         public string FilePath { get; set; }
-        
-        public long FileSize { get; set; }
-        
+                
         public FileTypes FileType { get; set; }
         
         public Guid ParentFolderId { get; set; }

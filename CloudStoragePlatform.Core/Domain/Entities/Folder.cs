@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CloudStoragePlatform.Core.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,8 +22,17 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         /// <summary>
         /// Folder Size in MegaBytes
         /// </summary>
-        public long? FolderSize { get; set; }
         public virtual ICollection<Folder> SubFolders { get; set; } = new List<Folder>();
         public virtual ICollection<File> Files { get; set; } = new List<File>();
+
+        public FolderResponse ToFolderResponse() 
+        {
+            return new FolderResponse()
+            {
+                FolderId = FolderId,
+                FolderName = FolderName,
+                FolderPath = FolderPath
+            };
+        }
     }
 }
