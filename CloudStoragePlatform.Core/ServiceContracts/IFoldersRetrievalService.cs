@@ -14,7 +14,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         Task<FolderResponse> GetFolderByFolderPath(string path);
         Task<List<FolderResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOptions);
         Task<List<FolderResponse>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOptions);
-        Task<List<FolderResponse>> GetFilteredFolders(string searchString);
+        Task<List<FolderResponse>> GetFilteredFolders(string searchString, SortOrderOptions sortOptions);
         Task<MetadataResponse> GetMetadata(Guid folderId);
     }
 }

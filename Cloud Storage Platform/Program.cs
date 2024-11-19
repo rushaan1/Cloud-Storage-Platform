@@ -56,6 +56,7 @@ namespace CloudStoragePlatform.Web
              * When sending response having folder/file path, C:\CloudStoragePlatform\ must be removed
              * Not Confirmed (need to be thought of) Making the folders always come first than files regardless of sorting 
              * Home Folder (root) must be excluded when returning a list of folders
+             * Use filters for metadata updation
              */
         }
     }

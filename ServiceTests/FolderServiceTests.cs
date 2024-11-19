@@ -10,6 +10,7 @@ using CloudStoragePlatform.Core.Services;
 using FluentAssertions;
 using Moq;
 using Org.BouncyCastle.Asn1.X509;
+using System.Linq.Expressions;
 using Xunit;
 namespace ServiceTests
 {
@@ -660,6 +661,89 @@ namespace ServiceTests
             result[1].FolderName.Should().Be("B");
         }
 
+        #endregion
+
+        #region GetFilteredFolders
+        [Fact]
+        public async Task GetFilteredFolders_FolderDoesntExists()
+        {
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            _foldersRepositoryMock.Setup(f => f.GetFilteredFolders(It.IsAny<Expression<Func<Folder, bool>>>()))
+                .ReturnsAsync(new List<Folder>());
+
+            // Act
+            List<FolderResponse> result = await _foldersRetrievalService.GetFilteredFolders(_fixture.Create<string>(), sortOptions);
+
+            // Assert
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetFilteredFolders_FolderSearchSuccessful()
+        {
+            // Arrange
+            var sortOptions = SortOrderOptions.ALPHABETICAL;
+
+            var filteredFolders = new List<Folder>
+            {
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abx", FolderPath = Path.Combine(initialPath, "Abx") },
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abc", FolderPath = Path.Combine(initialPath, "Abc") },
+            };
+            _foldersRepositoryMock.Setup(f => f.GetFilteredFolders(It.IsAny<Expression<Func<Folder, bool>>>()))
+                .ReturnsAsync(filteredFolders);
+
+            // Act
+            //Should be case insensitive & search folder name
+            List<FolderResponse> result = await _foldersRetrievalService.GetFilteredFolders("ab", sortOptions);
+
+            // Assert
+            result[0].FolderName.Should().Be(filteredFolders[1].FolderName);
+            result[1].FolderName.Should().Be(filteredFolders[0].FolderName);
+            result.Count.Should().Be(2);
+        }
+
+        #endregion
+
+        #region GetMetadata
+        [Fact]
+        public async Task GetMetadata_InvalidFolderId() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync((Folder)null!);
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersRetrievalService.GetMetadata(guid);
+            };
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Fact]
+        public async Task GetMetadata_Successful()
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            Metadata metadata = new Metadata() 
+            {
+                MetadataId = _fixture.Create<Guid>(),
+            };
+            Folder folder = new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abx", FolderPath = Path.Combine(initialPath, "Abx"), Metadata = metadata, MetadataId = metadata.MetadataId };
+            metadata.Folder = folder;
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            //Act
+            MetadataResponse mr = await _foldersRetrievalService.GetMetadata(folder.FolderId);
+
+            //Assert
+            mr.Should().NotBeNull();
+            mr.MetadataId.Should().Be(folder.MetadataId);
+        }
         #endregion
         #endregion
     }

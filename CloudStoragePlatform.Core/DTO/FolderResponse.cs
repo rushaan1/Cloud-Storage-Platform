@@ -11,7 +11,7 @@ namespace CloudStoragePlatform.Core.DTO
     {
         public Guid FolderId { get; set; }
         public string FolderName { get; set; }
-        public string FolderPath { get; set; }
-        public bool IsFavorite { get; set; }
+        public string? FolderPath { get; set; }
+        public bool? IsFavorite { get; set; }
     }
 }
