@@ -27,6 +27,9 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public int? OpenCount { get; set; }
 
         public int? ShareCount { get; set; }
+        /// <summary>
+        /// in MegaBytes
+        /// </summary>
         public long? Size { get; set; }
     }
 }

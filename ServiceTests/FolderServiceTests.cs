@@ -222,7 +222,7 @@ namespace ServiceTests
             };
 
             //Assert
-            await action.Should().ThrowAsync<ArgumentException>();
+            await action.Should().ThrowAsync<DirectoryNotFoundException>();
         }
 
 

@@ -19,9 +19,6 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         
         public Guid? FolderParentId { get; set; }
         public Folder? ParentFolder { get; set; }
-        /// <summary>
-        /// Folder Size in MegaBytes
-        /// </summary>
         public virtual ICollection<Folder> SubFolders { get; set; } = new List<Folder>();
         public virtual ICollection<File> Files { get; set; } = new List<File>();
 
