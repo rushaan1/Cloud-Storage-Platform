@@ -579,7 +579,7 @@ namespace ServiceTests
         {
             // Arrange
             var sortOptions = SortOrderOptions.ALPHABETICAL;
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
                 .ReturnsAsync(new Folder());
 
             // Act
@@ -603,7 +603,7 @@ namespace ServiceTests
             };
             Folder homeFolder = new Folder() {FolderId=_fixture.Create<Guid>(), FolderPath=initialPath, SubFolders=folders};
 
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
                 .ReturnsAsync(homeFolder);
 
             // Act
@@ -629,7 +629,7 @@ namespace ServiceTests
     };
             Folder homeFolder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders };
 
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
                 .ReturnsAsync(homeFolder);
 
             // Act

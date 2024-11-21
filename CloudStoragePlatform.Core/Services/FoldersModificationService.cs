@@ -95,7 +95,7 @@ namespace CloudStoragePlatform.Core.Services
         {
             Queue<Folder> tempTraversal = new Queue<Folder>();
             tempTraversal.Enqueue(source);  
-            while (tempTraversal.Count > 0)
+            while (tempTraversal.Count >= 0)
             {
                 Folder temp = tempTraversal.Dequeue();
                 if (temp.FolderId != source.FolderId)
@@ -105,7 +105,7 @@ namespace CloudStoragePlatform.Core.Services
                     temp.FolderPath = folderPathBeforeAfter;
                     await _foldersRepository.UpdateFolder(temp, true, false, false, false, false, false);
                 }
-                if (temp.SubFolders.Count > 0)
+                if (temp.SubFolders.Count >= 0)
                 {
                     foreach (Folder temp2 in temp.SubFolders)
                     {
