@@ -7,8 +7,10 @@ using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.Exceptions;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
+using CloudStoragePlatform;
 using FluentAssertions;
 using Moq;
+using NPOI;
 using Org.BouncyCastle.Asn1.X509;
 using System.Linq.Expressions;
 using Xunit;
@@ -21,6 +23,7 @@ namespace ServiceTests
 
         private readonly IFixture _fixture;
         private readonly Mock<IFoldersRepository> _foldersRepositoryMock;
+        private readonly Mock<IFilesRepository> _filesRepositoryMock;
         string initialPath = @"C:\CloudStoragePlatformUnitTests\home";
 
         public FolderServiceTests() 
@@ -30,7 +33,8 @@ namespace ServiceTests
             _fixture.Customize<string>(c => c.FromFactory(() => string.Concat(new string(Enumerable.Range(0, 50).Select(x => _fixture.Create<char>()).ToArray()).Split(Path.GetInvalidFileNameChars()))));
 
             _foldersRepositoryMock = new Mock<IFoldersRepository>();
-            _foldersModificationService = new FoldersModificationService(_foldersRepositoryMock.Object);
+            _filesRepositoryMock = new Mock<IFilesRepository>();
+            _foldersModificationService = new FoldersModificationService(_foldersRepositoryMock.Object, _filesRepositoryMock.Object);
             _foldersRetrievalService = new FoldersRetrievalService(_foldersRepositoryMock.Object);
         }
 
@@ -158,10 +162,19 @@ namespace ServiceTests
 
             FolderRenameRequest renameRequest = _fixture.Create<FolderRenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
             Folder folder = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
+            Folder updated = folder;
+            updated.FolderName = renameRequest.FolderNewName;
+            updated.FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.FolderNewName);
             Directory.CreateDirectory(folderPath);
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
+
+            _foldersRepositoryMock.Setup(f=> f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(updated);
+
+            _filesRepositoryMock.Setup(f => f.UpdateFile(It.IsAny<CloudStoragePlatform.Core.Domain.Entities.File>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(new CloudStoragePlatform.Core.Domain.Entities.File() { FilePath = Path.Combine(folderPath, _fixture.Create<string>()) });
             // The service will check using Directory to see if folder with new name already exists 
 
             //Act
@@ -171,6 +184,7 @@ namespace ServiceTests
             bool folderExists = Directory.Exists(Path.Combine(initialPath, renameRequest.FolderNewName));
             response.FolderId.Should().Be(renameRequest.FolderId);
             response.FolderName.Should().Be(renameRequest.FolderNewName);
+            response.FolderPath.Should().Be(updated.FolderPath);
             folderExists.Should().BeTrue();
             Directory.Delete(response.FolderPath);
         }
@@ -238,11 +252,19 @@ namespace ServiceTests
             string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
             string newPathForFOLDER = Path.Combine(destinationDirectoryPath, folderName);
 
+            Folder updated = folder;
+            updated.FolderPath = newPathForFOLDER;
+
             Directory.CreateDirectory(folderPath);
             Directory.CreateDirectory(destinationDirectoryPath);
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(updated);
+
+            _filesRepositoryMock.Setup(f => f.UpdateFile(It.IsAny<CloudStoragePlatform.Core.Domain.Entities.File>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(new CloudStoragePlatform.Core.Domain.Entities.File() { FilePath = Path.Combine(folderPath, _fixture.Create<string>()) });
 
             try
             {
@@ -579,8 +601,8 @@ namespace ServiceTests
             
             var folders = new List<Folder>
     {
-        new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "SmallFolder", FolderPath = Path.Combine(initialPath, "Small"), FolderSize = 1024 },
-        new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "BigFolder", FolderPath = Path.Combine(initialPath, "Big"), FolderSize = 2048 }
+        new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "SmallFolder", FolderPath = Path.Combine(initialPath, "Small"), Metadata = new Metadata(){ Size = 1024 } },
+        new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "BigFolder", FolderPath = Path.Combine(initialPath, "Big"), Metadata =  new Metadata(){ Size = 2048 } }
     };
             Folder homeFolder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders };
 
@@ -618,7 +640,7 @@ namespace ServiceTests
             await action.Should().ThrowAsync<ArgumentException>();
         }
 
-        [Fact]
+        [Fact] 
         public async Task GetAllSubFolders_NoSubFolders()
         {
             // Arrange

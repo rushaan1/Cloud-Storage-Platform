@@ -55,6 +55,38 @@ namespace CloudStoragePlatform.Core.Services
             throw new NotImplementedException();
         }
 
+        // Utility Function
+        private async Task UpdateChildPaths(Folder source, string oldp, string newp) 
+        {
+            List<Folder> tempTraversal = new List<Folder>() { source };
+            while (tempTraversal.Count > 0)
+            {
+                Folder temp = tempTraversal[0];
+                if (temp.FolderId != source.FolderId)
+                {
+                    string folderPathBeforeAfter = temp.FolderPath;
+                    folderPathBeforeAfter = folderPathBeforeAfter.Replace(oldp, newp);
+                    temp.FolderPath = folderPathBeforeAfter;
+                    await _foldersRepository.UpdateFolder(temp, true, false, false, false, false, false);
+                }
+                if (temp.SubFolders.Count > 0)
+                {
+                    foreach (Folder temp2 in temp.SubFolders)
+                    {
+                        tempTraversal.Add(temp2);
+                    }
+                }
+                foreach (Domain.Entities.File temp2 in temp.Files)
+                {
+                    string filePathBeforeAfter = temp2.FilePath;
+                    filePathBeforeAfter = filePathBeforeAfter.Replace(oldp, newp);
+                    temp2.FilePath = filePathBeforeAfter;
+                    await _filesRepository.UpdateFile(temp2, true, false, false, false);
+                }
+                tempTraversal.RemoveAt(0);
+            }
+        }
+
         public async Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(folderId);
@@ -74,40 +106,15 @@ namespace CloudStoragePlatform.Core.Services
             folder.ParentFolder = newParent!;
 
             Folder? finalMainFolder = await _foldersRepository.UpdateFolder(folder, true, true, false, false, false, false);
-
-            List<Folder> tempTraversal = new List<Folder>() { folder };
-            while (tempTraversal.Count>0)
-            {
-                Folder temp = tempTraversal.ElementAt(0);
-                if (temp.FolderId != folder.FolderId) 
-                {
-                    string folderPathBeforeAfter = temp.FolderPath;
-                    folderPathBeforeAfter = folderPathBeforeAfter.Replace(previousFolderPath, newFolderPathOfFolder);
-                    temp.FolderPath = folderPathBeforeAfter;
-                    await _foldersRepository.UpdateFolder(temp, true, false, false, false, false, false);
-                }
-                if (temp.SubFolders.Count > 0) 
-                {
-                    foreach (Folder temp2 in temp.SubFolders) 
-                    {
-                        tempTraversal.Add(temp2);
-                    }
-                }
-                foreach (Domain.Entities.File temp2 in temp.Files) 
-                {
-                    string filePathBeforeAfter = temp2.FilePath;
-                    filePathBeforeAfter = filePathBeforeAfter.Replace(previousFolderPath, newFolderPathOfFolder);
-                    temp2.FilePath = filePathBeforeAfter;
-                    await _filesRepository.UpdateFile(temp2, true, false, false, false);
-                }
-                tempTraversal.RemoveAt(0);
-            }
+            await UpdateChildPaths(folder, previousFolderPath, newFolderPath);
+            
             return finalMainFolder!.ToFolderResponse();
         }
 
         public async Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(folderRenameRequest.FolderId);
+            string oldp = folder!.FolderPath;
             if (folder == null) 
             {
                 throw new ArgumentException();
@@ -116,10 +123,13 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new InvalidOperationException();
             }
+            string newp = folder.FolderPath.Replace(folder.FolderName, folderRenameRequest.FolderNewName);
             folder.FolderName = folderRenameRequest.FolderNewName;
+            folder.FolderPath = newp;
+            await UpdateChildPaths(folder, oldp, newp);
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             // if a directory doesnt exists in specified folder it will rename instead of moving
-            Directory.Move(folder.FolderPath, folder.FolderPath.Replace(folder.FolderName, folderRenameRequest.FolderNewName));
+            Directory.Move(folder.FolderPath, newp);
             return updatedFolder!.ToFolderResponse();
         }
     }
