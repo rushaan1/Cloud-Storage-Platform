@@ -14,6 +14,7 @@ using NPOI;
 using Org.BouncyCastle.Asn1.X509;
 using System.Linq.Expressions;
 using Xunit;
+using System.Text.Json;
 namespace ServiceTests
 {
     public class FolderServiceTests
@@ -162,7 +163,7 @@ namespace ServiceTests
 
             FolderRenameRequest renameRequest = _fixture.Create<FolderRenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
             Folder folder = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
-            Folder updated = folder;
+            Folder updated = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
             updated.FolderName = renameRequest.FolderNewName;
             updated.FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.FolderNewName);
             Directory.CreateDirectory(folderPath);
@@ -252,7 +253,7 @@ namespace ServiceTests
             string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
             string newPathForFOLDER = Path.Combine(destinationDirectoryPath, folderName);
 
-            Folder updated = folder;
+            Folder updated = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
             updated.FolderPath = newPathForFOLDER;
 
             Directory.CreateDirectory(folderPath);
@@ -317,7 +318,13 @@ namespace ServiceTests
             Guid guid = _fixture.Create<Guid>();
             Folder folder = new Folder() { FolderId = guid, IsFavorite=false };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
-                .ReturnsAsync(folder);
+                .ReturnsAsync(folder); //possible error if moq is not creating deep copy because folder properties being changed
+
+            Folder updated = folder;
+            updated.IsFavorite = true;
+
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(updated);
 
             //Act
             FolderResponse fr = await _foldersModificationService.AddOrRemoveFavorite(guid);
@@ -337,6 +344,10 @@ namespace ServiceTests
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
+            Folder updated = folder;
+            updated.IsFavorite = false;
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(updated);
 
             //Act
             FolderResponse fr = await _foldersModificationService.AddOrRemoveFavorite(guid);
@@ -378,6 +389,11 @@ namespace ServiceTests
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
+            Folder updated = folder;
+            updated.IsTrash = true;
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(updated);
+
             //Act
             FolderResponse fr = await _foldersModificationService.AddOrRemoveTrash(guid);
 
@@ -395,6 +411,11 @@ namespace ServiceTests
             Folder folder = new Folder() { FolderId = guid, IsTrash = true };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
+
+            Folder updated = folder;
+            updated.IsTrash = false;
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(updated);
 
             //Act
             FolderResponse fr = await _foldersModificationService.AddOrRemoveTrash(guid);
@@ -437,6 +458,8 @@ namespace ServiceTests
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath};
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
+            _foldersRepositoryMock.Setup(f => f.DeleteFolder(It.IsAny<Folder>()))
+                .ReturnsAsync(true);
 
             Directory.CreateDirectory(folderPath);
             System.IO.File.Create(Path.Combine(folderPath, _fixture.Create<string>()+".txt"));

@@ -6,6 +6,7 @@ using CloudStoragePlatform.Core.ServiceContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,28 +41,63 @@ namespace CloudStoragePlatform.Core.Services
             return folder.ToFolderResponse();
         }
 
-        public async Task<FolderResponse> AddOrRemoveFavorite(Guid folderId)
+        public async Task<FolderResponse> AddOrRemoveFavorite(Guid fid)
         {
-            throw new NotImplementedException();
+            Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
+            if (folder == null) 
+            {
+                throw new ArgumentException();
+            }
+            if (folder.IsFavorite)
+            {
+                folder.IsFavorite = false;
+            }
+            else 
+            {
+                folder.IsFavorite = true;
+            }
+            Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            return updatedFolder!.ToFolderResponse();
         }
 
-        public async Task<FolderResponse> AddOrRemoveTrash(Guid folderId)
+        public async Task<FolderResponse> AddOrRemoveTrash(Guid fid)
         {
-            throw new NotImplementedException();
+            Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
+            if (folder == null)
+            {
+                throw new ArgumentException();
+            }
+            if (folder.IsTrash)
+            {
+                folder.IsTrash = false;
+            }
+            else
+            {
+                folder.IsTrash = true;
+            }
+            Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            return updatedFolder!.ToFolderResponse();
         }
 
-        public async Task<bool> DeleteFolder(Guid folderId)
+        public async Task<bool> DeleteFolder(Guid fid)
         {
-            throw new NotImplementedException();
+            Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
+            if (folder == null) 
+            {
+                throw new ArgumentException();
+            }
+            Directory.Delete(folder.FolderPath);
+            return await _foldersRepository.DeleteFolder(folder);
         }
 
         // Utility Function
         private async Task UpdateChildPaths(Folder source, string oldp, string newp) 
         {
-            List<Folder> tempTraversal = new List<Folder>() { source };
+            Queue<Folder> tempTraversal = new Queue<Folder>();
+            tempTraversal.Enqueue(source);  
             while (tempTraversal.Count > 0)
             {
-                Folder temp = tempTraversal[0];
+                Folder temp = tempTraversal.Dequeue();
                 if (temp.FolderId != source.FolderId)
                 {
                     string folderPathBeforeAfter = temp.FolderPath;
@@ -73,7 +109,7 @@ namespace CloudStoragePlatform.Core.Services
                 {
                     foreach (Folder temp2 in temp.SubFolders)
                     {
-                        tempTraversal.Add(temp2);
+                        tempTraversal.Enqueue(temp2);
                     }
                 }
                 foreach (Domain.Entities.File temp2 in temp.Files)
@@ -83,7 +119,6 @@ namespace CloudStoragePlatform.Core.Services
                     temp2.FilePath = filePathBeforeAfter;
                     await _filesRepository.UpdateFile(temp2, true, false, false, false);
                 }
-                tempTraversal.RemoveAt(0);
             }
         }
 
