@@ -31,6 +31,7 @@ namespace CloudStoragePlatform.Core.Services
                     throw new DuplicateFolderException();
                 }
                 folder = new Folder() { FolderId = Guid.NewGuid(), FolderName = folderAddRequest.FolderName, FolderPath = folderAddRequest.FolderPath };
+                // TODO Metadata connection
                 await _foldersRepository.AddFolder(folder);
                 Directory.CreateDirectory(folderAddRequest.FolderPath);
             }

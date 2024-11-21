@@ -23,9 +23,25 @@ namespace CloudStoragePlatform.Core.Services
             _configuration = configuration;
         }
 
-        public async Task<List<Folder>> Sort(SortOrderOptions option)
+        public List<Folder> Sort(List<Folder> folders, SortOrderOptions option)
         {
-            throw new NotImplementedException();
+            List<Folder> sorted = new List<Folder>(); 
+            switch (option) 
+            {
+                case SortOrderOptions.ALPHABETICAL:
+                    sorted = folders.OrderBy(f=>f.FolderName).ToList();
+                    break;
+                case SortOrderOptions.DATEADDED:
+                    sorted = folders.OrderBy(f => f.CreationDate).ToList();
+                    break;
+                case SortOrderOptions.LASTOPENED:
+                    sorted = folders.OrderBy(f => f.Metadata.LastOpened).ToList();
+                    break;
+                case SortOrderOptions.SIZE:
+                    sorted = folders.OrderBy(f => f.Metadata.Size).ToList();
+                    break;
+            }
+            return sorted;
         } // UTILITY FUNCTION
 
         public async Task<List<FolderResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOptions)
@@ -34,18 +50,39 @@ namespace CloudStoragePlatform.Core.Services
             List<Folder> homeFolders = homeFolder!.SubFolders.ToList();
             if (homeFolders.Count <= 0) 
             {
-
+                return new List<FolderResponse>();
             }
+            List<Folder> sorted = Sort(homeFolders, sortOptions); 
+            List<FolderResponse> folderResponses = sorted.Select(f=>f.ToFolderResponse()).ToList();
+            return folderResponses;
         }
 
-        public Task<List<FolderResponse>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOptions)
+        public async Task<List<FolderResponse>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOptions)
         {
-            throw new NotImplementedException();
+            Folder? parentFolder = await _foldersRepository.GetFolderByFolderId(parentFolderId);
+            if (parentFolder == null)
+            {
+                throw new ArgumentException();
+            }
+            List<Folder> childFolders = parentFolder!.SubFolders.ToList();
+            if (childFolders.Count <= 0)
+            {
+                return new List<FolderResponse>();
+            }
+            List<Folder> sorted = Sort(childFolders, sortOptions);
+            List<FolderResponse> folderResponses = sorted.Select(f => f.ToFolderResponse()).ToList();
+            return folderResponses;
         }
 
-        public Task<List<FolderResponse>> GetFilteredFolders(string searchString, SortOrderOptions sortOptions)
+        public async Task<List<FolderResponse>> GetFilteredFolders(string searchString, SortOrderOptions sortOptions)
         {
-            throw new NotImplementedException();
+            List<Folder> folders = await _foldersRepository.GetFilteredFolders(f=>f.FolderName.Contains(searchString));
+            if (folders.Count <= 0) 
+            {
+                return new List<FolderResponse>();
+            }
+            List<Folder> sortedFolderzzzzzz = Sort(folders, sortOptions);
+            return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
         }
 
         public async Task<FolderResponse> GetFolderByFolderId(Guid fid)
@@ -68,9 +105,15 @@ namespace CloudStoragePlatform.Core.Services
             return folder.ToFolderResponse();
         }
 
-        public Task<MetadataResponse> GetMetadata(Guid folderId)
+        public async Task<MetadataResponse> GetMetadata(Guid fid)
         {
-            throw new NotImplementedException();
+            Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
+            if (folder == null)
+            {
+                throw new ArgumentException();
+            }
+
+            return folder.Metadata.ToMetadataResponse();
         }
     }
 }

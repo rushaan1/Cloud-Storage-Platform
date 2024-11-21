@@ -36,7 +36,7 @@ namespace ServiceTests
             _foldersRepositoryMock = new Mock<IFoldersRepository>();
             _filesRepositoryMock = new Mock<IFilesRepository>();
             _foldersModificationService = new FoldersModificationService(_foldersRepositoryMock.Object, _filesRepositoryMock.Object);
-            _foldersRetrievalService = new FoldersRetrievalService(_foldersRepositoryMock.Object);
+            _foldersRetrievalService = new FoldersRetrievalService(_foldersRepositoryMock.Object, new Mock<Microsoft.Extensions.Configuration.IConfiguration>().Object);
         }
 
         #region FolderModificationService
@@ -591,7 +591,7 @@ namespace ServiceTests
         }
 
         [Fact]
-        public async Task GetAllFoldersInHomeFolder_Success_AlphabeticalAscending()
+        public async Task GetAllFoldersInHomeFolder_Success_Alphabetical()
         {
             // Arrange
             var sortOptions = SortOrderOptions.ALPHABETICAL;
@@ -617,7 +617,7 @@ namespace ServiceTests
         }
 
         [Fact]
-        public async Task GetAllFoldersInHomeFolder_Success_SizeAscending()
+        public async Task GetAllFoldersInHomeFolder_Success_Size()
         {
             // Arrange
             var sortOptions = SortOrderOptions.SIZE;
