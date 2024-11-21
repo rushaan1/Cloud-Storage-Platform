@@ -318,9 +318,9 @@ namespace ServiceTests
             Guid guid = _fixture.Create<Guid>();
             Folder folder = new Folder() { FolderId = guid, IsFavorite=false };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
-                .ReturnsAsync(folder); //possible error if moq is not creating deep copy because folder properties being changed
+                .ReturnsAsync(folder); 
 
-            Folder updated = folder;
+            Folder updated = new Folder() { FolderId = guid, IsFavorite = false };
             updated.IsFavorite = true;
 
             _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
@@ -344,7 +344,7 @@ namespace ServiceTests
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
-            Folder updated = folder;
+            Folder updated = new Folder() { FolderId = guid, IsFavorite = true };
             updated.IsFavorite = false;
             _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
@@ -389,7 +389,7 @@ namespace ServiceTests
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
-            Folder updated = folder;
+            Folder updated = new Folder() { FolderId = guid, IsTrash = false };
             updated.IsTrash = true;
             _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
@@ -412,7 +412,7 @@ namespace ServiceTests
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
-            Folder updated = folder;
+            Folder updated = new Folder() { FolderId = guid, IsTrash = true };
             updated.IsTrash = false;
             _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
