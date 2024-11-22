@@ -58,6 +58,8 @@ namespace CloudStoragePlatform.Web
              * Home Folder (root) must be excluded when returning a list of folders
              * Use filters for metadata updation
              */
+
+            // inject user identifying stuff in constructor and in repository's constructor
         }
     }
 }

@@ -21,6 +21,7 @@ namespace CloudStoragePlatform.Core.Services
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
+            // inject user identifying stuff in constructor and in repository's constructor
         }
         public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
         {
