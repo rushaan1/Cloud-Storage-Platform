@@ -13,5 +13,6 @@ namespace CloudStoragePlatform.Core.DTO
         public string FolderName { get; set; }
         public string? FolderPath { get; set; }
         public bool? IsFavorite { get; set; }
+        public bool? IsTrash { get; set; }
     }
 }

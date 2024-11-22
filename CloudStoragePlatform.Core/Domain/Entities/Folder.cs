@@ -18,7 +18,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public string FolderPath { get; set; }
         
         public Guid? FolderParentId { get; set; }
-        public Folder? ParentFolder { get; set; }
+        public virtual Folder? ParentFolder { get; set; }
         public virtual ICollection<Folder> SubFolders { get; set; } = new List<Folder>();
         public virtual ICollection<File> Files { get; set; } = new List<File>();
 
@@ -28,7 +28,9 @@ namespace CloudStoragePlatform.Core.Domain.Entities
             {
                 FolderId = FolderId,
                 FolderName = FolderName,
-                FolderPath = FolderPath
+                FolderPath = FolderPath,
+                IsFavorite = IsFavorite,
+                IsTrash = IsTrash
             };
         }
     }

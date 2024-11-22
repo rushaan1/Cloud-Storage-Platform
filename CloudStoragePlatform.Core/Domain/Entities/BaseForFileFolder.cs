@@ -19,9 +19,9 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public virtual Metadata Metadata { get; set; }
         
         public DateTime CreationDate { get; set; }
-        
-        public bool IsFavorite { get; set; }
-        
-        public bool IsTrash { get; set; }
+
+        public bool IsFavorite { get; set; } = false;
+
+        public bool IsTrash { get; set; } = false;
     }
 }

@@ -3,6 +3,7 @@ using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Exceptions;
 using CloudStoragePlatform.Core.ServiceContracts;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +54,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 folder.IsFavorite = false;
             }
-            else 
+            else if (!folder.IsFavorite)
             {
                 folder.IsFavorite = true;
             }
@@ -96,7 +97,7 @@ namespace CloudStoragePlatform.Core.Services
         {
             Queue<Folder> tempTraversal = new Queue<Folder>();
             tempTraversal.Enqueue(source);  
-            while (tempTraversal.Count >= 0)
+            while (tempTraversal.Count > 0)
             {
                 Folder temp = tempTraversal.Dequeue();
                 if (temp.FolderId != source.FolderId)
@@ -106,7 +107,7 @@ namespace CloudStoragePlatform.Core.Services
                     temp.FolderPath = folderPathBeforeAfter;
                     await _foldersRepository.UpdateFolder(temp, true, false, false, false, false, false);
                 }
-                if (temp.SubFolders.Count >= 0)
+                if (temp.SubFolders.Count > 0)
                 {
                     foreach (Folder temp2 in temp.SubFolders)
                     {
@@ -143,14 +144,14 @@ namespace CloudStoragePlatform.Core.Services
 
             Folder? finalMainFolder = await _foldersRepository.UpdateFolder(folder, true, true, false, false, false, false);
             await UpdateChildPaths(folder, previousFolderPath, newFolderPath);
-            
+            Directory.Move(previousFolderPath, newFolderPathOfFolder);
+
             return finalMainFolder!.ToFolderResponse();
         }
 
         public async Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(folderRenameRequest.FolderId);
-            string oldp = folder!.FolderPath;
             if (folder == null) 
             {
                 throw new ArgumentException();
@@ -159,13 +160,14 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new InvalidOperationException();
             }
+            string oldp = folder!.FolderPath;
             string newp = folder.FolderPath.Replace(folder.FolderName, folderRenameRequest.FolderNewName);
             folder.FolderName = folderRenameRequest.FolderNewName;
             folder.FolderPath = newp;
             await UpdateChildPaths(folder, oldp, newp);
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             // if a directory doesnt exists in specified folder it will rename instead of moving
-            Directory.Move(folder.FolderPath, newp);
+            FileSystem.RenameDirectory(oldp, folderRenameRequest.FolderNewName);
             return updatedFolder!.ToFolderResponse();
         }
     }

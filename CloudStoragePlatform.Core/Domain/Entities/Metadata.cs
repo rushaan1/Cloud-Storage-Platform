@@ -12,8 +12,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
     {
         [Key]
         public Guid MetadataId { get; set; }
-        public File? File { get; set; }
-        public Folder? Folder { get; set; }
+        public virtual File? File { get; set; }
+        public virtual Folder? Folder { get; set; }
         public DateTime? PreviousReplacementDate { get; set; }
         public int? ReplaceCount { get; set; }
 
