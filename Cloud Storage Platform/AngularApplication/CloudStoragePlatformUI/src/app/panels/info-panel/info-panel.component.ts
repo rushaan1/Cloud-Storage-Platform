@@ -31,6 +31,7 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
 
   ngAfterViewChecked(){
     let itemSelected = this.anyItemsSelected();
+    // would likely need to alter the logic of panels on high level to make it work with >2 panels
     if (itemSelected){
       if (this.previouslySelected != itemSelected){
         setTimeout(() => {

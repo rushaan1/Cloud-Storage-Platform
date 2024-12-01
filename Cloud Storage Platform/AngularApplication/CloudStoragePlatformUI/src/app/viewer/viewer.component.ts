@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../services/item-selection.service';
 import { EventService } from '../services/event-service.service';
 
@@ -7,11 +7,17 @@ import { EventService } from '../services/event-service.service';
   templateUrl: './viewer.component.html',
   styleUrl: './viewer.component.css'
 })
-export class ViewerComponent implements AfterViewChecked {
+export class ViewerComponent implements AfterViewChecked, AfterViewInit {
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
   previouslySelected = false;
   itemsSelected = 0;
-  files = ["file innit gawk gawk sigma porch init", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3"];
+  files = ["file hello", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3"];
+
+  ngAfterViewInit(): void {
+    this.eventService.listen("checkbox selection change",()=>{
+      this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
+    })
+  }
 
   ngAfterViewChecked(): void {
     const infoPanelComponent = document.getElementById("infoPanel") as HTMLElement;

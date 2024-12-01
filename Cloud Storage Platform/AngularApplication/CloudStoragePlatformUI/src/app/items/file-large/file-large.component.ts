@@ -13,6 +13,7 @@ export class FileLargeComponent implements OnInit {
   @Input() favorite: boolean = false;
   @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() itemSelected: EventEmitter<boolean> = new EventEmitter<boolean>();
+  
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild("selectFile") selectFileCheckbox!:ElementRef<HTMLInputElement>;
 
@@ -127,5 +128,6 @@ export class FileLargeComponent implements OnInit {
       this.selected = true;
       this.selectFileCheckbox.nativeElement.classList.add("visible-checkbox");
     }
+    this.eventService.emit("checkbox selection change",0);
   }
 }
