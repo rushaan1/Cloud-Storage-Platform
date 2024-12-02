@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cloud_Storage_Platform.CustomValidationAttributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace CloudStoragePlatform.Core.DTO
     public class FolderAddRequest
     {
         [Required]
+        [RegularExpression(@"\S+", ErrorMessage = "Empty or only white spaces in new folder name")]
+        [FileOrFolderNameValidationAttribute("Invalid folder name")]
         public string FolderName { get; set; }
         /// <summary>
         /// PATH MUST INCLUDE NEW FOLDER'S NAME!

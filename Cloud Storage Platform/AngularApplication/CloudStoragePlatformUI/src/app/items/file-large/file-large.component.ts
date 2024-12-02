@@ -13,38 +13,38 @@ export class FileLargeComponent implements OnInit {
   @Input() favorite: boolean = false;
   @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() itemSelected: EventEmitter<boolean> = new EventEmitter<boolean>();
-  
-  @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
-  @ViewChild("selectFile") selectFileCheckbox!:ElementRef<HTMLInputElement>;
 
-  @ViewChild("backBtn") backBtn!:ElementRef<HTMLElement>;
-  @ViewChild("selectTxt") selectFile!:ElementRef<HTMLElement>;
-  @ViewChild("fileOptionsMenu") fileOptionsMenu!:ElementRef<HTMLDivElement>;
+  @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
+  @ViewChild("selectFile") selectFileCheckbox!: ElementRef<HTMLInputElement>;
+
+  @ViewChild("backBtn") backBtn!: ElementRef<HTMLElement>;
+  @ViewChild("selectTxt") selectFile!: ElementRef<HTMLElement>;
+  @ViewChild("fileOptionsMenu") fileOptionsMenu!: ElementRef<HTMLDivElement>;
   originalName = "";
   fileOptionsShouldBeVisible = false;
   renaming = false;
   moving = false;
   selected = false;
 
-  constructor(private itemSelectionService:ItemSelectionService, private eventService:EventService){}
+  constructor(private itemSelectionService: ItemSelectionService, private eventService: EventService) { }
 
   ngOnInit(): void {
     this.originalName = this.name;
     this.nameResizing();
-    this.eventService.listen("unselector all", ()=>{
-      if (this.selected){
+    this.eventService.listen("unselector all", () => {
+      if (this.selected) {
         this.selectItemClick(true);
       }
     });
   }
 
-  changeMoveVisiblity(visibility:string){
+  changeMoveVisiblity(visibility: string) {
     this.backBtn.nativeElement.style.visibility = visibility;
     this.selectFile.nativeElement.style.visibility = visibility;
     (document.getElementsByClassName("move-selection")[0] as HTMLElement).style.visibility = visibility;
   }
 
-  nameResizing(){
+  nameResizing() {
     if (this.name.length >= 32) {
       let portionToBeExcluded = this.name.slice(32, this.name.length);
       this.name = this.name.replace(portionToBeExcluded, "") + "...";
@@ -53,10 +53,10 @@ export class FileLargeComponent implements OnInit {
 
   expandOptions() {
     this.moving = false;
-    if (this.fileOptionsShouldBeVisible){
-      setTimeout(()=>{this.changeMoveVisiblity("hidden")},300);
+    if (this.fileOptionsShouldBeVisible) {
+      setTimeout(() => { this.changeMoveVisiblity("hidden") }, 300);
     }
-    
+
     const menu = this.fileOptionsMenu.nativeElement;
     if (this.fileOptionsShouldBeVisible == false) {
       menu.style.visibility = "visible";
@@ -81,14 +81,14 @@ export class FileLargeComponent implements OnInit {
   }
 
   renameEnter() {
-    if (!this.renameEnter) {
-      return;
-    }
-    if (this.fileNameInput?.nativeElement){
-      this.originalName = this.fileNameInput?.nativeElement?.value;
-      this.name = this.originalName;
-      this.nameResizing();
-      console.log("Name updated?"); 
+    if (this.fileNameInput?.nativeElement) {
+      const onlyWhiteSpaceOrEmptyCheckingRegexPattern = /\S+/;
+      if (onlyWhiteSpaceOrEmptyCheckingRegexPattern.test(this.fileNameInput?.nativeElement?.value)) {
+        this.originalName = this.fileNameInput?.nativeElement?.value;
+        this.name = this.originalName;
+        this.nameResizing();
+        console.log("Name updated?");
+      }
     }
     this.renaming = false;
   }
@@ -102,32 +102,32 @@ export class FileLargeComponent implements OnInit {
     }, 50);
   }
 
-  move(){
+  move() {
     this.moving = true;
-    setTimeout(()=>{this.changeMoveVisiblity("visible");},25);
+    setTimeout(() => { this.changeMoveVisiblity("visible"); }, 25);
   }
 
-  back(){
+  back() {
     this.moving = false;
-    setTimeout(()=>{this.applyMargin(this.fileOptionsMenu.nativeElement.querySelectorAll("div"));},20);
-    setTimeout(()=>{this.changeMoveVisiblity("hidden");},25);
+    setTimeout(() => { this.applyMargin(this.fileOptionsMenu.nativeElement.querySelectorAll("div")); }, 20);
+    setTimeout(() => { this.changeMoveVisiblity("hidden"); }, 25);
   }
 
 
-  selectItemClick(unselectorAll:boolean=false){
-    if (this.selected){
+  selectItemClick(unselectorAll: boolean = false) {
+    if (this.selected) {
       this.itemSelectionService.deSelectItem();
       this.selected = false;
       this.selectFileCheckbox.nativeElement.classList.remove("visible-checkbox");
-      if (unselectorAll){
+      if (unselectorAll) {
         this.selectFileCheckbox.nativeElement.checked = false;
       }
     }
-    else{
+    else {
       this.itemSelectionService.selectItem();
       this.selected = true;
       this.selectFileCheckbox.nativeElement.classList.add("visible-checkbox");
     }
-    this.eventService.emit("checkbox selection change",0);
+    this.eventService.emit("checkbox selection change", 0);
   }
 }
