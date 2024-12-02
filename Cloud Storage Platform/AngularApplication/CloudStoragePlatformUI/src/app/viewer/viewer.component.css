@@ -14,7 +14,8 @@
 
 .info-panel-component{
     position: sticky;
-    top: 65px;
+    /*IMPORTANT THE REASON why only one of the info panels are sticking is because in reality they all are sticking but everyone of them is sticking to top 65 so they overlap each other making only 1 of them visible, this needs fixing*/
+    top: 65px; 
     z-index: 5;
     display: none;
 }

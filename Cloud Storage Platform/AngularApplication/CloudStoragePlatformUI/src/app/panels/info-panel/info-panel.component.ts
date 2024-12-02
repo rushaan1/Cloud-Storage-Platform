@@ -31,7 +31,7 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
 
   ngAfterViewChecked(){
     let itemSelected = this.anyItemsSelected();
-    // would likely need to alter the logic of panels on high level to make it work with >2 panels
+    // IMPORTANT would likely need to use different logic INSTEAD of checking if any item is selected for displaying or not displaying menu based info panel
     if (itemSelected){
       if (this.previouslySelected != itemSelected){
         setTimeout(() => {
@@ -44,6 +44,7 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
       }
     }
     else if (this.hasMenuContent){
+      // ONLY for displaying/hiding the panel
       this.infoPanel.nativeElement.classList.remove("visible-info-panel");
       this.previouslySelected = itemSelected;
     }

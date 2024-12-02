@@ -28,6 +28,6 @@
     
     <div class="file-name-text">
         <div *ngIf="!this.renaming" class="file-name-text-div">{{name}}</div>
-        <input (blur)="renameEnter()" #fileNameInput *ngIf="this.renaming" (keydown.enter)="renameEnter()" class="file-name-text-input" type="text" [value]="this.name"/>
+        <input (blur)="renameEnter()" #fileNameInput *ngIf="this.renaming" (keydown.enter)="renameEnter()" class="file-name-text-input" type="text" [value]="this.originalName"/>
     </div>
 </div>

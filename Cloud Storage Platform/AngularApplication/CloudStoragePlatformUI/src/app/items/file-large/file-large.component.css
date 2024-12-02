@@ -96,6 +96,7 @@
 
 .file-name-text-div{
     text-wrap: wrap;
+    overflow-wrap: anywhere;
     display: inline-block;
     width: 85px;
     text-align: center;
