@@ -31,7 +31,7 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
 
   ngAfterViewChecked(){
     let itemSelected = this.anyItemsSelected();
-    // IMPORTANT would likely need to use different logic INSTEAD of checking if any item is selected for displaying or not displaying menu based info panel
+    // IMPORTANT would likely need to use different logic INSTEAD of checking if any item is selected for displaying or not displaying menu based info panels
     if (itemSelected){
       if (this.previouslySelected != itemSelected){
         setTimeout(() => {

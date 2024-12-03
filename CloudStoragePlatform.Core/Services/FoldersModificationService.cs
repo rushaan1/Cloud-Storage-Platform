@@ -32,8 +32,24 @@ namespace CloudStoragePlatform.Core.Services
                 {
                     throw new DuplicateFolderException();
                 }
-                folder = new Folder() { FolderId = Guid.NewGuid(), FolderName = folderAddRequest.FolderName, FolderPath = folderAddRequest.FolderPath };
-                // TODO Metadata connection
+                Metadata metadata = new Metadata() 
+                {
+                    MetadataId = Guid.NewGuid(),
+                    ReplaceCount = 0,
+                    RenameCount = 0,
+                    MoveCount = 0,
+                    OpenCount = 0,
+                    ShareCount = 0,
+                    Size = 0
+                };
+                Sharing sharing = new Sharing()
+                {
+                    SharingId = Guid.NewGuid(),
+                };
+
+                folder = new Folder() { FolderId = Guid.NewGuid(), FolderName = folderAddRequest.FolderName, FolderPath = folderAddRequest.FolderPath, Metadata = metadata, Sharing = sharing };
+                metadata.Folder = folder;
+                sharing.Folder = folder;
                 await _foldersRepository.AddFolder(folder);
                 Directory.CreateDirectory(folderAddRequest.FolderPath);
             }
