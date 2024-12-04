@@ -58,8 +58,8 @@ namespace CloudStoragePlatform.Web
              * Sort reversing (asc & desc) should be handled by client, by default its asc
              */
 
-            // Client based advice but in angular client whenever a new folder is created or file is added and it has duplicate name then instead of giving error it should append (1) or something to the new name for uniqueness
-
+            // Highly doubtful Client based advice but in angular client whenever a new folder is created or file is added and it has duplicate name then instead of giving error it should append (1) or something to the new name for uniqueness
+            // Loader should be shown in the viewer likely as an overlay and refresh button should only be in expanded navigation drawer
 
             /* TODO Filters
              * Filters that must be used:

@@ -149,7 +149,7 @@ namespace ServiceTests
                 {
                     await _foldersModificationService.RenameFolder(renameRequest);
                 };
-                await action.Should().ThrowAsync<InvalidOperationException>();
+                await action.Should().ThrowAsync<DuplicateFolderException>();
             }
             finally 
             {
@@ -242,6 +242,40 @@ namespace ServiceTests
 
             //Assert
             await action.Should().ThrowAsync<DirectoryNotFoundException>();
+        }
+
+
+
+        [Fact]
+        public async Task MoveFolder_DuplicateFolderInNewPath()
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            string folderName = _fixture.Create<string>();
+            string folderPath = Path.Combine(initialPath, folderName);
+            Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
+            Directory.CreateDirectory(folderPath);
+
+            string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
+            string newPathForFOLDER = Path.Combine(destinationDirectoryPath, folderName);
+            Directory.CreateDirectory(destinationDirectoryPath);
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            //creating duplicate directory
+            Directory.CreateDirectory(newPathForFOLDER);
+
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.MoveFolder(guid, destinationDirectoryPath);
+            };
+
+
+            //Assert
+            await action.Should().ThrowAsync<DuplicateFolderException>();
         }
 
 
