@@ -561,13 +561,10 @@ namespace ServiceTests
                 .ReturnsAsync((Folder) null!);
 
             //Act
-            Func<Task> action = async () => 
-            {
-                await _foldersRetrievalService.GetFolderByFolderId(guid);
-            };
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderId(guid);
 
             //Assert
-            await action.Should().ThrowAsync<ArgumentException>();
+            folderResponse.Should().BeNull();
         }
         [Fact]
         public async Task GetFolderByFolderId_Success()
@@ -597,13 +594,11 @@ namespace ServiceTests
                 .ReturnsAsync((Folder)null!);
 
             // Act
-            Func<Task> action = async () =>
-            {
-                await _foldersRetrievalService.GetFolderByFolderPath(path);
-            };
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderPath(path);
+
 
             // Assert
-            await action.Should().ThrowAsync<ArgumentException>();
+            folderResponse.Should().BeNull();
         }
 
         [Fact]

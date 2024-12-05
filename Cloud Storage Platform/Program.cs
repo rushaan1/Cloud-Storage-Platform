@@ -58,7 +58,6 @@ namespace CloudStoragePlatform.Web
              * Sort reversing (asc & desc) should be handled by client, by default its asc
              */
 
-            // Highly doubtful Client based advice but in angular client whenever a new folder is created or file is added and it has duplicate name then instead of giving error it should append (1) or something to the new name for uniqueness
             // Loader should be shown in the viewer likely as an overlay and refresh button should only be in expanded navigation drawer
 
             /* TODO Filters
@@ -67,8 +66,9 @@ namespace CloudStoragePlatform.Web
              * When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added
              * When sending response having folder/file path, C:\CloudStoragePlatform\ must be removed
              * (Most likely not needed) Not Confirmed (need to be thought of) Making the folders always come first than files regardless of sorting 
-             * Home Folder (root) must be excluded when returning a list of folders
+             * (Should be implemented after adding user accounts) Home Folder (root) must be excluded when returning a list of folders
              * Use filters for metadata updation
+             * (Should be implemented after adding user accounts) Filter for rejecting any modification attempt on home folder
              */
 
             // inject user identifying stuff in constructor and in repository's constructor

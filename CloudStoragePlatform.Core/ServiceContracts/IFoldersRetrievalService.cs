@@ -10,8 +10,8 @@ namespace CloudStoragePlatform.Core.ServiceContracts
 {
     public interface IFoldersRetrievalService
     {
-        Task<FolderResponse> GetFolderByFolderId(Guid id);
-        Task<FolderResponse> GetFolderByFolderPath(string path);
+        Task<FolderResponse?> GetFolderByFolderId(Guid id);
+        Task<FolderResponse?> GetFolderByFolderPath(string path);
         Task<List<FolderResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOptions);
         Task<List<FolderResponse>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOptions);
         Task<List<FolderResponse>> GetFilteredFolders(string searchString, SortOrderOptions sortOptions);

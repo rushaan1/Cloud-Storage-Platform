@@ -4,6 +4,7 @@ using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.ServiceContracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 namespace Cloud_Storage_Platform.Controllers
 {
@@ -20,7 +21,7 @@ namespace Cloud_Storage_Platform.Controllers
             _foldersRetrievalService = foldersRetrievalService;
         }
 
-
+        #region Retrievals
         [HttpGet]
         [Route("getAllFoldersInHome")]
         public async Task<ActionResult<List<FolderResponse>>> GetAllFoldersInHomeFolder(SortOrderOptions sortOrder) 
@@ -32,7 +33,43 @@ namespace Cloud_Storage_Platform.Controllers
             }
             return folders;
         }
-        
+
+        [HttpGet]
+        [Route("getAllSubFolders")]
+        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOrder) 
+        {
+            List<FolderResponse> folders = await _foldersRetrievalService.GetAllSubFolders(parentFolderId, sortOrder);
+            return folders;
+        }
+
+        [HttpGet]
+        [Route("getFilteredFolders")]
+        public async Task<ActionResult<List<FolderResponse>>> GetFilteredFolders(string searchString, SortOrderOptions sortOrder)
+        {
+            string searchStringTrimmed = searchString.Trim();
+            List<FolderResponse> folders = await _foldersRetrievalService.GetFilteredFolders(searchStringTrimmed, sortOrder);
+            return folders;
+        }
+
+        [HttpGet]
+        [Route("getFolderById")]
+        public async Task<ActionResult<FolderResponse>> GetFolderById(Guid id) 
+        {
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderId(id);
+            return (folderResponse!=null) ? folderResponse : NotFound();
+        }
+
+        [HttpGet]
+        [Route("getFolderByPath")]
+        public async Task<ActionResult<FolderResponse>> GetFolderByPath(string path)
+        {
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderPath(path);
+            return (folderResponse!=null) ? folderResponse : NotFound();
+        }
+        #endregion
+
+
+        #region Modifications
         [HttpPost]
         [Route("/add")]
         public async Task<ActionResult<FolderResponse>> AddFolder(FolderAddRequest folderAddRequest)
@@ -80,5 +117,8 @@ namespace Cloud_Storage_Platform.Controllers
             bool isDeleted = await _foldersModificationService.DeleteFolder(folderId);
             return isDeleted;
         }
+        #endregion
+
+        // TODO: Handling folder uploads with files and sub-folders and folder replacement with files and sub-folders.
     }
 }

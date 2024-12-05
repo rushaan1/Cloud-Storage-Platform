@@ -23,27 +23,6 @@ namespace CloudStoragePlatform.Core.Services
             _configuration = configuration;
         }
 
-        public List<Folder> Sort(List<Folder> folders, SortOrderOptions option)
-        {
-            List<Folder> sorted = new List<Folder>(); 
-            switch (option) 
-            {
-                case SortOrderOptions.ALPHABETICAL:
-                    sorted = folders.OrderBy(f=>f.FolderName).ToList();
-                    break;
-                case SortOrderOptions.DATEADDED:
-                    sorted = folders.OrderBy(f => f.CreationDate).ToList();
-                    break;
-                case SortOrderOptions.LASTOPENED:
-                    sorted = folders.OrderBy(f => f.Metadata.LastOpened).ToList();
-                    break;
-                case SortOrderOptions.SIZE:
-                    sorted = folders.OrderBy(f => f.Metadata.Size).ToList();
-                    break;
-            }
-            return sorted;
-        } // UTILITY FUNCTION
-
         public async Task<List<FolderResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOptions)
         {
             Folder? homeFolder = await _foldersRepository.GetFolderByFolderPath(_configuration["InitialPathForStorage"]);
@@ -85,22 +64,22 @@ namespace CloudStoragePlatform.Core.Services
             return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
         }
 
-        public async Task<FolderResponse> GetFolderByFolderId(Guid fid)
+        public async Task<FolderResponse?> GetFolderByFolderId(Guid fid)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
             if (folder == null) 
             {
-                throw new ArgumentException();
+                return null;
             }
             return folder.ToFolderResponse();
         }
 
-        public async Task<FolderResponse> GetFolderByFolderPath(string fpath)
+        public async Task<FolderResponse?> GetFolderByFolderPath(string fpath)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderPath(fpath);
             if (folder == null)
             {
-                throw new ArgumentException();
+                return null;
             }
             return folder.ToFolderResponse();
         }
@@ -114,6 +93,30 @@ namespace CloudStoragePlatform.Core.Services
             }
 
             return folder.Metadata.ToMetadataResponse();
+        }
+
+
+
+        // UTILITY FUNCTION
+        public List<Folder> Sort(List<Folder> folders, SortOrderOptions option)
+        {
+            List<Folder> sorted = new List<Folder>();
+            switch (option)
+            {
+                case SortOrderOptions.ALPHABETICAL:
+                    sorted = folders.OrderBy(f => f.FolderName).ToList();
+                    break;
+                case SortOrderOptions.DATEADDED:
+                    sorted = folders.OrderBy(f => f.CreationDate).ToList();
+                    break;
+                case SortOrderOptions.LASTOPENED:
+                    sorted = folders.OrderBy(f => f.Metadata.LastOpened).ToList();
+                    break;
+                case SortOrderOptions.SIZE:
+                    sorted = folders.OrderBy(f => f.Metadata.Size).ToList();
+                    break;
+            }
+            return sorted;
         }
     }
 }
