@@ -49,7 +49,7 @@ namespace CloudStoragePlatform.Web
             app.Run();
 
             /*
-             * TODO services: Add file, remove file, edit file name, replace file, get all contents with main folder, get specific files from specific folder, sorting, filtering, move files, favorite, unfavorite, share functionality
+             * (Should be implemented after adding user accounts) Home Folder (root) must be excluded when returning a list of folders, only needed in 1 action method of FoldersController
              */
 
 
@@ -62,11 +62,9 @@ namespace CloudStoragePlatform.Web
 
             /* TODO Filters
              * Filters that must be used:
-             * When receving creation/rename request that includes a folder/file path all invalid folder name characters must be removed
-             * When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added
+             * (instead use model binder) When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added
              * When sending response having folder/file path, C:\CloudStoragePlatform\ must be removed
              * (Most likely not needed) Not Confirmed (need to be thought of) Making the folders always come first than files regardless of sorting 
-             * (Should be implemented after adding user accounts) Home Folder (root) must be excluded when returning a list of folders
              * Use filters for metadata updation
              * (Should be implemented after adding user accounts) Filter for rejecting any modification attempt on home folder
              */

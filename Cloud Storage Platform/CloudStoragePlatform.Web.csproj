@@ -28,4 +28,8 @@
     <ProjectReference Include="..\CloudStoragePlatform.Infrastructure\CloudStoragePlatform.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Filters\" />
+  </ItemGroup>
+
 </Project>
