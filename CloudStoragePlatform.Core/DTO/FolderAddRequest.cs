@@ -11,7 +11,7 @@ namespace CloudStoragePlatform.Core.DTO
     public class FolderAddRequest
     {
         [Required]
-        [RegularExpression(@"\S+", ErrorMessage = "Empty or only white spaces in new folder name")]
+        [RegularExpression(@"^\S.*\S$", ErrorMessage = "Empty or only white spaces in new folder name")]
         [FileOrFolderNameValidationAttribute("Invalid folder name")]
         public string FolderName { get; set; }
         /// <summary>

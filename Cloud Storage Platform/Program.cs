@@ -21,14 +21,16 @@ namespace CloudStoragePlatform.Web
                 Directory.CreateDirectory(Path.Combine(defaultDirectory, "home"));
             }
 
-            builder.Services.AddControllers(options => 
-            {
-                options.Filters.Add<EnsureGuidIsNotEmptyFilter>();
-            });
+            builder.Services.AddControllers();
 
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
             builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
+            builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
+            builder.Services.AddScoped<IFilesRepository, FilesRepository>();
+            builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
+            builder.Services.AddScoped<IRecentsRepository, RecentsRepository>();
+            builder.Services.AddScoped<ISharingRepository, SharingRepository>();
             builder.Services.AddScoped<IModelBinder, AppendToPath>();
             builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
 
@@ -59,6 +61,8 @@ namespace CloudStoragePlatform.Web
             /*
              * (Should be implemented after adding user accounts) Home Folder (root) must be excluded when returning a list of folders, only needed in 1 action method of FoldersController
              */
+
+            // keep in mind ApplicationDbContext is seeding data with hard coded initial directory path to avoid complexity
 
 
             /*

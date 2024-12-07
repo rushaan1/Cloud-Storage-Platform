@@ -72,12 +72,15 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
 
 
 
-            // TODO: Seed home folder modelBuilder.Entity<Folder>().HasData(new Folder() 
-            //{
-            //    FolderId = Guid.NewGuid(),
-            //    FolderName = "Name",
-
-            //});
+            modelBuilder.Entity<Folder>().HasData(new Folder()
+            {
+                FolderId = new Guid("9E2ABD0A-94AC-43E2-A212-9DC9F7590447"),
+                FolderName = "home",
+                FolderPath = @"C:\CloudStoragePlatform\home",
+                CreationDate = DateTime.Now,
+                IsFavorite = false,
+                IsTrash = false
+            });
         }
     }
 }

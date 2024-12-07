@@ -843,7 +843,7 @@ namespace ServiceTests
 
             //Assert
             mr.Should().NotBeNull();
-            mr.MetadataId.Should().Be(folder.MetadataId);
+            mr.MetadataId.Should().Be((Guid)folder.MetadataId);
         }
         #endregion
         #endregion
