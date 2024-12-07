@@ -1,4 +1,5 @@
 ﻿using Cloud_Storage_Platform.CustomModelBinders;
+using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Enums;
@@ -9,6 +10,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Cloud_Storage_Platform.Controllers
 {
+    [TypeFilter(typeof(EnsureGuidIsNotEmptyFilter), Arguments = new object[] { new string[] { "parentFolderId", "folderId" } } )]
     [Route("api/[controller]")]
     [ApiController]
     public class FoldersController : ControllerBase
@@ -56,9 +58,9 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getFolderById")]
-        public async Task<ActionResult<FolderResponse>> GetFolderById(Guid id) 
+        public async Task<ActionResult<FolderResponse>> GetFolderById(Guid folderId) 
         {
-            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderId(id);
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderId(folderId);
             return (folderResponse!=null) ? folderResponse : NotFound();
         }
 
@@ -125,6 +127,6 @@ namespace Cloud_Storage_Platform.Controllers
         }
         #endregion
 
-        // TODO: Handling folder uploads with files and sub-folders and folder replacement with files and sub-folders.
+        // TODO: Handling folder uploads with files and sub-folders.
     }
 }

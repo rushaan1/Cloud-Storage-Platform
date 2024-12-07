@@ -1,8 +1,11 @@
+using Cloud_Storage_Platform.CustomModelBinders;
+using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using CloudStoragePlatform.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudStoragePlatform.Web
@@ -18,11 +21,16 @@ namespace CloudStoragePlatform.Web
                 Directory.CreateDirectory(Path.Combine(defaultDirectory, "home"));
             }
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options => 
+            {
+                options.Filters.Add<EnsureGuidIsNotEmptyFilter>();
+            });
 
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
             builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
+            builder.Services.AddScoped<IModelBinder, AppendToPath>();
+            builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -62,7 +70,7 @@ namespace CloudStoragePlatform.Web
 
             /* TODO Filters
              * Filters that must be used:
-             * (instead use model binder) When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added
+             * (being handled by controllers themselves) When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added
              * When sending response having folder/file path, C:\CloudStoragePlatform\ must be removed
              * (Most likely not needed) Not Confirmed (need to be thought of) Making the folders always come first than files regardless of sorting 
              * Use filters for metadata updation
