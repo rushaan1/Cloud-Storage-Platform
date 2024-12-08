@@ -36,7 +36,7 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
             modelBuilder.Entity<Folder>()
                 .HasOne(f => f.ParentFolder)
                 .WithMany(f => f.SubFolders)
-                .HasForeignKey(f => f.FolderParentId);
+                .HasForeignKey(f => f.ParentFolderId);
 
             modelBuilder.Entity<Core.Domain.Entities.File>()
                 .HasOne(f => f.ParentFolder)

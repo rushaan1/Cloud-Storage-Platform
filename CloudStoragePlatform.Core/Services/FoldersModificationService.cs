@@ -25,7 +25,7 @@ namespace CloudStoragePlatform.Core.Services
         }
         public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
         {
-            string parentFolderPath = ReplaceLastOccurance(folderAddRequest.FolderPath, folderAddRequest.FolderName, "");
+            string parentFolderPath = ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
             Folder? folder = null;
             if (Directory.Exists(parentFolderPath))
             {
@@ -53,13 +53,12 @@ namespace CloudStoragePlatform.Core.Services
                 folder = new Folder() { FolderId = Guid.NewGuid(), FolderName = folderAddRequest.FolderName, FolderPath = folderAddRequest.FolderPath, ParentFolder = parent, Metadata = metadata, Sharing = sharing, CreationDate = DateTime.Now };
                 metadata.Folder = folder;
                 sharing.Folder = folder;
-                parent?.SubFolders.Add(folder);
-                if (parent != null) 
+                await _foldersRepository.AddFolder(folder);
+                if (parent != null)
                 {
                     parent.SubFolders.Add(folder);
                     await _foldersRepository.UpdateFolder(parent, false, false, false, false, true, false);
                 }
-                await _foldersRepository.AddFolder(folder);
                 Directory.CreateDirectory(folderAddRequest.FolderPath);
             }
             else 
