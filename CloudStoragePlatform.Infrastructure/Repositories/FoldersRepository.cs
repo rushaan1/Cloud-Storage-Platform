@@ -129,23 +129,53 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
         }
 
         public async Task<bool> DeleteFolder(Folder folder) 
-        {   
-            _db.Shares.Remove(folder.Sharing);
-            _db.MetaDatasets.Remove(folder.Metadata);
-
+        {
             if (folder.SubFolders.Any()) 
             {
-                _db.Folders.RemoveRange(folder.SubFolders);
+                foreach (Folder f in folder.SubFolders.ToList()) 
+                {
+                    await DeleteFolder(f);
+                }
             }
+
             if (folder.Files.Any()) 
             {
-                _db.Files.RemoveRange(folder.Files);
+                foreach (Core.Domain.Entities.File file in folder.Files.ToList()) 
+                {
+                    DisconnectAndNullifyMetadataAndSharing(file);
+                    _db.Files.Remove(file);
+                }
             }
-            // TODO Handle null cases now that metadata and sharing can be null
-            // TODO completely fix this function by deleting each subfolder & file individually and removal of parent connection & id
 
+            folder.ParentFolder = null;
+            folder.ParentFolderId = null;
+
+            DisconnectAndNullifyMetadataAndSharing(folder);
             _db.Folders.Remove(folder);
+
+            // TODO Handle null cases now that metadata and sharing can be null
             return await _db.SaveChangesAsync() > 0;
+        }
+
+        // Utility Function
+        private void DisconnectAndNullifyMetadataAndSharing(BaseForFileFolder entity) 
+        {
+            if (entity.Metadata != null)
+            {
+                Metadata metadata = entity.Metadata;
+                metadata.File = null;
+
+                entity.Metadata = null;
+                entity.MetadataId = null;
+            }
+            if (entity.Sharing != null)
+            {
+                Sharing sharing = entity.Sharing;
+                sharing.File = null;
+
+                entity.Sharing = null;
+                entity.SharingId = null;
+            }
         }
     }
 }

@@ -72,6 +72,10 @@ namespace CloudStoragePlatform.Web
              */
 
             // Loader should be shown in the viewer likely as an overlay and refresh button should only be in expanded navigation drawer
+            // When multiple popups are there for the user a half opacity button with up arrow should be present to make all those popups non sticky
+
+            // unneeded Space related validation error when folder name is a single character
+
 
             /* TODO Filters
              * Filters that must be used:
@@ -82,7 +86,11 @@ namespace CloudStoragePlatform.Web
              * (Should be implemented after adding user accounts) Filter for rejecting any modification attempt on home folder
              */
 
+            // Azure blob storage won't require creating new folders explicitly windows file system
+            // atleast 2 utility functions can be combined in Core project into a single static class which can be used by services/repositories of file & folder and new utility function of combining paths can be created there two
+
             // inject user identifying stuff in constructor and in repository's constructor
+
         }
     }
 }

@@ -517,6 +517,7 @@ namespace ServiceTests
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath};
+            
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
             _foldersRepositoryMock.Setup(f => f.DeleteFolder(It.IsAny<Folder>()))
