@@ -141,6 +141,8 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             {
                 _db.Files.RemoveRange(folder.Files);
             }
+            // TODO Handle null cases now that metadata and sharing can be null
+            // TODO completely fix this function by deleting each subfolder & file individually and removal of parent connection & id
 
             _db.Folders.Remove(folder);
             return await _db.SaveChangesAsync() > 0;

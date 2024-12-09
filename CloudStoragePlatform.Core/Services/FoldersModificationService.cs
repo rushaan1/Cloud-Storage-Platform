@@ -113,7 +113,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
-            Directory.Delete(folder.FolderPath);
+            Directory.Delete(folder.FolderPath, true);
             return await _foldersRepository.DeleteFolder(folder);
         }
 

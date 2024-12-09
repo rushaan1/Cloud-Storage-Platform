@@ -18,7 +18,7 @@ namespace Cloud_Storage_Platform.CustomModelBinders
             {
                 if (!valueProviderResult.FirstValue.IsNullOrEmpty()) 
                 {
-                    string updatedValue = valueProviderResult.FirstValue + _configuration["InitialPathForStorage"];
+                    string updatedValue = _configuration["InitialPathForStorage"] + valueProviderResult.FirstValue;
                     bindingContext.Result = ModelBindingResult.Success(updatedValue);
                     return Task.CompletedTask;
                 }

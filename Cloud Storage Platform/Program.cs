@@ -64,6 +64,7 @@ namespace CloudStoragePlatform.Web
 
             // keep in mind ApplicationDbContext is seeding data with hard coded initial directory path to avoid complexity
 
+            // Path supplied as query string params need \ and via request body need \\ as path separator
 
             /*
              * Additional Points:

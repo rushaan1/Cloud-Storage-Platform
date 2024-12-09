@@ -25,7 +25,11 @@ namespace CloudStoragePlatform.Core.Services
 
         public async Task<List<FolderResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOptions)
         {
-            Folder? homeFolder = await _foldersRepository.GetFolderByFolderPath(_configuration["InitialPathForStorage"]);
+            Folder? homeFolder = await _foldersRepository.GetFolderByFolderPath(Path.Combine(_configuration["InitialPathForStorage"], "home"));
+            if (homeFolder == null) 
+            {
+                return new List<FolderResponse>();
+            }
             List<Folder> homeFolders = homeFolder!.SubFolders.ToList();
             if (homeFolders.Count <= 0) 
             {
@@ -110,10 +114,10 @@ namespace CloudStoragePlatform.Core.Services
                     sorted = folders.OrderBy(f => f.CreationDate).ToList();
                     break;
                 case SortOrderOptions.LASTOPENED:
-                    sorted = folders.OrderBy(f => f.Metadata.LastOpened).ToList();
+                    sorted = folders.OrderBy(f => f.Metadata?.LastOpened).ToList();
                     break;
                 case SortOrderOptions.SIZE:
-                    sorted = folders.OrderBy(f => f.Metadata.Size).ToList();
+                    sorted = folders.OrderBy(f => f.Metadata?.Size).ToList();
                     break;
             }
             return sorted;
