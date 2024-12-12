@@ -114,7 +114,7 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("/addOrRemoveFromTrash")]
         public async Task<ActionResult<FolderResponse>> AddOrRemoveFromTrash(Guid folderId)
         {
-            FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveFavorite(folderId);
+            FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveTrash(folderId);
             return folderResponse;
         }
 

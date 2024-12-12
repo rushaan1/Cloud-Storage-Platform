@@ -128,6 +128,9 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new DirectoryNotFoundException();
             }
+
+
+
             string previousFolderPath = folder.FolderPath;
             string newFolderPathOfFolder = Path.Combine(newFolderPath, folder.FolderName);
 
@@ -141,7 +144,7 @@ namespace CloudStoragePlatform.Core.Services
             folder.ParentFolder = newParent!;
 
             Folder? finalMainFolder = await _foldersRepository.UpdateFolder(folder, true, true, false, false, false, false);
-            await UpdateChildPaths(folder, previousFolderPath, newFolderPath);
+            await UpdateChildPaths(folder, previousFolderPath, newFolderPathOfFolder);
             Directory.Move(previousFolderPath, newFolderPathOfFolder);
 
             return finalMainFolder!.ToFolderResponse();
@@ -204,7 +207,7 @@ namespace CloudStoragePlatform.Core.Services
             }
         }
         //Using this function instead of normally replacing to ensure only that specific folder name is replaced because .Replace() will replace all occurances so it may replace an occurance which isn't the folder's name
-        private string ReplaceLastOccurance(string main, string previousPart, string newPart)
+        public string ReplaceLastOccurance(string main, string previousPart, string newPart)
         {
             int lastIndex = main.LastIndexOf(previousPart);
             string replacedString = main.Substring(0, lastIndex) + newPart;

@@ -17,6 +17,14 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
         public FoldersRepository(ApplicationDbContext db) 
         {
             _db = db;
+
+            // Not remembering sql queries no problem
+
+            // Deleting all folders with metadatsets & sharing except home
+            //List<Folder> folders = _db.Folders.Where(f=>f.FolderName!= "home").ToList();
+            //folders.ForEach(f => DisconnectAndDeleteMetadataAndSharing(f));
+            //folders.ForEach(f => _db.Folders.Remove(f));
+            //_db.SaveChanges();
         }
         public async Task<Folder> AddFolder(Folder folder) 
         {
@@ -142,7 +150,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             {
                 foreach (Core.Domain.Entities.File file in folder.Files.ToList()) 
                 {
-                    DisconnectAndNullifyMetadataAndSharing(file);
+                    DisconnectAndDeleteMetadataAndSharing(file);
                     _db.Files.Remove(file);
                 }
             }
@@ -150,7 +158,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             folder.ParentFolder = null;
             folder.ParentFolderId = null;
 
-            DisconnectAndNullifyMetadataAndSharing(folder);
+            DisconnectAndDeleteMetadataAndSharing(folder);
             _db.Folders.Remove(folder);
 
             // TODO Handle null cases now that metadata and sharing can be null
@@ -158,23 +166,27 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
         }
 
         // Utility Function
-        private void DisconnectAndNullifyMetadataAndSharing(BaseForFileFolder entity) 
+        private void DisconnectAndDeleteMetadataAndSharing(BaseForFileFolder entity) 
         {
             if (entity.Metadata != null)
             {
                 Metadata metadata = entity.Metadata;
                 metadata.File = null;
+                metadata.Folder = null;
 
                 entity.Metadata = null;
                 entity.MetadataId = null;
+                _db.MetaDatasets.Remove(metadata);
             }
             if (entity.Sharing != null)
             {
                 Sharing sharing = entity.Sharing;
                 sharing.File = null;
+                sharing.Folder = null;
 
                 entity.Sharing = null;
                 entity.SharingId = null;
+                _db.Shares.Remove(sharing);
             }
         }
     }
