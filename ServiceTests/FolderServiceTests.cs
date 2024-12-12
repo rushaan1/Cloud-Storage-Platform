@@ -279,6 +279,76 @@ namespace ServiceTests
         }
 
 
+        [Fact]
+        public async Task MoveFolder_ChildPathProvided() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            string folderName = _fixture.Create<string>();
+            string folderPath = Path.Combine(initialPath, folderName);
+            Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
+            Directory.CreateDirectory(folderPath);
+
+            Guid childFolderGuid = _fixture.Create<Guid>();
+            string childFolderName = _fixture.Create<string>();
+            string childFolderPath = Path.Combine(folderPath, childFolderName);
+            Folder childFolder = new Folder() { FolderId = childFolderGuid, FolderName = childFolderName, FolderPath = childFolderPath };
+            childFolder.ParentFolder = folder;
+            childFolder.ParentFolderId = folder.FolderId;
+            Directory.CreateDirectory(childFolderPath);
+
+            string destinationDirectoryPath = childFolderPath;
+            Directory.CreateDirectory(destinationDirectoryPath);
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync(childFolder);
+
+            //creating duplicate directory
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.MoveFolder(guid, destinationDirectoryPath);
+            };
+
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Fact]
+        public async Task MoveFolder_NewPathHasSamePathAsFolderToBeMoved() 
+        {
+            //Arrange
+            Guid guid = _fixture.Create<Guid>();
+            string folderName = _fixture.Create<string>();
+            string folderPath = Path.Combine(initialPath, folderName);
+            Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
+            Directory.CreateDirectory(folderPath);
+
+            string destinationDirectoryPath = folder.FolderPath;
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
+                .ReturnsAsync(folder);
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync(folder);
+
+
+            //Act
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.MoveFolder(guid, destinationDirectoryPath);
+            };
+
+
+            //Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+
 
         [Fact]
         public async Task MoveFolder_SuccessfullyMoved() 

@@ -117,6 +117,7 @@ namespace CloudStoragePlatform.Core.Services
             return await _foldersRepository.DeleteFolder(folder);
         }
 
+        // just confirming that including folder to moved's name in newFolderPath will NOT proof code from moving folder to its subfolder
         public async Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(folderId);
@@ -130,7 +131,6 @@ namespace CloudStoragePlatform.Core.Services
             }
 
 
-
             string previousFolderPath = folder.FolderPath;
             string newFolderPathOfFolder = Path.Combine(newFolderPath, folder.FolderName);
 
@@ -140,6 +140,23 @@ namespace CloudStoragePlatform.Core.Services
             }
             
             Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newFolderPath);
+
+            if (newParent?.FolderId == folderId) 
+            {
+                throw new ArgumentException();
+            }
+            
+            Folder? parent = newParent;
+            while (parent != null)
+            {
+                if (parent.FolderId == folder.FolderId)
+                {
+                    throw new ArgumentException();
+                }
+                parent = parent.ParentFolder;
+            }
+
+
             folder.FolderPath = newFolderPathOfFolder;
             folder.ParentFolder = newParent!;
 
