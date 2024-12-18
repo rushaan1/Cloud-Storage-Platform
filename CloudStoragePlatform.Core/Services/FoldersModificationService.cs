@@ -25,7 +25,7 @@ namespace CloudStoragePlatform.Core.Services
         }
         public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
         {
-            string parentFolderPath = ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
+            string parentFolderPath = Utilities.ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
             Folder? folder = null;
             if (Directory.Exists(parentFolderPath))
             {
@@ -161,7 +161,7 @@ namespace CloudStoragePlatform.Core.Services
             folder.ParentFolder = newParent!;
 
             Folder? finalMainFolder = await _foldersRepository.UpdateFolder(folder, true, true, false, false, false, false);
-            await UpdateChildPaths(folder, previousFolderPath, newFolderPathOfFolder);
+            await Utilities.UpdateChildPaths(_foldersRepository,_filesRepository,folder, previousFolderPath, newFolderPathOfFolder);
             Directory.Move(previousFolderPath, newFolderPathOfFolder);
 
             return finalMainFolder!.ToFolderResponse();
@@ -174,7 +174,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
-            string newp = ReplaceLastOccurance(folder.FolderPath, folder.FolderName, folderRenameRequest.FolderNewName);
+            string newp = Utilities.ReplaceLastOccurance(folder.FolderPath, folder.FolderName, folderRenameRequest.FolderNewName);
             if (Directory.Exists(newp)) 
             {
                 throw new DuplicateFolderException();
@@ -182,53 +182,10 @@ namespace CloudStoragePlatform.Core.Services
             string oldp = folder!.FolderPath;
             folder.FolderName = folderRenameRequest.FolderNewName;
             folder.FolderPath = newp;
-            await UpdateChildPaths(folder, oldp, newp);
+            await Utilities.UpdateChildPaths(_foldersRepository, _filesRepository, folder, oldp, newp);
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             FileSystem.RenameDirectory(oldp, folderRenameRequest.FolderNewName);
             return updatedFolder!.ToFolderResponse();
-        }
-
-
-
-
-
-        // Utility Functions
-        private async Task UpdateChildPaths(Folder source, string oldp, string newp)
-        {
-            Queue<Folder> tempTraversal = new Queue<Folder>();
-            tempTraversal.Enqueue(source);
-            while (tempTraversal.Count > 0)
-            {
-                Folder temp = tempTraversal.Dequeue();
-                if (temp.FolderId != source.FolderId)
-                {
-                    string folderPathBeforeAfter = temp.FolderPath;
-                    folderPathBeforeAfter = folderPathBeforeAfter.Replace(oldp, newp);
-                    temp.FolderPath = folderPathBeforeAfter;
-                    await _foldersRepository.UpdateFolder(temp, true, false, false, false, false, false);
-                }
-                if (temp.SubFolders.Count > 0)
-                {
-                    foreach (Folder temp2 in temp.SubFolders)
-                    {
-                        tempTraversal.Enqueue(temp2);
-                    }
-                }
-                foreach (Domain.Entities.File temp2 in temp.Files)
-                {
-                    string filePathBeforeAfter = temp2.FilePath;
-                    filePathBeforeAfter = filePathBeforeAfter.Replace(oldp, newp);
-                    temp2.FilePath = filePathBeforeAfter;
-                    await _filesRepository.UpdateFile(temp2, true, false, false, false);
-                }
-            }
-        }
-        //Using this function instead of normally replacing to ensure only that specific folder name is replaced because .Replace() will replace all occurances so it may replace an occurance which isn't the folder's name
-        public string ReplaceLastOccurance(string main, string previousPart, string newPart)
-        {
-            int lastIndex = main.LastIndexOf(previousPart);
-            string replacedString = main.Substring(0, lastIndex) + newPart;
-            return replacedString;
         }
     }
 }

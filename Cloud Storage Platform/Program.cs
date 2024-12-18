@@ -74,9 +74,6 @@ namespace CloudStoragePlatform.Web
             // Loader should be shown in the viewer likely as an overlay and refresh button should only be in expanded navigation drawer
             // When multiple popups are there for the user a half opacity button with up arrow should be present to make all those popups non sticky
 
-            // utility function in controller is violating SRP (ReplaceLastOccurance)
-            // make future utility class static and being able to be used by controller
-
             /* TODO Filters
              * Filters that must be used:
              * (being handled by controllers themselves) When receving any request having folder/file path, at its start the initial C:\CloudStoragePlatform\ must be added

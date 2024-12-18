@@ -35,7 +35,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 return new List<FolderResponse>();
             }
-            List<Folder> sorted = Sort(homeFolders, sortOptions); 
+            List<Folder> sorted = Utilities.Sort(homeFolders, sortOptions); 
             List<FolderResponse> folderResponses = sorted.Select(f=>f.ToFolderResponse()).ToList();
             return folderResponses;
         }
@@ -52,7 +52,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 return new List<FolderResponse>();
             }
-            List<Folder> sorted = Sort(childFolders, sortOptions);
+            List<Folder> sorted = Utilities.Sort(childFolders, sortOptions);
             List<FolderResponse> folderResponses = sorted.Select(f => f.ToFolderResponse()).ToList();
             return folderResponses;
         }
@@ -64,7 +64,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 return new List<FolderResponse>();
             }
-            List<Folder> sortedFolderzzzzzz = Sort(folders, sortOptions);
+            List<Folder> sortedFolderzzzzzz = Utilities.Sort(folders, sortOptions);
             return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
         }
 
@@ -97,30 +97,6 @@ namespace CloudStoragePlatform.Core.Services
             }
 
             return folder.Metadata.ToMetadataResponse();
-        }
-
-
-
-        // UTILITY FUNCTION
-        public List<Folder> Sort(List<Folder> folders, SortOrderOptions option)
-        {
-            List<Folder> sorted = new List<Folder>();
-            switch (option)
-            {
-                case SortOrderOptions.ALPHABETICAL:
-                    sorted = folders.OrderBy(f => f.FolderName).ToList();
-                    break;
-                case SortOrderOptions.DATEADDED:
-                    sorted = folders.OrderBy(f => f.CreationDate).ToList();
-                    break;
-                case SortOrderOptions.LASTOPENED:
-                    sorted = folders.OrderBy(f => f.Metadata?.LastOpened).ToList();
-                    break;
-                case SortOrderOptions.SIZE:
-                    sorted = folders.OrderBy(f => f.Metadata?.Size).ToList();
-                    break;
-            }
-            return sorted;
         }
     }
 }

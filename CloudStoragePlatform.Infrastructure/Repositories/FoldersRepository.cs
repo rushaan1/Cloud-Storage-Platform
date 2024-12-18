@@ -150,7 +150,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             {
                 foreach (Core.Domain.Entities.File file in folder.Files.ToList()) 
                 {
-                    DisconnectAndDeleteMetadataAndSharing(file);
+                    Utility.DisconnectAndDeleteMetadataAndSharing(_db, file);
                     _db.Files.Remove(file);
                 }
             }
@@ -158,36 +158,11 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             folder.ParentFolder = null;
             folder.ParentFolderId = null;
 
-            DisconnectAndDeleteMetadataAndSharing(folder);
+            Utility.DisconnectAndDeleteMetadataAndSharing(_db, folder);
             _db.Folders.Remove(folder);
 
             // TODO Handle null cases now that metadata and sharing can be null
             return await _db.SaveChangesAsync() > 0;
-        }
-
-        // Utility Function
-        private void DisconnectAndDeleteMetadataAndSharing(BaseForFileFolder entity) 
-        {
-            if (entity.Metadata != null)
-            {
-                Metadata metadata = entity.Metadata;
-                metadata.File = null;
-                metadata.Folder = null;
-
-                entity.Metadata = null;
-                entity.MetadataId = null;
-                _db.MetaDatasets.Remove(metadata);
-            }
-            if (entity.Sharing != null)
-            {
-                Sharing sharing = entity.Sharing;
-                sharing.File = null;
-                sharing.Folder = null;
-
-                entity.Sharing = null;
-                entity.SharingId = null;
-                _db.Shares.Remove(sharing);
-            }
         }
     }
 }
