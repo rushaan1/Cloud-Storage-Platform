@@ -9,6 +9,7 @@ import { ItemSelectionService } from '../../services/item-selection.service';
 export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
   @Input() infoText:string = "";
   @Input() hasMenuContent!:boolean;
+  @Input() shouldBeVisible!:boolean;
   @ViewChild("infoPanel") infoPanel!:ElementRef<HTMLDivElement>;
   @ContentChild(TemplateRef) projectedContent?: TemplateRef<any>;
   previouslySelected = false;
@@ -30,27 +31,14 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
   }
 
   ngAfterViewChecked(){
-    let itemSelected = this.anyItemsSelected();
-    // IMPORTANT would likely need to use different logic INSTEAD of checking if any item is selected for displaying or not displaying menu based info panels
-    if (itemSelected){
-      if (this.previouslySelected != itemSelected){
-        setTimeout(() => {
-          this.infoPanel.nativeElement.classList.add("visible-info-panel");
-        },50); 
-        this.previouslySelected = itemSelected;
-      }
-      else{
-        this.previouslySelected = itemSelected;
-      }
+    if (this.shouldBeVisible){
+      setTimeout(() => {
+        this.infoPanel.nativeElement.classList.add("visible-info-panel");
+      },50); 
     }
-    else if (this.hasMenuContent){
-      // ONLY for displaying/hiding the panel
+    else{
       this.infoPanel.nativeElement.classList.remove("visible-info-panel");
-      this.previouslySelected = itemSelected;
     }
   }
 
-  anyItemsSelected():boolean{
-    return (this.itemSelectionService.selectedItems.length>0);
-  }
 }

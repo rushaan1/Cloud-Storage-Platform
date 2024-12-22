@@ -7,41 +7,6 @@ import { EventService } from '../services/event-service.service';
   templateUrl: './viewer.component.html',
   styleUrl: './viewer.component.css'
 })
-export class ViewerComponent implements AfterViewChecked, AfterViewInit {
-  constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
-  previouslySelected = false;
-  itemsSelected = 0;
-  files = ["file hello", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3","file 1", "file 2", "file 3"];
-
-  ngAfterViewInit(): void {
-    this.eventService.listen("checkbox selection change",()=>{
-      this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
-    })
-  }
-
-  ngAfterViewChecked(): void {
-    const infoPanelComponent = document.getElementById("infoPanel") as HTMLElement;
-    let isSelected = this.anyItemsSelected();
-    if (isSelected){
-      this.previouslySelected = isSelected;
-      infoPanelComponent.style.display = "inline";
-      this.itemsSelected = this.itemSelectionService.selectedItems.length;
-    }
-    else{
-      if (this.previouslySelected!=isSelected){
-        setTimeout(()=>{infoPanelComponent.style.display = "none";},600)
-      }
-      else{
-        infoPanelComponent.style.display = "none";
-      }
-    }
-  }
-
-  anyItemsSelected():boolean{
-    return (this.itemSelectionService.selectedItems.length>0);
-  }
-
-  unselect(){
-    this.eventService.emit("unselector all", 0);
-  }
+export class ViewerComponent {
+  files = ["folder hello", "folder 2", "folder 3","folder 4", "folder 5", "folder 6", "folder 7", "folder 8", "folder 9", "folder 10","folder 11", "folder 12", "folder 13", "folder 14", "folder 15", "folder 16"];
 }

@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { WorkspaceModule } from './workspace/workspace.module';
+import { PanelHandlerComponent } from './panels/panel-handler/panel-handler.component';
 
 @NgModule({
   declarations: [

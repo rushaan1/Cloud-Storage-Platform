@@ -12,38 +12,11 @@
     cursor: pointer;
 }
 
-.info-panel-component{
-    position: sticky;
-    /*IMPORTANT THE REASON why only one of the info panels are sticking is because in reality they all are sticking but everyone of them is sticking to top 65 so they overlap each other making only 1 of them visible, this needs fixing*/
-    top: 65px; 
-    z-index: 5;
-    display: none;
-}
-
-#infoPanel{
-    z-index: 4;
-}
 
 .text-only{
     display: block !important;
 }
 
-move-selection{
-    margin-left: 50px;
-}
-.panel-selected-menu-btn{
-    margin-left: 5px;
-    padding: 2px 6.5px 2px 6.5px;
-}
-.items-select-txt{
-    margin-left: 5px;
-}
-
-.trash-btn{
-    background-color: white;
-    border: solid gray 1px;
-    height: 25px;
-}
 
 .trash-btn:hover{
     background-color: lightgray;
