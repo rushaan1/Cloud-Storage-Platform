@@ -1,6 +1,7 @@
-import { AfterViewChecked, AfterViewInit, Component } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
+import { InfoPanelComponent } from '../info-panel/info-panel.component';
 
 @Component({
   selector: 'info-panel-handler',
@@ -10,30 +11,32 @@ import { EventService } from '../../services/event-service.service';
 export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
   itemsSelected = 0;
   previouslySelected = false;
-  sample1Visbility = false;
+  sample1Visbility = true;
 
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
   
   ngAfterViewInit(): void {
+    const sampleTextInfoPanel = document.getElementById("sampleTextInfoPanel")!;
+    sampleTextInfoPanel.style.display = "inline";
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
     })
   }
 
   ngAfterViewChecked(): void {
-    const infoPanelComponent = document.getElementById("infoPanel") as HTMLElement;
+    const selectionInfoPanel = document.getElementById("selectionInfoPanel")!;
     let isSelected = this.anyItemsSelected();
     if (isSelected){
       this.previouslySelected = isSelected;
-      infoPanelComponent.style.display = "inline";
+      selectionInfoPanel.style.display = "inline";
       this.itemsSelected = this.itemSelectionService.selectedItems.length;
     }
     else{
       if (this.previouslySelected!=isSelected){
-        setTimeout(()=>{infoPanelComponent.style.display = "none";},600)
+        setTimeout(()=>{selectionInfoPanel.style.display = "none";},600)
       }
       else{
-        infoPanelComponent.style.display = "none";
+        selectionInfoPanel.style.display = "none";
       }
     }
   }

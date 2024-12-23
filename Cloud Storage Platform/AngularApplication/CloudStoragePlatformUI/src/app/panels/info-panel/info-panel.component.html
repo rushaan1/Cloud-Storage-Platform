@@ -1,5 +1,5 @@
 <div [ngClass]="(!shouldBeVisible)?'visible-info-panel':''" #infoPanel class="info-panel">
-    <i class="fa-light fa-circle-exclamation"></i>
+    <i class="fa-solid fa-circle-info"></i>
     <div *ngIf="!hasMenuContent" class="margin-left infoText">{{infoText}}</div>
     <ng-content class="margin-left"></ng-content>
 </div>

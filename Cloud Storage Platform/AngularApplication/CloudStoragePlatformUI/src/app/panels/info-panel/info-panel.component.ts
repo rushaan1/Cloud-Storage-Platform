@@ -12,7 +12,7 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
   @Input() shouldBeVisible!:boolean;
   @ViewChild("infoPanel") infoPanel!:ElementRef<HTMLDivElement>;
   @ContentChild(TemplateRef) projectedContent?: TemplateRef<any>;
-  previouslySelected = false;
+  previouslyVisible = false;
   transitionDone = false;
   afterContentInit = false;
 
@@ -32,12 +32,16 @@ export class InfoPanelComponent implements AfterViewChecked, AfterViewInit {
 
   ngAfterViewChecked(){
     if (this.shouldBeVisible){
-      setTimeout(() => {
-        this.infoPanel.nativeElement.classList.add("visible-info-panel");
-      },50); 
+      if (this.previouslyVisible!=this.shouldBeVisible){
+        setTimeout(() => {
+          this.infoPanel.nativeElement.classList.add("visible-info-panel");
+        },50);
+      }
+      this.previouslyVisible = this.shouldBeVisible;
     }
     else{
       this.infoPanel.nativeElement.classList.remove("visible-info-panel");
+      this.previouslyVisible = this.shouldBeVisible;
     }
   }
 

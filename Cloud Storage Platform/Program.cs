@@ -63,6 +63,7 @@ namespace CloudStoragePlatform.Web
              */
 
             // keep in mind ApplicationDbContext is seeding data with hard coded initial directory path to avoid complexity
+            // 
 
             // Path supplied as query string params need \ and via request body need \\ as path separator
 
@@ -87,7 +88,7 @@ namespace CloudStoragePlatform.Web
             // atleast 2 utility functions can be combined in Core project into a single static class which can be used by services/repositories of file & folder and new utility function of combining paths can be created there two
 
             // inject user identifying stuff in constructor and in repository's constructor
-
+            // handle database concurrency
         }
     }
 }

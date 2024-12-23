@@ -1,5 +1,5 @@
-<info-panel [shouldBeVisible]="sample1Visbility" [hasMenuContent]="false" [infoText]="'Sample1'" class="text-only info-panel-component"></info-panel>
-<info-panel [shouldBeVisible]="this.itemsSelected>0" [hasMenuContent]="true" id="infoPanel" class="info-panel-component">
+<info-panel id="sampleTextInfoPanel" [shouldBeVisible]="sample1Visbility" [hasMenuContent]="false" [infoText]="'Sample1'" class="info-panel-component text-only"></info-panel>
+<info-panel id="selectionInfoPanel" [shouldBeVisible]="this.itemsSelected>0" [hasMenuContent]="true" class="info-panel-component">
     <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
     <span class="items-select-txt">{{itemsSelected}} Item(s) Selected</span>
     <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
