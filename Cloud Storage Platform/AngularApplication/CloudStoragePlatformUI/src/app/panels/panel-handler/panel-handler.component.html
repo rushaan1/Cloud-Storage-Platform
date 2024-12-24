@@ -1,6 +1,14 @@
-<info-panel id="sampleTextInfoPanel" [shouldBeVisible]="sample1Visbility" [hasMenuContent]="false" [infoText]="'Sample1'" class="info-panel-component text-only"></info-panel>
-<info-panel id="selectionInfoPanel" [shouldBeVisible]="this.itemsSelected>0" [hasMenuContent]="true" class="info-panel-component">
-    <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
-    <span class="items-select-txt">{{itemsSelected}} Item(s) Selected</span>
-    <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
-</info-panel>
+<div #notificationAlert id="notificationAlert" class="info-panel sticky-notif">
+  <div class="margin-left infoText">You have notifications.</div>
+</div>
+
+<div #sampleTextInfoPanel class="info-panel">
+  <i class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Sample Text</div>
+</div>
+
+<div #selectionInfoPanel class="info-panel sticky-notif">
+  <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
+  <span class="items-select-txt">{{itemsSelected}} Item(s) Selected</span>
+  <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
+</div>

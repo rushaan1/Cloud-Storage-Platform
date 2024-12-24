@@ -1,7 +1,6 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
-import { InfoPanelComponent } from '../info-panel/info-panel.component';
 
 @Component({
   selector: 'info-panel-handler',
@@ -9,36 +8,35 @@ import { InfoPanelComponent } from '../info-panel/info-panel.component';
   styleUrl: './panel-handler.component.css'
 })
 export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
+  @ViewChild("notificationAlert") notificationAlert!:ElementRef;
+  @ViewChild("sampleTextInfoPanel") sampleTextInfoPanel!:ElementRef;
+  @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
+  orderedStickyInfoPanels:ElementRef[] = [];
   itemsSelected = 0;
-  previouslySelected = false;
-  sample1Visbility = true;
 
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
-  
+
   ngAfterViewInit(): void {
-    const sampleTextInfoPanel = document.getElementById("sampleTextInfoPanel")!;
-    sampleTextInfoPanel.style.display = "inline";
+    this.orderedStickyInfoPanels = [this.notificationAlert, this.selectionInfoPanel];
+    this.sampleTextInfoPanel.nativeElement.style.display = "none";
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
-    })
+    });
+    this.computeStickyPanelsTop();
   }
 
   ngAfterViewChecked(): void {
-    const selectionInfoPanel = document.getElementById("selectionInfoPanel")!;
     let isSelected = this.anyItemsSelected();
     if (isSelected){
-      this.previouslySelected = isSelected;
-      selectionInfoPanel.style.display = "inline";
+      this.selectionInfoPanel.nativeElement.style.display = "flex";
       this.itemsSelected = this.itemSelectionService.selectedItems.length;
     }
     else{
-      if (this.previouslySelected!=isSelected){
-        setTimeout(()=>{selectionInfoPanel.style.display = "none";},600)
-      }
-      else{
-        selectionInfoPanel.style.display = "none";
-      }
+      this.selectionInfoPanel.nativeElement.style.display = "none";
     }
+
+    this.showNotificationAlert();
+
   }
 
   anyItemsSelected():boolean{
@@ -49,4 +47,24 @@ export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
     this.eventService.emit("unselector all", 0);
   }
 
+  showNotificationAlert(){
+    const infoPanels = document.getElementsByClassName("sticky-notif");
+    const visibleInfoPanels = Array.from(infoPanels).filter(panel => {
+      return (window.getComputedStyle(panel).display !== "none") && (panel.id != "notificationAlert");
+    });
+
+    if (visibleInfoPanels.length>0){
+      this.notificationAlert.nativeElement.style.display = "flex";
+    }
+    else{
+      this.notificationAlert.nativeElement.style.display = "none";
+    }
+  }
+
+  computeStickyPanelsTop(){
+    this.orderedStickyInfoPanels[0].nativeElement.style.top = "62px";
+    for (let i = 1; i<this.orderedStickyInfoPanels.length; i++){
+      this.orderedStickyInfoPanels[i].nativeElement.style.top = `${62+(i*31)}px`;
+    }
+  }
 }
