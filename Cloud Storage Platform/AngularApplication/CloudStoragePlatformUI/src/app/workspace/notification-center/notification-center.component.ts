@@ -3,11 +3,11 @@ import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 
 @Component({
-  selector: 'info-panel-handler',
-  templateUrl: './panel-handler.component.html',
-  styleUrl: './panel-handler.component.css'
+  selector: 'notification-center',
+  templateUrl: './notification-center.component.html',
+  styleUrl: './notification-center.component.css'
 })
-export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
+export class NotificationCenterComponent implements AfterViewChecked, AfterViewInit {
   @ViewChild("notificationAlert") notificationAlert!:ElementRef;
   @ViewChild("sampleTextInfoPanel") sampleTextInfoPanel!:ElementRef;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;

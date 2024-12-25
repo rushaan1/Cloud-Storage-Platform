@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'file-large-item',
@@ -16,19 +17,18 @@ export class FileLargeComponent implements OnInit {
 
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild("selectFile") selectFileCheckbox!: ElementRef<HTMLInputElement>;
-
-  @ViewChild("backBtn") backBtn!: ElementRef<HTMLElement>;
-  @ViewChild("selectTxt") selectFile!: ElementRef<HTMLElement>;
   @ViewChild("fileOptionsMenu") fileOptionsMenu!: ElementRef<HTMLDivElement>;
+
+  uniqueComponentIdentifierUUID:string = ""; // after backend integration can be replaced with the id supplied by api
   originalName = "";
   fileOptionsShouldBeVisible = false;
   renaming = false;
-  moving = false;
   selected = false;
 
   constructor(private itemSelectionService: ItemSelectionService, private eventService: EventService) { }
 
   ngOnInit(): void {
+    this.uniqueComponentIdentifierUUID = uuidv4();
     this.originalName = this.name;
     this.nameResizing();
     this.eventService.listen("unselector all", () => {
@@ -36,12 +36,11 @@ export class FileLargeComponent implements OnInit {
         this.selectItemClick(true);
       }
     });
-  }
 
-  changeMoveVisiblity(visibility: string) {
-    this.backBtn.nativeElement.style.visibility = visibility;
-    this.selectFile.nativeElement.style.visibility = visibility;
-    (document.getElementsByClassName("move-selection")[0] as HTMLElement).style.visibility = visibility;
+    this.eventService.listen("file options expanded", (uuid:string)=>{
+      if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsShouldBeVisible == true)
+        this.expandOptions();
+    });
   }
 
   nameResizing() {
@@ -52,17 +51,13 @@ export class FileLargeComponent implements OnInit {
   }
 
   expandOptions() {
-    this.moving = false;
-    if (this.fileOptionsShouldBeVisible) {
-      setTimeout(() => { this.changeMoveVisiblity("hidden") }, 300);
-    }
-
     const menu = this.fileOptionsMenu.nativeElement;
     if (this.fileOptionsShouldBeVisible == false) {
       menu.style.visibility = "visible";
       menu.style.height = "200px";
       this.fileOptionsShouldBeVisible = true;
       this.applyMargin(menu.querySelectorAll("div"));
+      this.eventService.emit("file options expanded", this.uniqueComponentIdentifierUUID);
     }
     else {
       menu.style.height = "0";
@@ -100,17 +95,6 @@ export class FileLargeComponent implements OnInit {
       this.fileNameInput?.nativeElement?.focus();
       this.fileNameInput?.nativeElement?.select();
     }, 50);
-  }
-
-  move() {
-    this.moving = true;
-    setTimeout(() => { this.changeMoveVisiblity("visible"); }, 25);
-  }
-
-  back() {
-    this.moving = false;
-    setTimeout(() => { this.applyMargin(this.fileOptionsMenu.nativeElement.querySelectorAll("div")); }, 20);
-    setTimeout(() => { this.changeMoveVisiblity("hidden"); }, 25);
   }
 
 
