@@ -13,16 +13,16 @@ export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
   orderedStickyInfoPanels:ElementRef[] = [];
   itemsSelected = 0;
+  notificationQuantity = 0;
 
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
 
   ngAfterViewInit(): void {
     this.orderedStickyInfoPanels = [this.notificationAlert, this.selectionInfoPanel];
-    this.sampleTextInfoPanel.nativeElement.style.display = "none";
+    this.sampleTextInfoPanel.nativeElement.style.display = "flex";
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
     });
-    this.computeStickyPanelsTop();
   }
 
   ngAfterViewChecked(): void {
@@ -36,7 +36,7 @@ export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
     }
 
     this.showNotificationAlert();
-
+    this.computeStickyPanelsTop();
   }
 
   anyItemsSelected():boolean{
@@ -48,11 +48,11 @@ export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
   }
 
   showNotificationAlert(){
-    const infoPanels = document.getElementsByClassName("sticky-notif");
+    const infoPanels = document.getElementsByClassName("info-panel");
     const visibleInfoPanels = Array.from(infoPanels).filter(panel => {
-      return (window.getComputedStyle(panel).display !== "none") && (panel.id != "notificationAlert");
+      return (window.getComputedStyle(panel).display !== "none") && (panel.classList.contains("sticky-notif")==false);
     });
-
+    this.notificationQuantity = visibleInfoPanels.length;
     if (visibleInfoPanels.length>0){
       this.notificationAlert.nativeElement.style.display = "flex";
     }
@@ -62,9 +62,27 @@ export class PanelHandlerComponent implements AfterViewChecked, AfterViewInit {
   }
 
   computeStickyPanelsTop(){
-    this.orderedStickyInfoPanels[0].nativeElement.style.top = "62px";
-    for (let i = 1; i<this.orderedStickyInfoPanels.length; i++){
-      this.orderedStickyInfoPanels[i].nativeElement.style.top = `${62+(i*31)}px`;
+    let visibleOrderedStickyInfoPanels:ElementRef[] = this.orderedStickyInfoPanels;
+    visibleOrderedStickyInfoPanels = Array.from(visibleOrderedStickyInfoPanels).filter(panel => {
+      return (window.getComputedStyle(panel.nativeElement).display !== "none")
+    });
+
+    if (visibleOrderedStickyInfoPanels.length>0){
+      visibleOrderedStickyInfoPanels[0].nativeElement.style.top = `65px`;
+      let cumulativeHeights = 0;
+      for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
+        let previousInfoPanelHeight:number = parseFloat(
+          window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1].nativeElement).height
+        );
+        cumulativeHeights += previousInfoPanelHeight;
+        visibleOrderedStickyInfoPanels[i].nativeElement.style.top = `${cumulativeHeights+65}px`;
+        console.log(previousInfoPanelHeight);
+      }
     }
+  }
+
+  dismissNotificationAlert(event:MouseEvent){
+    const infoPanel = event.target as HTMLElement;
+    infoPanel.parentElement!.style.display = "none";
   }
 }

@@ -1,9 +1,10 @@
 <div #notificationAlert id="notificationAlert" class="info-panel sticky-notif">
-  <div class="margin-left infoText">You have notifications.</div>
+  <div class="margin-left infoText">You have {{notificationQuantity}} notifications.</div>
 </div>
 
 <div #sampleTextInfoPanel class="info-panel">
-  <i class="fa-solid fa-square-xmark"></i>
+  <!--KEEP IN MIND notification dismissing function will dismiss the parent element of the i element-->
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
   <div class="margin-left infoText">Sample Text</div>
 </div>
 
