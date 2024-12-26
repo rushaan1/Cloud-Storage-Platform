@@ -59,6 +59,10 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     else{
       this.notificationAlert.nativeElement.style.display = "none";
     }
+    /*TODO: Instead of showing only notification alert, the most latest non-sticky
+            notification should be sticky and it should say "... +2 alerts"
+            No separate notification alert div should be there and no need to check if its sticking due to scrolling or not
+     */
   }
 
   computeStickyPanelsTop(){

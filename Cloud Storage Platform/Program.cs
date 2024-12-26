@@ -73,7 +73,6 @@ namespace CloudStoragePlatform.Web
              */
 
             // Loader should be shown in the viewer likely as an overlay and refresh button should only be in expanded navigation drawer
-            // When multiple popups are there for the user a half opacity button with up arrow should be present to make all those popups non sticky
 
             /* TODO Filters
              * Filters that must be used:
