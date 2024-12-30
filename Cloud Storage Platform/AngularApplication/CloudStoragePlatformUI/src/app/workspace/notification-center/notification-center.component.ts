@@ -8,21 +8,29 @@ import { EventService } from '../../services/event-service.service';
   styleUrl: './notification-center.component.css'
 })
 export class NotificationCenterComponent implements AfterViewChecked, AfterViewInit {
-  @ViewChild("notificationAlert") notificationAlert!:ElementRef;
+  protected readonly window = window;
   @ViewChild("sampleTextInfoPanel") sampleTextInfoPanel!:ElementRef;
+  @ViewChild("sampleTextInfoPanel2") sampleTextInfoPanel2!:ElementRef;
+  @ViewChild("sampleTextInfoPanel3") sampleTextInfoPanel3!:ElementRef;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
-  orderedStickyInfoPanels:ElementRef[] = [];
+  orderedInfoPanels:ElementRef[] = [];
+  recentInfoPanelsInSequence:ElementRef[] = [];
+
   itemsSelected = 0;
-  notificationQuantity = 0;
+  mostRecentNonStickyNotification:ElementRef | null = null;
 
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
 
   ngAfterViewInit(): void {
-    this.orderedStickyInfoPanels = [this.notificationAlert, this.selectionInfoPanel];
-    this.sampleTextInfoPanel.nativeElement.style.display = "flex";
+    this.orderedInfoPanels = [this.selectionInfoPanel, this.sampleTextInfoPanel, this.sampleTextInfoPanel2, this.sampleTextInfoPanel3];
+    //any new info panel must be added in the array above based on its position in the HTML file
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
     });
+
+    window.addEventListener("scroll", () => {
+      this.updateNotificationAlerts();
+    })
   }
 
   ngAfterViewChecked(): void {
@@ -35,7 +43,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.selectionInfoPanel.nativeElement.style.display = "none";
     }
 
-    this.showNotificationAlert();
+    this.updateNotificationAlerts();
     this.computeStickyPanelsTop();
   }
 
@@ -47,28 +55,32 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.eventService.emit("unselector all", 0);
   }
 
-  showNotificationAlert(){
+  updateNotificationAlerts(){
     const infoPanels = document.getElementsByClassName("info-panel");
     const visibleInfoPanels = Array.from(infoPanels).filter(panel => {
       return (window.getComputedStyle(panel).display !== "none") && (panel.classList.contains("sticky-notif")==false);
     });
-    this.notificationQuantity = visibleInfoPanels.length;
-    if (visibleInfoPanels.length>0){
-      this.notificationAlert.nativeElement.style.display = "flex";
+
+    if (this.mostRecentNonStickyNotification!=null){
+      const notificationQuantity = visibleInfoPanels.length;
+      const latestNotif:HTMLElement = this.mostRecentNonStickyNotification.nativeElement.querySelector(".alertTxt");
+      if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>34){
+        latestNotif.style.display = "inline";
+        latestNotif.innerText = `+${notificationQuantity} alerts!`;
+      }
+      else{
+        if (this.mostRecentNonStickyNotification!=null) {
+          latestNotif.innerText = "";
+          latestNotif.style.display = "none";
+        }
+      }
     }
-    else{
-      this.notificationAlert.nativeElement.style.display = "none";
-    }
-    /*TODO: Instead of showing only notification alert, the most latest non-sticky
-            notification should be sticky and it should say "... +2 alerts"
-            No separate notification alert div should be there and no need to check if its sticking due to scrolling or not
-     */
   }
 
   computeStickyPanelsTop(){
-    let visibleOrderedStickyInfoPanels:ElementRef[] = this.orderedStickyInfoPanels;
+    let visibleOrderedStickyInfoPanels:ElementRef[] = this.orderedInfoPanels;
     visibleOrderedStickyInfoPanels = Array.from(visibleOrderedStickyInfoPanels).filter(panel => {
-      return (window.getComputedStyle(panel.nativeElement).display !== "none")
+      return (window.getComputedStyle(panel.nativeElement).display !== "none") && (panel.nativeElement.classList.contains("sticky-notif")==true);
     });
 
     if (visibleOrderedStickyInfoPanels.length>0){
@@ -88,5 +100,34 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   dismissNotificationAlert(event:MouseEvent){
     const infoPanel = event.target as HTMLElement;
     infoPanel.parentElement!.style.display = "none";
+    if (this.recentInfoPanelsInSequence.length>0){
+      this.setLatestNotification(this.recentInfoPanelsInSequence.pop() as ElementRef, true);
+    }
+  }
+
+  setLatestNotification(infoPanel:ElementRef, beingRemoved:boolean=false){
+    if (this.mostRecentNonStickyNotification){
+      this.mostRecentNonStickyNotification.nativeElement.classList.remove("sticky-notif");
+      if (!beingRemoved){
+        this.recentInfoPanelsInSequence.push(this.mostRecentNonStickyNotification);
+      }
+    }
+    this.mostRecentNonStickyNotification = infoPanel;
+    this.mostRecentNonStickyNotification.nativeElement.classList.add("sticky-notif");
+  }
+
+  showSampleTextInfoPanel(){
+    this.sampleTextInfoPanel.nativeElement.style.display = "flex";
+    this.setLatestNotification(this.sampleTextInfoPanel);
+  }
+
+  showSampleTextInfoPanel2(){
+    this.sampleTextInfoPanel2.nativeElement.style.display = "flex";
+    this.setLatestNotification(this.sampleTextInfoPanel2);
+  }
+
+  showSampleTextInfoPanel3(){
+    this.sampleTextInfoPanel3.nativeElement.style.display = "flex";
+    this.setLatestNotification(this.sampleTextInfoPanel3);
   }
 }

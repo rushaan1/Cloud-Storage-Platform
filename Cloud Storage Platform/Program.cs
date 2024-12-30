@@ -84,10 +84,10 @@ namespace CloudStoragePlatform.Web
              */
 
             // Azure blob storage won't require creating new folders explicitly windows file system
-            // atleast 2 utility functions can be combined in Core project into a single static class which can be used by services/repositories of file & folder and new utility function of combining paths can be created there two
 
             // inject user identifying stuff in constructor and in repository's constructor
             // handle database concurrency
+            // do not forget to add encryption, 256-bit AES encryption at rest I need to add at rest and TLS at transit about which I don't need to worry at all as it's default but I can still mention it in project description
         }
     }
 }

@@ -35,3 +35,9 @@
   border: solid gray 1px;
   height: 25px;
 }
+.alertTxt{
+  cursor: pointer;
+  color: red;
+  text-decoration: underline;
+  display: none;
+}

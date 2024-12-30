@@ -1,15 +1,21 @@
-<div #notificationAlert id="notificationAlert" class="info-panel sticky-notif">
-  <div class="margin-left infoText">You have {{notificationQuantity}} notifications.</div>
+<div #selectionInfoPanel class="info-panel sticky-notif">
+  <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
+  <span class="items-select-txt txt">{{itemsSelected}} Item(s) Selected</span>
+  <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
 </div>
 
 <div #sampleTextInfoPanel class="info-panel">
   <!--KEEP IN MIND notification dismissing function will dismiss the parent element of the i element-->
   <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Sample Text</div>
+  <div class="margin-left infoText">Sample Text <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
 </div>
 
-<div #selectionInfoPanel class="info-panel sticky-notif">
-  <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
-  <span class="items-select-txt">{{itemsSelected}} Item(s) Selected</span>
-  <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
+<div #sampleTextInfoPanel2 class="info-panel">
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Sample Text 2 <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
+</div>
+
+<div #sampleTextInfoPanel3 class="info-panel">
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Sample Text 3rd one <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
 </div>
