@@ -7,6 +7,7 @@
   border-top: 2px solid lightgray;
   min-height: 35px;
   z-index: 5;
+  /*font-weight: bold;*/
 }
 
 .margin-left{
@@ -27,14 +28,17 @@
   margin-left: 5px;
   padding: 2px 6.5px 2px 6.5px;
 }
+
 .items-select-txt{
   margin-left: 5px;
 }
+
 .trash-btn{
   background-color: white;
   border: solid gray 1px;
   height: 25px;
 }
+
 .alertTxt{
   cursor: pointer;
   color: red;

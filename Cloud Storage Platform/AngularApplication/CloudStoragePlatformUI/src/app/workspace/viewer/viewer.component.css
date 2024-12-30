@@ -7,12 +7,6 @@
     width: 120px;
 }
 
-.file-large-item-from-viewer:hover{
-    background-color: rgba(211, 211, 211, 0.593);
-    cursor: pointer;
-}
-
-
 .text-only{
     display: block !important;
 }

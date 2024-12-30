@@ -27,6 +27,9 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
     });
+    // this.showSampleTextInfoPanel();
+    // this.showSampleTextInfoPanel2();
+    // this.showSampleTextInfoPanel3();
 
     window.addEventListener("scroll", () => {
       this.updateNotificationAlerts();

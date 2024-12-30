@@ -18,6 +18,8 @@ export class FileLargeComponent implements OnInit {
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild("selectFile") selectFileCheckbox!: ElementRef<HTMLInputElement>;
   @ViewChild("fileOptionsMenu") fileOptionsMenu!: ElementRef<HTMLDivElement>;
+  @ViewChild("file") file!: ElementRef<HTMLDivElement>;
+  @ViewChild("ellipsis") ellipsis!: ElementRef<HTMLElement>;
 
   uniqueComponentIdentifierUUID:string = ""; // after backend integration can be replaced with the id supplied by api
   originalName = "";
@@ -41,6 +43,15 @@ export class FileLargeComponent implements OnInit {
       if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsShouldBeVisible == true)
         this.expandOptions();
     });
+
+    window.addEventListener("click", (e) => {
+      let clickedOnElement = e.target as HTMLElement;
+      if (this.fileOptionsShouldBeVisible){
+        if ((clickedOnElement.parentElement!=this.fileOptionsMenu.nativeElement && clickedOnElement!=this.fileOptionsMenu.nativeElement) && clickedOnElement!=this.ellipsis.nativeElement) {
+          this.expandOptions();
+        }
+      }
+    });
   }
 
   nameResizing() {
@@ -56,8 +67,9 @@ export class FileLargeComponent implements OnInit {
       menu.style.visibility = "visible";
       menu.style.height = "200px";
       this.fileOptionsShouldBeVisible = true;
-      this.applyMargin(menu.querySelectorAll("div"));
       this.eventService.emit("file options expanded", this.uniqueComponentIdentifierUUID);
+      this.ellipsis.nativeElement.style.backgroundColor = "lightgray";
+      this.file.nativeElement.style.backgroundColor = "rgba(211, 211, 211, 0.593)";
     }
     else {
       menu.style.height = "0";
@@ -65,13 +77,8 @@ export class FileLargeComponent implements OnInit {
       setTimeout(() => {
         menu.style.visibility = "hidden";
       }, 400);
-    }
-  }
-
-  applyMargin(options: NodeListOf<HTMLDivElement>) {
-    for (let i = 1; i < options.length; i++) {
-      console.log(options[i].textContent);
-      options[i].style.marginTop = `${31 * i}px`;
+      this.ellipsis.nativeElement.style.backgroundColor = "";
+      this.file.nativeElement.style.backgroundColor = "";
     }
   }
 

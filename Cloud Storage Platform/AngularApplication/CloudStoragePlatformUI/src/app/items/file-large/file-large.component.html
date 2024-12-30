@@ -1,4 +1,4 @@
-<div (mouseleave)="selectFileCheckbox.nativeElement.style.visibility = 'hidden'" (mouseover)="selectFileCheckbox.nativeElement.style.visibility = 'visible'" [title]="originalName" class="file">
+<div #file (mouseleave)="selectFileCheckbox.nativeElement.style.visibility = 'hidden'" (mouseover)="selectFileCheckbox.nativeElement.style.visibility = 'visible'" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
         <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="trash-file-option">Move to trash</div>
         <div (click)="setupInput();" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Rename</div>
@@ -9,7 +9,7 @@
     </div>
 
     <div title="Options" class="file-options">
-        <i (click)="expandOptions()" class="fa-solid fa-ellipsis"></i>
+        <i #ellipsis (click)="expandOptions()" class="fa-solid fa-ellipsis"></i>
     </div>
 
     <!--150x180.25-->
