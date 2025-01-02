@@ -23,7 +23,7 @@ export class FileLargeComponent implements OnInit {
 
   uniqueComponentIdentifierUUID:string = ""; // after backend integration can be replaced with the id supplied by api
   originalName = "";
-  fileOptionsShouldBeVisible = false;
+  fileOptionsVisible = false;
   renaming = false;
   selected = false;
 
@@ -40,13 +40,13 @@ export class FileLargeComponent implements OnInit {
     });
 
     this.eventService.listen("file options expanded", (uuid:string)=>{
-      if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsShouldBeVisible == true)
+      if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsVisible == true)
         this.expandOptions();
     });
 
     window.addEventListener("click", (e) => {
       let clickedOnElement = e.target as HTMLElement;
-      if (this.fileOptionsShouldBeVisible){
+      if (this.fileOptionsVisible){
         if ((clickedOnElement.parentElement!=this.fileOptionsMenu.nativeElement && clickedOnElement!=this.fileOptionsMenu.nativeElement) && clickedOnElement!=this.ellipsis.nativeElement) {
           this.expandOptions();
         }
@@ -63,17 +63,17 @@ export class FileLargeComponent implements OnInit {
 
   expandOptions() {
     const menu = this.fileOptionsMenu.nativeElement;
-    if (this.fileOptionsShouldBeVisible == false) {
+    if (this.fileOptionsVisible == false) {
       menu.style.visibility = "visible";
       menu.style.height = "200px";
-      this.fileOptionsShouldBeVisible = true;
+      this.fileOptionsVisible = true;
       this.eventService.emit("file options expanded", this.uniqueComponentIdentifierUUID);
       this.ellipsis.nativeElement.style.backgroundColor = "lightgray";
       this.file.nativeElement.style.backgroundColor = "rgba(211, 211, 211, 0.593)";
     }
     else {
       menu.style.height = "0";
-      this.fileOptionsShouldBeVisible = false;
+      this.fileOptionsVisible = false;
       setTimeout(() => {
         menu.style.visibility = "hidden";
       }, 400);

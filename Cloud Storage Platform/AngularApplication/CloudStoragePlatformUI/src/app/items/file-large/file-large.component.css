@@ -72,12 +72,10 @@
 
 .file-option{
     padding-top: 9px;
-    opacity: 0;
     padding-bottom: 9px;
     width: 100%;
     text-align: center;
     position: relative;
-    transition: opacity 0.2s ease-in;
 }
 
 #trash-file-option{
@@ -86,10 +84,6 @@
 
 .file-option:hover{
     background-color: lightgray;
-}
-
-.file-options-visible{
-    opacity: 1 !important;
 }
 
 .file-name-text-input{

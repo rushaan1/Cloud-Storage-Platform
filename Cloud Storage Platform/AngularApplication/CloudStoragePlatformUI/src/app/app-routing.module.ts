@@ -4,10 +4,10 @@ import {ViewerComponent} from "./workspace/viewer/viewer.component";
 
 const routes: Routes = [
   {path:'', component:ViewerComponent},
-  {path:'preDefinedFilter/home', component:ViewerComponent},
-  {path:'preDefinedFilter/recents', component:ViewerComponent},
-  {path:'preDefinedFilter/favorites', component:ViewerComponent},
-  {path:'preDefinedFilter/trash', component:ViewerComponent},
+  {path:'filter/home', component:ViewerComponent},
+  {path:'filter/recents', component:ViewerComponent},
+  {path:'filter/favorites', component:ViewerComponent},
+  {path:'filter/trash', component:ViewerComponent},
   {path:'folder/**', component:ViewerComponent},
   {path:'searchFilter', component:ViewerComponent},
 ];

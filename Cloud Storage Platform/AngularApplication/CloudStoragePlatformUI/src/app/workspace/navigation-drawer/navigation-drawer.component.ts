@@ -135,7 +135,9 @@ export class NavigationDrawerComponent implements OnInit {
     const targetElement = event.currentTarget as HTMLElement;
     const aElement = targetElement.querySelector("a") as HTMLAnchorElement;
     const iElement = aElement.getElementsByTagName("i")[0] as HTMLElement;
-
+    if (targetElement.classList.contains("active")){
+      return;
+    }
     this.setBackgroundColors(targetElement, aElement, iElement, "antiquewhite");
   }
 
@@ -143,7 +145,6 @@ export class NavigationDrawerComponent implements OnInit {
     const targetElement = event.currentTarget as HTMLElement;
     const aElement = targetElement.querySelector("a") as HTMLAnchorElement;
     const iElement = aElement.getElementsByTagName("i")[0] as HTMLElement;
-
     this.setBackgroundColors(targetElement, aElement, iElement, "");
   }
 

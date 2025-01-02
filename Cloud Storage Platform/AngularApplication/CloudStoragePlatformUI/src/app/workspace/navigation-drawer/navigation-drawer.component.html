@@ -15,10 +15,10 @@
         <div class="space">5GB of 10GB used.</div>
     </div>
     <ul class="category top-category maindrawer-top">
-        <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/recents']" [routerLinkActive]="['active']"><i class="fa-regular fa-clock"></i>Recents</a></li>
-        <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/home']" [routerLinkActive]="['active']"><i class="fa-solid fa-house"></i>Home</a></li>
-        <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/favorites']" [routerLinkActive]="['active']"><i class="fa-regular fa-heart"></i>Favorites</a></li>
-        <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/trash']" [routerLinkActive]="['active']"><i class="fa-regular fa-trash-can"></i>Trash</a></li>
+        <li [routerLink]="['/filter/recents']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-regular fa-clock"></i>Recents</a></li>
+        <li [routerLink]="['/filter/home']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-solid fa-house"></i>Home</a></li>
+        <li [routerLink]="['/filter/favorites']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-regular fa-heart"></i>Favorites</a></li>
+        <li [routerLink]="['/filter/trash']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i>Trash</a></li>
     </ul>
     <ul class="category bottom-category maindrawer-bottom">
         <li id="Images" (click)="typeItemSelected($event, 0)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="category-tab"><input id="0-NavCheckbox" type="checkbox"/><a><i class="fa-regular fa-image"></i>Images</a></li>
@@ -36,10 +36,10 @@
             <i (click)="miniDrawerClick()" class="menu-i fa-solid fa-bars"></i>
         </div>
         <ul class="category top-category m-top-cat">
-            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/recents']" [routerLinkActive]="['active']"><i class="fa-regular fa-clock"></i></a></li>
-            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/home']" [routerLinkActive]="['active']"><i class="fa-solid fa-house"></i></a></li>
-            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/favorites']" [routerLinkActive]="['active']"><i class="fa-regular fa-heart"></i></a></li>
-            <li (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLink]="['/trash']" [routerLinkActive]="['active']"><i class="fa-regular fa-trash-can"></i></a></li>
+            <li [routerLink]="['/filter/recents']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-regular fa-clock"></i></a></li>
+            <li [routerLink]="['/filter/home']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-solid fa-house"></i></a></li>
+            <li [routerLink]="['/filter/favorites']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-regular fa-heart"></i></a></li>
+            <li [routerLink]="['/filter/trash']" [routerLinkActive]="['active']" (mouseover)="topCategoryLiHover($event)" (mouseleave)="topCategoryLiHoverAway($event)"><a [routerLinkActive]="['active']"><i [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i></a></li>
         </ul>
         <ul class="category bottom-category m-bottom-cat">
             <li id="Images" (click)="typeItemSelectedMini($event,'Images', 0)" style="padding-left: 0;" (mouseover)="hoverTransitionTrigger($event)" (mouseleave)="hoverTransitionOppositeTrigger($event)" class="m-cat-tab category-tab Images"><a><i class="fa-regular fa-image"></i></a></li>

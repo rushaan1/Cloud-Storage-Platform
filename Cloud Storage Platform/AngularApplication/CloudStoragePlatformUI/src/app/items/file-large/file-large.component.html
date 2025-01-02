@@ -1,11 +1,11 @@
 <div #file (mouseleave)="selectFileCheckbox.nativeElement.style.visibility = 'hidden'" (mouseover)="selectFileCheckbox.nativeElement.style.visibility = 'visible'" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
-        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="trash-file-option">Move to trash</div>
-        <div (click)="setupInput();" [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="rename-file-option">Rename</div>
-        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="share-file-option">Share</div>
-        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="move-file-option">Move to...</div>
-        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="favorite-file-option">Favorite</div>
-        <div [ngClass]="fileOptionsShouldBeVisible ? 'file-options-visible':''" class="file-option" id="info-file-option">Info</div>
+        <div class="file-option" id="trash-file-option">Move to trash</div>
+        <div (click)="setupInput();" class="file-option" id="rename-file-option">Rename</div>
+        <div class="file-option" id="share-file-option">Share</div>
+        <div class="file-option" id="move-file-option">Move to...</div>
+        <div class="file-option" id="favorite-file-option">Favorite</div>
+        <div class="file-option" id="info-file-option">Info</div>
     </div>
 
     <div title="Options" class="file-options">
