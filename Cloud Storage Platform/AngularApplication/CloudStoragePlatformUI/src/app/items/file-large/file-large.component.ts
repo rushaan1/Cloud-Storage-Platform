@@ -2,6 +2,8 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, 
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import { v4 as uuidv4 } from 'uuid';
+import {FormControl, Validators} from "@angular/forms";
+import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
 
 @Component({
   selector: 'file-large-item',
@@ -20,6 +22,8 @@ export class FileLargeComponent implements OnInit {
   @ViewChild("fileOptionsMenu") fileOptionsMenu!: ElementRef<HTMLDivElement>;
   @ViewChild("file") file!: ElementRef<HTMLDivElement>;
   @ViewChild("ellipsis") ellipsis!: ElementRef<HTMLElement>;
+
+  renameFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
 
   uniqueComponentIdentifierUUID:string = ""; // after backend integration can be replaced with the id supplied by api
   originalName = "";
@@ -84,24 +88,43 @@ export class FileLargeComponent implements OnInit {
 
   renameEnter() {
     if (this.fileNameInput?.nativeElement) {
-      const onlyWhiteSpaceOrEmptyCheckingRegexPattern = /\S+/;
-      if (onlyWhiteSpaceOrEmptyCheckingRegexPattern.test(this.fileNameInput?.nativeElement?.value)) {
+      if (this.renameFormControl.valid) {
         this.originalName = this.fileNameInput?.nativeElement?.value;
         this.name = this.originalName;
         this.nameResizing();
-        console.log("Name updated?");
+        this.renaming = false;
+        localStorage["renaming"] = false;
+      }
+      else if (this.renameFormControl.invalid){
+        if (this.renameFormControl.hasError("invalidCharacter")){
+          this.eventService.emit("invalidCharacterNotif", this.renameFormControl.errors?.['invalidCharactersString']);
+        }
+        else {
+          this.eventService.emit("emptyInputNotif");
+        }
+        this.fileNameInput.nativeElement.focus();
+        this.fileNameInput.nativeElement.classList.add("file-name-text-input-red");
       }
     }
-    this.renaming = false;
   }
 
   setupInput() {
+    if (localStorage["renaming"] == "true"){
+      this.eventService.emit("alreadyRenamingNotif");
+      this.expandOptions();
+      return;
+    }
     this.renaming = this.renaming ? false : true;
     this.expandOptions();
     setTimeout(() => {
-      this.fileNameInput?.nativeElement?.focus();
-      this.fileNameInput?.nativeElement?.select();
-    }, 50);
+      if (this.fileNameInput?.nativeElement){
+        this.fileNameInput.nativeElement.focus();
+        this.fileNameInput.nativeElement.classList.remove("file-name-text-input-red");
+        this.fileNameInput.nativeElement.value = this.originalName;
+        this.fileNameInput.nativeElement.select();
+      }
+    }, 90);
+    localStorage["renaming"] = true;
   }
 
 
@@ -119,6 +142,6 @@ export class FileLargeComponent implements OnInit {
       this.selected = true;
       this.selectFileCheckbox.nativeElement.classList.add("visible-checkbox");
     }
-    this.eventService.emit("checkbox selection change", 0);
+    this.eventService.emit("checkbox selection change");
   }
 }

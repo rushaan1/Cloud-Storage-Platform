@@ -7,6 +7,7 @@ import { ViewerComponent } from './viewer/viewer.component';
 import { PanelComponent } from './panel/panel.component';
 import { ItemsModule } from '../items/items.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
+import {ReactiveFormsModule} from "@angular/forms";
 
 
 @NgModule({
@@ -16,11 +17,12 @@ import { NotificationCenterComponent } from './notification-center/notification-
     PanelComponent,
     NotificationCenterComponent
   ],
-  imports: [
-    CommonModule,
-    AppRoutingModule,
-    ItemsModule
-  ],
+    imports: [
+        CommonModule,
+        AppRoutingModule,
+        ItemsModule,
+        ReactiveFormsModule
+    ],
   exports:[
     NavigationDrawerComponent,
     ViewerComponent,

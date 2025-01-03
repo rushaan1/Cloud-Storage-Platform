@@ -1,21 +1,21 @@
 .file-item-icon{
-    background: url('../../workspace/item-icons/document-icon.png');
+    background: url('../item-icons/document-icon.png');
     background-size: cover;
     height: 90px;
     width: 90px;
 }
 .picture{
-    background: url('../../workspace/item-icons/pic-icon.png');
+    background: url('../item-icons/pic-icon.png');
     background-size: cover;
 }
 
 .video{
-    background: url('../../workspace/item-icons/video-icon.png');
+    background: url('../item-icons/video-icon.png');
     background-size: cover;
 }
 
 .folder{
-    background: url('../../workspace/item-icons/folder-icon.png');
+    background: url('../item-icons/folder-icon.png');
     background-size: cover;
 }
 
@@ -89,10 +89,17 @@
 .file-name-text-input{
     display: inline-block;
     background: transparent;
-    border: none;
     text-align: center;
     width: 85px;
     padding: 5px;
+}
+
+input.file-name-text-input-red{
+  border: 1px solid red;
+  outline: none;
+}
+input.file-name-text-input-red:focus {
+  border: 1px solid red;
 }
 
 .file-name-text-div{

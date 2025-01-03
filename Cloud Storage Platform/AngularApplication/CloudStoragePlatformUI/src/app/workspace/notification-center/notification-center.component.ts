@@ -9,9 +9,9 @@ import { EventService } from '../../services/event-service.service';
 })
 export class NotificationCenterComponent implements AfterViewChecked, AfterViewInit {
   protected readonly window = window;
-  @ViewChild("sampleTextInfoPanel") sampleTextInfoPanel!:ElementRef;
-  @ViewChild("sampleTextInfoPanel2") sampleTextInfoPanel2!:ElementRef;
-  @ViewChild("sampleTextInfoPanel3") sampleTextInfoPanel3!:ElementRef;
+  @ViewChild("emptyInputNotif") emptyInputNotif!:ElementRef;
+  @ViewChild("invalidCharacterNotif") invalidCharacterNotif!:ElementRef;
+  @ViewChild("alreadyRenamingNotif") alreadyRenamingNotif!:ElementRef;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
   orderedInfoPanels:ElementRef[] = [];
   recentInfoPanelsInSequence:ElementRef[] = [];
@@ -19,21 +19,21 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   itemsSelected = 0;
   mostRecentNonStickyNotification:ElementRef | null = null;
 
+  invalidCharacter:string="";
+
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
 
   ngAfterViewInit(): void {
-    this.orderedInfoPanels = [this.selectionInfoPanel, this.sampleTextInfoPanel, this.sampleTextInfoPanel2, this.sampleTextInfoPanel3];
+    this.orderedInfoPanels = [this.selectionInfoPanel, this.emptyInputNotif, this.invalidCharacterNotif, this.alreadyRenamingNotif];
     //any new info panel must be added in the array above based on its position in the HTML file
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
     });
-    // this.showSampleTextInfoPanel();
-    // this.showSampleTextInfoPanel2();
-    // this.showSampleTextInfoPanel3();
-
     window.addEventListener("scroll", () => {
       this.updateNotificationAlerts();
-    })
+    });
+
+    this.setNotificationEventListeners();
   }
 
   ngAfterViewChecked(): void {
@@ -106,6 +106,11 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     if (this.recentInfoPanelsInSequence.length>0){
       this.setLatestNotification(this.recentInfoPanelsInSequence.pop() as ElementRef, true);
     }
+
+
+    if (infoPanel.parentElement==this.invalidCharacterNotif.nativeElement){
+      this.invalidCharacter = "";
+    }
   }
 
   setLatestNotification(infoPanel:ElementRef, beingRemoved:boolean=false){
@@ -119,18 +124,22 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.mostRecentNonStickyNotification.nativeElement.classList.add("sticky-notif");
   }
 
-  showSampleTextInfoPanel(){
-    this.sampleTextInfoPanel.nativeElement.style.display = "flex";
-    this.setLatestNotification(this.sampleTextInfoPanel);
-  }
 
-  showSampleTextInfoPanel2(){
-    this.sampleTextInfoPanel2.nativeElement.style.display = "flex";
-    this.setLatestNotification(this.sampleTextInfoPanel2);
-  }
+  setNotificationEventListeners(){
+    this.eventService.listen("emptyInputNotif", ()=>{
+      this.emptyInputNotif.nativeElement.style.display = "flex";
+      this.setLatestNotification(this.emptyInputNotif);
+    });
 
-  showSampleTextInfoPanel3(){
-    this.sampleTextInfoPanel3.nativeElement.style.display = "flex";
-    this.setLatestNotification(this.sampleTextInfoPanel3);
+    this.eventService.listen("invalidCharacterNotif", (character:string)=>{
+      this.invalidCharacterNotif.nativeElement.style.display = "flex";
+      this.setLatestNotification(this.invalidCharacterNotif);
+      this.invalidCharacter = character;
+    });
+
+    this.eventService.listen("alreadyRenamingNotif", ()=>{
+      this.alreadyRenamingNotif.nativeElement.style.display = "flex";
+      this.setLatestNotification(this.alreadyRenamingNotif);
+    });
   }
 }

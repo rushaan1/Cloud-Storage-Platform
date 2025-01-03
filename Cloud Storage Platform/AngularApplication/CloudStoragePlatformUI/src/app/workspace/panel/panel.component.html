@@ -1,9 +1,9 @@
 <div class="content-panel">
     <div class="panel-main">
         <div class="panel-main-flex">
-            <div class="search margin-left">
-                <input (focus)="searchDarkenBorder()" (blur)="searchLightenBorder()" class="searchbox" type="text" id="search" name="search" placeholder="Search the cloud">
-                <div class="search-btn">
+            <div #searchDiv class="search margin-left">
+                <input (keydown.enter)="this.searchClick()" [formControl]="this.searchFormControl" (focus)="searchDarkenBorder()" (blur)="searchLightenBorder()" class="searchbox" type="text" id="search" name="search" placeholder="Search the cloud">
+                <div (click)="this.searchClick()" class="search-btn">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </div>
             </div>

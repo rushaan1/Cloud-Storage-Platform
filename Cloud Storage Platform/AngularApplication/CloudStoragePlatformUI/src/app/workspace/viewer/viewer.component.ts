@@ -28,7 +28,7 @@ export class ViewerComponent implements OnInit{
       this.predefinedTypeFilter = typeFilter;
       this.sortBy = sortBy;
       this.sortingOrder = sortingOrder;
-
+      localStorage["renaming"] = false;
       // use !queryName to see if query param is valid or empty/null/undefined
     });
 

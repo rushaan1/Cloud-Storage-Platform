@@ -45,6 +45,10 @@
     background-color: gray;
 }
 
+.red-search-border{
+  border-color: red !important;
+}
+
 .search{
     border: 2px solid grey;
     width: 40%;
@@ -117,7 +121,7 @@ span{
     height: 38.2px;
     width: 10.5%;
     background-color: lightgray;
-    border: 0.825px solid gray; 
+    border: 0.825px solid gray;
     display: flex;
     justify-content: center;
     align-items: center;

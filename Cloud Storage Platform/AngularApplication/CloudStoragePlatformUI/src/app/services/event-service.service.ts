@@ -5,7 +5,11 @@ import { Observable, Subject } from "rxjs";
 export class EventService {
   private subject = new Subject();
 
-  emit(eventName: string, payload: any) {
+  emit(eventName: string, payload: any=null) {
+    if (payload==null){
+      this.subject.next({ eventName });
+      return;
+    }
     this.subject.next({ eventName, payload });
   }
 
