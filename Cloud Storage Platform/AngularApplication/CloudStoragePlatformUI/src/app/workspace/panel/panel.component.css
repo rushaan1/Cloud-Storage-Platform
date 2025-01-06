@@ -1,139 +1,144 @@
-.panel-main{
-    position: sticky;
-    height: 65px;
-    background-color: #F5F5F5;
-    width: 100%;
-    padding-left: 4px;
+.panel-main {
+  position: sticky;
+  height: 65px;
+  background-color: #F5F5F5;
+  width: 100%;
+  padding-left: 4px;
 }
 
-.panel-main-flex{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 100%;
+.panel-main-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
 }
 
-.searchbox{
-    width: 90%;
-    height: 28px;
-    background-color: white;
-    /* border-radius: 5px; */
-    padding: 3px;
-    padding-left: 10px;
-    border: none;
-    font-size: 1rem;
-    /* margin-left: 5px; */
-    display: inline-block;
+.search {
+  border: 2px solid grey;
+  width: 40%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 20px;
+  border-radius: 24px;
+  background-color: white;
 }
 
-.searchbox:focus-visible{
-    outline:none;
+.searchbox {
+  width: 90%;
+  height: 28px;
+  border-radius: 24px;
+  padding: 3px;
+  padding-left: 17px;
+  border: none;
+  font-size: 1rem;
+  /* margin-left: 5px; */
+  display: inline-block;
 }
 
-.search-btn{
-    height: 28px;
-    width: 28px;
-    padding: 4px;
-    /* border: 2px solid gray; */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: lightgray;
+.searchbox:focus-visible {
+  outline: none;
 }
 
-.search-btn:hover{
-    background-color: gray;
+.search-btn {
+  height: 28px;
+  width: 28px;
+  padding: 4px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.red-search-border{
+.search-btn:hover {
+  background-color: bisque;
+}
+
+.red-search-border {
   border-color: red !important;
 }
 
-.search{
-    border: 2px solid grey;
-    width: 40%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-left: 20px;
+.upload {
+  height: 39.8px;
+  width: fit-content;
+  background-color: lightgray;
+  /*padding: 10px;*/
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  text-align: center;
+  /*padding-top: 12px;*/
+  border-color: transparent;
+  border-radius: 24px;
+  padding: 12px 20px 12px 15px;
 }
 
-.upload{
-    height: 39.8px;
-    width: 11.9%;
-    background-color: lightgray;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding-top: 12px;
+.upload:hover {
+  background-color: gray;
+  cursor: pointer;
 }
 
-.upload:hover{
-    background-color: gray;
+.fa-arrow-up {
+  margin-right: 10.2px;
 }
 
-.fa-arrow-up{
-    margin-right: 5px;
+.user-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 150px;
+  height: 39.8px;
 }
 
-.user-info{
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 150px;
-    height: 39.8px;
+span {
+  width: 90px;
 }
 
-span{
-    width: 90px;
+.pfp {
+  background-color: red;
+  height: 39.8px;
+  width: 39.8px;
+  border-radius: 50%;
+  margin-left: 5px;
 }
 
-.pfp{
-    background-color: red;
-    height: 39.8px;
-    width: 39.8px;
-    border-radius: 50%;
-    margin-left: 5px;
+.margin-left {
+  margin-left: 20px;
 }
 
-.margin-left{
-    margin-left: 20px;
+#sortBy {
+  height: 39.8px;
+  width: 8.3%;
+  background-color: lightgray;
+  padding: 0 2.5px 0 2.5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
-#sortBy{
-    height: 39.8px;
-    width: 8.3%;
-    background-color: lightgray;
-    padding: 0 2.5px 0 2.5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+#sortBy:hover {
+  background-color: gray;
 }
 
-#sortBy:hover{
-    background-color: gray;
+.style {
+  height: 38.2px;
+  width: 10.5%;
+  background-color: lightgray;
+  border: 0.825px solid gray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0px 3px 0px 3px;
+  cursor: default;
 }
 
-.style{
-    height: 38.2px;
-    width: 10.5%;
-    background-color: lightgray;
-    border: 0.825px solid gray;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 0px 3px 0px 3px;
-    cursor: default;
+.style:hover {
+  background-color: gray;
 }
 
-.style:hover{
-    background-color: gray;
-}
-
-#style{
-    margin-right: 3px
+#style {
+  margin-right: 3px
 }
