@@ -1,6 +1,7 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
+import {timestamp} from "rxjs";
 
 @Component({
   selector: 'notification-center',
@@ -20,6 +21,12 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   mostRecentNonStickyNotification:ElementRef | null = null;
 
   invalidCharacter:string="";
+
+  /*
+
+  The terminologies info-panel, notif and notification mean the same.
+
+   */
 
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
 
@@ -122,6 +129,26 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     }
     this.mostRecentNonStickyNotification = infoPanel;
     this.mostRecentNonStickyNotification.nativeElement.classList.add("sticky-notif");
+
+    const infoText = this.mostRecentNonStickyNotification.nativeElement.querySelector(".infoText");
+    const timestamp = infoText.querySelector(".timestamp");
+
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const newInnerText = `at ${hours}:${minutes}`;
+
+    if (timestamp){
+      timestamp.innerText = newInnerText;
+    }
+    else{
+      const newTimestamp = document.createElement("span");
+      newTimestamp.innerText = newInnerText;
+      newTimestamp.style.paddingLeft = "8px";
+      newTimestamp.style.color = "gray";
+      newTimestamp.classList.add("timestamp");
+      infoText.appendChild(newTimestamp);
+    }
   }
 
 

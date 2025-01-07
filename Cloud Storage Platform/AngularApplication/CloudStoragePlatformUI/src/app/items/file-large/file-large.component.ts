@@ -22,10 +22,11 @@ export class FileLargeComponent implements OnInit {
   @ViewChild("fileOptionsMenu") fileOptionsMenu!: ElementRef<HTMLDivElement>;
   @ViewChild("file") file!: ElementRef<HTMLDivElement>;
   @ViewChild("ellipsis") ellipsis!: ElementRef<HTMLElement>;
+  @ViewChild("renamingFileOptionDiv") renamingFileOptionDiv?: ElementRef<HTMLDivElement>;
 
   renameFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
 
-  uniqueComponentIdentifierUUID:string = ""; // after backend integration can be replaced with the id supplied by api
+  uniqueComponentIdentifierUUID:string = ""; // this is being used additionally to real folder id integrated with backend to prevent any security risks as this id needs to be stored in localStorage for validation-related purposes
   originalName = "";
   fileOptionsVisible = false;
   renaming = false;
@@ -94,6 +95,9 @@ export class FileLargeComponent implements OnInit {
         this.nameResizing();
         this.renaming = false;
         localStorage["renaming"] = false;
+        if (this.renamingFileOptionDiv?.nativeElement){
+          this.renamingFileOptionDiv.nativeElement.innerText = "Rename";
+        }
       }
       else if (this.renameFormControl.invalid){
         if (this.renameFormControl.hasError("invalidCharacter")){
@@ -109,12 +113,17 @@ export class FileLargeComponent implements OnInit {
   }
 
   setupInput() {
-    if (localStorage["renaming"] == "true"){
+    if (localStorage["renaming"] == "true" && !this.renaming){
       this.eventService.emit("alreadyRenamingNotif");
       this.expandOptions();
       return;
     }
-    this.renaming = this.renaming ? false : true;
+
+    if (this.renamingFileOptionDiv?.nativeElement){
+      this.renamingFileOptionDiv.nativeElement.innerText = "Renaming...";
+    }
+
+    this.renaming = true;
     this.expandOptions();
     setTimeout(() => {
       if (this.fileNameInput?.nativeElement){
@@ -122,6 +131,7 @@ export class FileLargeComponent implements OnInit {
         this.fileNameInput.nativeElement.classList.remove("file-name-text-input-red");
         this.fileNameInput.nativeElement.value = this.originalName;
         this.fileNameInput.nativeElement.select();
+        this.renameFormControl.setValue(this.originalName);
       }
     }, 90);
     localStorage["renaming"] = true;
