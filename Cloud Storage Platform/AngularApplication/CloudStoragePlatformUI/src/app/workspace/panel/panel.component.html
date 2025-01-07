@@ -1,7 +1,7 @@
 <div class="content-panel">
     <div class="panel-main">
         <div class="panel-main-flex">
-            <div #searchDiv class="search margin-left">
+            <div #searchDiv class="search">
                 <input (keydown.enter)="this.searchClick()" [formControl]="this.searchFormControl" (focus)="searchDarkenBorder()" (blur)="searchLightenBorder()" class="searchbox" type="text" id="search" name="search" placeholder="Search the cloud">
                 <div (click)="this.searchClick()" class="search-btn">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -16,11 +16,14 @@
                 <option id="">Options</option>
             </select>
             <div class="style">
-                <input [checked]="true" type="checkbox" name="style" id="style"/>
-                <div class="large-icon-text">Large Icons</div>
+<!--                <input [checked]="true" type="checkbox" name="style" id="style"/>-->
+                <div class="large-icon-text">Switch to list style</div>
             </div>
-            <div class="user-info margin-left">
-                <span>Sample Username</span>
+          <div class="dark-mode">
+            <i class="fa-solid fa-moon"></i>
+            <span class="dark-mode-text-div">Enable dark mode</span>
+          </div>
+            <div class="user-info">
                 <div class="pfp"></div>
             </div>
         </div>

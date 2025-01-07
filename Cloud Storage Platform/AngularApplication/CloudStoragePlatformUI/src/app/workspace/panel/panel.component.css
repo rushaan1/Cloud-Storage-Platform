@@ -9,17 +9,16 @@
 .panel-main-flex {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   height: 100%;
 }
 
 .search {
   border: 2px solid grey;
-  width: 40%;
+  width: 33%;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-left: 20px;
   border-radius: 24px;
   background-color: white;
 }
@@ -85,10 +84,8 @@
 
 .user-info {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 150px;
   height: 39.8px;
+  justify-self: start;
 }
 
 span {
@@ -96,49 +93,71 @@ span {
 }
 
 .pfp {
-  background-color: red;
+  background: url("C:\\Users\\rusha\\OneDrive\\Pictures\\🌸Nyanoless - Comms Open! (@NanolessP).png");
   height: 39.8px;
   width: 39.8px;
   border-radius: 50%;
-  margin-left: 5px;
+  background-size: cover;
 }
 
-.margin-left {
-  margin-left: 20px;
+.pfp:hover {
+  cursor: pointer;
 }
+
 
 #sortBy {
   height: 39.8px;
   width: 8.3%;
-  background-color: lightgray;
   padding: 0 2.5px 0 2.5px;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
+  background: transparent;
+  border: none;
 }
 
 #sortBy:hover {
-  background-color: gray;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#sortBy:focus-visible {
+  outline: none;
 }
 
 .style {
   height: 38.2px;
-  width: 10.5%;
-  background-color: lightgray;
-  border: 0.825px solid gray;
+  width: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   padding: 0px 3px 0px 3px;
   cursor: default;
+  background: transparent;
+  border: none;
 }
 
 .style:hover {
-  background-color: gray;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 #style {
   margin-right: 3px
+}
+
+.dark-mode{
+  display: flex;
+  gap: 7px;
+  width: fit-content;
+}
+.dark-mode-text-div{
+  width: fit-content;
+}
+.dark-mode:hover{
+  text-decoration: underline;
+  text-decoration-color: black;
+  cursor: pointer;
 }
