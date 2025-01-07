@@ -1,31 +1,48 @@
 <div class="content-panel">
-    <div class="panel-main">
-        <div class="panel-main-flex">
-            <div #searchDiv class="search">
-                <input (keydown.enter)="this.searchClick()" [formControl]="this.searchFormControl" (focus)="searchDarkenBorder()" (blur)="searchLightenBorder()" class="searchbox" type="text" id="search" name="search" placeholder="Search the cloud">
-                <div (click)="this.searchClick()" class="search-btn">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
-            </div>
-            <button class="upload">
-                <i class="fa-solid fa-arrow-up"></i>
-                Upload
-            </button>
-            <select id="sortBy">
-                <option id="" [selected]="true">Sort By</option>
-                <option id="">Options</option>
-            </select>
-            <div class="style">
-<!--                <input [checked]="true" type="checkbox" name="style" id="style"/>-->
-                <div class="large-icon-text">Switch to list style</div>
-            </div>
-          <div class="dark-mode">
-            <i class="fa-solid fa-moon"></i>
-            <span class="dark-mode-text-div">Enable dark mode</span>
-          </div>
-            <div class="user-info">
-                <div class="pfp"></div>
-            </div>
+  <div class="panel-main">
+    <div #panelMainFlex class="panel-main-flex">
+
+      <div #searchDiv class="search">
+        <input (blur)="searchLightenBorder()" (focus)="searchDarkenBorder()"
+               (keydown.enter)="this.searchClick()" [formControl]="this.searchFormControl" class="searchbox" id="search" name="search"
+               placeholder="Search the cloud" type="text">
+
+        <div (click)="this.searchClick()" class="search-btn">
+          <i class="fa-solid fa-magnifying-glass"></i>
         </div>
+      </div>
+
+      <button class="upload">
+        <i class="fa-solid fa-arrow-up"></i>
+        Upload
+      </button>
+
+      <select id="sortBy">
+        <option [selected]="true">Sort by</option>
+        <option id="">Options</option>
+      </select>
+
+      <div class="style">
+        <!--                <input [checked]="true" type="checkbox" name="style" id="style"/>-->
+        <div class="large-icon-text">Switch to list style</div>
+      </div>
+
+      <div class="dark-mode">
+        <i class="fa-solid fa-moon"></i>
+        <span class="dark-mode-text-div">Enable dark mode</span>
+      </div>
+
+      <div class="user-info">
+        <div #pfp (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = true;" class="pfp"></div>
+        <div #pfpDropdown *ngIf="this.pfpDropdownShowing" class="top-pointed-dropdown">
+          <span #pfpDropDownSpan>
+            Hi FirstName, <br>
+            <b>Click to open account settings</b>
+          </span>
+        </div>
+
+      </div>
+
     </div>
+  </div>
 </div>
