@@ -10,7 +10,7 @@ const BASE_URL = "https://localhost:7219/api/Folders";
 @Injectable({
   providedIn: 'root'
 })
-export class FoldersServiceService {
+export class FoldersService {
   constructor(private httpClient:HttpClient) { }
 
   public getAllFoldersInHome():Observable<Folder[]>{

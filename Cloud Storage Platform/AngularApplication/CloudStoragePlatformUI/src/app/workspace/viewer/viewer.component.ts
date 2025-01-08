@@ -2,6 +2,8 @@ import {AfterViewChecked, AfterViewInit, Component, OnInit, ViewChild} from '@an
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute} from "@angular/router";
+import {Folder} from "../../models/Folder";
+import {File} from "../../models/File";
 
 @Component({
   selector: 'viewer',
@@ -9,7 +11,9 @@ import {ActivatedRoute} from "@angular/router";
   styleUrl: './viewer.component.css'
 })
 export class ViewerComponent implements OnInit{
-  files = ["folder hello", "folder 2", "folder 3","folder 4", "folder 5", "folder 6", "folder 7", "folder 8", "folder 9", "folder 10","folder 11", "folder 12", "folder 13", "folder 14", "folder 15", "folder 16"];
+  folders: Folder[] = [];
+  files: File[] = [];
+
   searchQuery?:string;
   predefinedTypeFilter?:string;
   sortBy?:string;
@@ -38,7 +42,21 @@ export class ViewerComponent implements OnInit{
         return;
       }
       switch(url[0].path){
-        case "preDefinedFilter":
+        case "filter":
+          if (url[1]){
+            switch (url[1].path){
+              case "home":
+                // TODO
+                this.loadHomeFolder();
+                break;
+              case "recents":
+                break;
+              case "favorites":
+                break;
+              case "trash":
+                break;
+            }
+          }
           break;
         case "folder":
           break;

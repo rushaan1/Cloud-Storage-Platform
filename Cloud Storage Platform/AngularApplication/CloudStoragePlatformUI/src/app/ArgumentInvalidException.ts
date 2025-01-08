@@ -1,6 +1,6 @@
 class ArgumentInvalidException extends Error {
   constructor(message:string) {
     super(message);
-    this.name = "ArgumentException";
+    this.name = "ArgumentInvalidException";
   }
 }

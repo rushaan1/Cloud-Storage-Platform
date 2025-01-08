@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FoldersServiceService } from './folders-service.service';
+import { FoldersService } from './folders.service';
 
 describe('FoldersServiceService', () => {
-  let service: FoldersServiceService;
+  let service: FoldersService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(FoldersServiceService);
+    service = TestBed.inject(FoldersService);
   });
 
   it('should be created', () => {

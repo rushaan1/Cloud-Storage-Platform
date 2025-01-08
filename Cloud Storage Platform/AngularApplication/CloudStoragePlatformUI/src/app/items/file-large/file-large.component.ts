@@ -4,6 +4,8 @@ import { EventService } from '../../services/event-service.service';
 import { v4 as uuidv4 } from 'uuid';
 import {FormControl, Validators} from "@angular/forms";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
+import {FoldersService} from "../../services/ApiServices/folders.service";
+import {Folder} from "../../models/Folder";
 
 @Component({
   selector: 'file-large-item',
@@ -11,9 +13,13 @@ import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
   styleUrl: './file-large.component.css'
 })
 export class FileLargeComponent implements OnInit {
+  /*
+  * Important: BaseFile contains all properties contained by Folders and every single one of those properties are also contained by File but File contains additional properties.
+  *            File term is sometimes used to refer to Folder, especially in Frontend code (questionable practice)
+  * */
   @Input() type: string = "";
-  @Input() name: string = "";
-  @Input() favorite: boolean = false;
+  @Input() base!:BaseFile;
+  @Input() fileInfo?:any; // TODO
   @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() itemSelected: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -26,17 +32,19 @@ export class FileLargeComponent implements OnInit {
 
   renameFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
 
-  uniqueComponentIdentifierUUID:string = ""; // this is being used additionally to real folder id integrated with backend to prevent any security risks as this id needs to be stored in localStorage for validation-related purposes
+  uniqueComponentIdentifierUUID:string = "";
+  name = "";
   originalName = "";
   fileOptionsVisible = false;
   renaming = false;
   selected = false;
 
-  constructor(private itemSelectionService: ItemSelectionService, private eventService: EventService) { }
+  constructor(private itemSelectionService: ItemSelectionService, private foldersService:FoldersService, private eventService: EventService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
-    this.originalName = this.name;
+    this.originalName = this.base.fileName;
+    this.name = this.originalName;
     this.nameResizing();
     this.eventService.listen("unselector all", () => {
       if (this.selected) {
@@ -62,7 +70,7 @@ export class FileLargeComponent implements OnInit {
   nameResizing() {
     if (this.name.length >= 32) {
       let portionToBeExcluded = this.name.slice(32, this.name.length);
-      this.name = this.name.replace(portionToBeExcluded, "") + "...";
+      this.name= this.name.replace(portionToBeExcluded, "") + "...";
     }
   }
 
@@ -90,14 +98,29 @@ export class FileLargeComponent implements OnInit {
   renameEnter() {
     if (this.fileNameInput?.nativeElement) {
       if (this.renameFormControl.valid) {
-        this.originalName = this.fileNameInput?.nativeElement?.value;
-        this.name = this.originalName;
-        this.nameResizing();
+        // API Integration part
+        this.foldersService.renameFolder(this.base.fileId, this.fileNameInput.nativeElement.value).subscribe({
+          next: (response:Folder) => {
+            this.base.fileName = response.fileName;
+            this.originalName = response.fileName;
+            this.name = response.fileName;
+            this.eventService.emit("renameSuccessNotif", response.fileName);
+            this.nameResizing();
+          },
+          error: err => {
+            // TODO ErrorNotif for this
+
+          },
+          complete: () => {}
+        });
+
         this.renaming = false;
         localStorage["renaming"] = false;
         if (this.renamingFileOptionDiv?.nativeElement){
           this.renamingFileOptionDiv.nativeElement.innerText = "Rename";
         }
+
+        // (9th Jan, 2025) The above code should execute regardless of Observable error
       }
       else if (this.renameFormControl.invalid){
         if (this.renameFormControl.hasError("invalidCharacter")){

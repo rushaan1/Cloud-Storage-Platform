@@ -14,6 +14,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   @ViewChild("invalidCharacterNotif") invalidCharacterNotif!:ElementRef;
   @ViewChild("alreadyRenamingNotif") alreadyRenamingNotif!:ElementRef;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
+  @ViewChild("renameSuccessNotif") renameSuccessNotif!:ElementRef;
   orderedInfoPanels:ElementRef[] = [];
   recentInfoPanelsInSequence:ElementRef[] = [];
 
@@ -21,7 +22,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   mostRecentNonStickyNotification:ElementRef | null = null;
 
   invalidCharacter:string="";
-
+  successRenamedToName:string="";
   /*
 
   The terminologies info-panel, notif and notification mean the same.
@@ -31,7 +32,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
 
   ngAfterViewInit(): void {
-    this.orderedInfoPanels = [this.selectionInfoPanel, this.emptyInputNotif, this.invalidCharacterNotif, this.alreadyRenamingNotif];
+    this.orderedInfoPanels = [this.selectionInfoPanel, this.emptyInputNotif, this.invalidCharacterNotif, this.alreadyRenamingNotif, this.renameSuccessNotif];
     //any new info panel must be added in the array above based on its position in the HTML file
     this.eventService.listen("checkbox selection change",()=>{
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
@@ -167,6 +168,12 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.eventService.listen("alreadyRenamingNotif", ()=>{
       this.alreadyRenamingNotif.nativeElement.style.display = "flex";
       this.setLatestNotification(this.alreadyRenamingNotif);
+    });
+
+    this.eventService.listen("renameSuccessNotif", (renamedTo:string)=>{
+      this.renameSuccessNotif.nativeElement.style.display = "flex";
+      this.setLatestNotification(this.renameSuccessNotif);
+      this.successRenamedToName = renamedTo;
     });
   }
 }

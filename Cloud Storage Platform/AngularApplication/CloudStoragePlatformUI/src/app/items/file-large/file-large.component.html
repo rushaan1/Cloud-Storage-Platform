@@ -14,13 +14,13 @@
 
     <!--150x180.25-->
     <input (click)="selectItemClick()" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
-    <i *ngIf="this.favorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
+    <i *ngIf="this.base.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>
 
 
     <div class="file-name-text">
-        <div *ngIf="!this.renaming" class="file-name-text-div">{{name}}</div>
+        <div *ngIf="!this.renaming" class="file-name-text-div">{{this.name}}</div>
         <input #fileNameInput *ngIf="this.renaming" [formControl]="this.renameFormControl" (blur)="renameEnter()" (keydown.enter)="renameEnter()" class="file-name-text-input" type="text" [value]="this.originalName"/>
     </div>
 </div>

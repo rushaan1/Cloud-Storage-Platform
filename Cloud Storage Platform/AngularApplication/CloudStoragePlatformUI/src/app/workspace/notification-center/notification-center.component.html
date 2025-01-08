@@ -19,3 +19,8 @@
   <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
   <div class="margin-left infoText">Unable to rename another file. Please complete renaming the current file/folder. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
 </div>
+
+<div #renameSuccessNotif class="info-panel">
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Successfully renamed to {{successRenamedToName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
+</div>
