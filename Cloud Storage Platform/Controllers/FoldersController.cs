@@ -76,7 +76,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         #region Modifications
         [HttpPost]
-        [Route("/add")]
+        [Route("add")]
         public async Task<ActionResult<FolderResponse>> AddFolder(FolderAddRequest folderAddRequest)
         {
             FolderAddRequest updatedAddRequest = folderAddRequest;
@@ -87,7 +87,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpPatch]
-        [Route("/rename")]
+        [Route("rename")]
         public async Task<ActionResult<FolderResponse>> RenameFolder(FolderRenameRequest folderRenameRequest) 
         {
             FolderResponse folderResponse = await _foldersModificationService.RenameFolder(folderRenameRequest);
@@ -95,7 +95,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpPatch]
-        [Route("/move")]
+        [Route("move")]
         public async Task<ActionResult<FolderResponse>> MoveFolder(Guid folderId, [ModelBinder(typeof(AppendToPath))] string newFolderPath) 
         {
             FolderResponse folderResponse = await _foldersModificationService.MoveFolder(folderId, newFolderPath);
@@ -103,7 +103,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpPatch]
-        [Route("/addOrRemoveFromFavorite")]
+        [Route("addOrRemoveFromFavorite")]
         public async Task<ActionResult<FolderResponse>> AddOrRemoveFromFavorite(Guid folderId)
         {
             FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveFavorite(folderId);
@@ -111,7 +111,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpPatch]
-        [Route("/addOrRemoveFromTrash")]
+        [Route("addOrRemoveFromTrash")]
         public async Task<ActionResult<FolderResponse>> AddOrRemoveFromTrash(Guid folderId)
         {
             FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveTrash(folderId);
@@ -119,7 +119,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpDelete]
-        [Route("/delete")]
+        [Route("delete")]
         public async Task<ActionResult<bool>> DeleteFolder(Guid folderId)
         {
             bool isDeleted = await _foldersModificationService.DeleteFolder(folderId);
