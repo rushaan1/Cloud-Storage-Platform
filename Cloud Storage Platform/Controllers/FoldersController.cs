@@ -1,5 +1,6 @@
 ﻿using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
+using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Enums;
@@ -40,10 +41,23 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpGet]
-        [Route("getAllSubFolders")]
+        [Route("getAllSubFoldersById")]
         public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED) 
         {
             List<FolderResponse> folders = await _foldersRetrievalService.GetAllSubFolders(parentFolderId, sortOrder);
+            return folders;
+        }
+
+        [HttpGet]
+        [Route("getAllSubFoldersByPath")]
+        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders([ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        {
+            FolderResponse? parent = await _foldersRetrievalService.GetFolderByFolderPath(path);
+            if (parent == null) 
+            {
+                return NotFound();
+            }
+            List<FolderResponse> folders = await _foldersRetrievalService.GetAllSubFolders(parent.FolderId, sortOrder);
             return folders;
         }
 
