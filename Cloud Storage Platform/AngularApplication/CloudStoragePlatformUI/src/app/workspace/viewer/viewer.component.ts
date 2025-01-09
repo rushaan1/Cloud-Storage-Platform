@@ -40,6 +40,7 @@ export class ViewerComponent implements OnInit{
 
     this.route.url.subscribe(url => {
       const appUrl = this.router.url.split("/");
+      // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure its not relative but global url is accessed to ensure usability of program structure 
       appUrl.shift();
       if (!appUrl[0]){
         this.router.navigate(["filter", "home"]);
