@@ -50,7 +50,7 @@ export class FileLargeComponent implements OnInit {
     this.nameResizing();
     this.eventService.listen("unselector all", () => {
       if (this.selected) {
-        this.selectItemClick(true);
+        this.selectItemClick(undefined, true);
       }
     });
 
@@ -76,7 +76,8 @@ export class FileLargeComponent implements OnInit {
     }
   }
 
-  expandOptions() {
+  expandOptions(event?:Event) {
+    event?.stopPropagation();
     const menu = this.fileOptionsMenu.nativeElement;
     if (this.fileOptionsVisible == false) {
       menu.style.visibility = "visible";
@@ -97,7 +98,8 @@ export class FileLargeComponent implements OnInit {
     }
   }
 
-  renameEnter() {
+  renameEnter(event?:Event) {
+    event?.stopPropagation();
     if (this.fileNameInput?.nativeElement) {
       if (this.renameFormControl.valid) {
         // API Integration part
@@ -137,7 +139,8 @@ export class FileLargeComponent implements OnInit {
     }
   }
 
-  setupInput() {
+  setupInput(event?:Event) {
+    event?.stopPropagation();
     if (localStorage["renaming"] == "true" && !this.renaming){
       this.eventService.emit("alreadyRenamingNotif");
       this.expandOptions();
@@ -163,7 +166,8 @@ export class FileLargeComponent implements OnInit {
   }
 
 
-  selectItemClick(unselectorAll: boolean = false) {
+  selectItemClick(event?:Event, unselectorAll: boolean = false) {
+    event?.stopPropagation()
     if (this.selected) {
       this.itemSelectionService.deSelectItem();
       this.selected = false;
@@ -181,6 +185,9 @@ export class FileLargeComponent implements OnInit {
   }
 
   fetchSubFoldersRedirect(){
+    if (this.fileOptionsVisible || this.renaming){
+      return;
+    }
     let constructedPath = this.FileFolder.filePath.split("\\");
     let index = constructedPath.indexOf("home");
     constructedPath = constructedPath.slice(index, constructedPath.length);

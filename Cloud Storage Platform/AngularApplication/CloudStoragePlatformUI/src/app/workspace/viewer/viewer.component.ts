@@ -1,7 +1,7 @@
 import {AfterViewChecked, AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {HelperMethods} from "../../HelperMethods";
@@ -39,14 +39,16 @@ export class ViewerComponent implements OnInit{
 
 
     this.route.url.subscribe(url => {
-      if (!url[0]){
+      const appUrl = this.router.url.split("/");
+      appUrl.shift();
+      if (!appUrl[0]){
         this.router.navigate(["filter", "home"]);
         return;
       }
-      switch(url[0].path){
+      switch(appUrl[0]){
         case "filter":
-          if (url[1]){
-            switch (url[1].path){
+          if (appUrl[1]){
+            switch (appUrl[1]){
               case "home":
                 // TODO
                 this.loadHomeFolder();
@@ -64,10 +66,7 @@ export class ViewerComponent implements OnInit{
           }
           break;
         case "folder":
-          let constructedPathForApi = "";
-          for (let i = 1; i< url.length; i++) {
-            constructedPathForApi = "\\"+constructedPathForApi + url[i];
-          }
+          const constructedPathForApi = new HelperMethods().constructFilePathForApi(appUrl);
           // API
           if (new HelperMethods().validString(constructedPathForApi)){
             this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
