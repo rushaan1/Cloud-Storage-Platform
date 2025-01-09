@@ -1,3 +1,4 @@
+import {ArgumentInvalidException} from "./ArgumentInvalidException";
 export class HelperMethods{
   public validString(str:string):boolean{
     if (str && str.trim().length > 0){

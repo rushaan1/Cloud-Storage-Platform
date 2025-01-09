@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {FormControl, Validators} from "@angular/forms";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
 import {FoldersService} from "../../services/ApiServices/folders.service";
-import {Folder} from "../../models/Folder";
+import {File} from "../../models/File";
+import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 
 @Component({
   selector: 'file-large-item',
@@ -14,11 +15,12 @@ import {Folder} from "../../models/Folder";
 })
 export class FileLargeComponent implements OnInit {
   /*
-  * Important: BaseFile contains all properties contained by Folders and every single one of those properties are also contained by File but File contains additional properties.
+  * Important: BaseFileInterface contains all properties contained by Folders and every single one of those properties are also contained by File but File contains additional properties.
   *            File term is sometimes used to refer to Folder, especially in Frontend code (questionable practice)
+  *            IF APPLICABLE: Difference between / and // handled by service
   * */
   @Input() type: string = "";
-  @Input() base!:BaseFile;
+  @Input() FileFolder!:File;
   @Input() fileInfo?:any; // TODO
   @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() itemSelected: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -39,11 +41,11 @@ export class FileLargeComponent implements OnInit {
   renaming = false;
   selected = false;
 
-  constructor(private itemSelectionService: ItemSelectionService, private foldersService:FoldersService, private eventService: EventService) { }
+  constructor(private itemSelectionService: ItemSelectionService, private router:Router, private activatedRoute:ActivatedRoute, private foldersService:FoldersService, private eventService: EventService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
-    this.originalName = this.base.fileName;
+    this.originalName = this.FileFolder.fileName;
     this.name = this.originalName;
     this.nameResizing();
     this.eventService.listen("unselector all", () => {
@@ -99,9 +101,9 @@ export class FileLargeComponent implements OnInit {
     if (this.fileNameInput?.nativeElement) {
       if (this.renameFormControl.valid) {
         // API Integration part
-        this.foldersService.renameFolder(this.base.fileId, this.fileNameInput.nativeElement.value).subscribe({
-          next: (response:Folder) => {
-            this.base.fileName = response.fileName;
+        this.foldersService.renameFolder(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
+          next: (response:File) => {
+            this.FileFolder.fileName = response.fileName;
             this.originalName = response.fileName;
             this.name = response.fileName;
             this.eventService.emit("renameSuccessNotif", response.fileName);
@@ -176,5 +178,16 @@ export class FileLargeComponent implements OnInit {
       this.selectFileCheckbox.nativeElement.classList.add("visible-checkbox");
     }
     this.eventService.emit("checkbox selection change");
+  }
+
+  fetchSubFoldersRedirect(){
+    let constructedPath = this.FileFolder.filePath.split("\\");
+    let index = constructedPath.indexOf("home");
+    constructedPath = constructedPath.slice(index, constructedPath.length);
+
+    // for (let i = 0; i < constructedPath.length; i++){
+    //   constructedPath[i] = "/"+constructedPath[i];
+    // }
+    this.router.navigate(["folder", ...constructedPath]);
   }
 }

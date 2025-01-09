@@ -8,6 +8,7 @@ import { PanelComponent } from './panel/panel.component';
 import { ItemsModule } from '../items/items.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
 import {ReactiveFormsModule} from "@angular/forms";
+import {HttpClientModule} from "@angular/common/http";
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import {ReactiveFormsModule} from "@angular/forms";
         CommonModule,
         AppRoutingModule,
         ItemsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        HttpClientModule
     ],
   exports:[
     NavigationDrawerComponent,

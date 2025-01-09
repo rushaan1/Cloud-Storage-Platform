@@ -3,13 +3,22 @@ import { RouterModule, Routes } from '@angular/router';
 import {ViewerComponent} from "./workspace/viewer/viewer.component";
 
 const routes: Routes = [
-  {path:'', component:ViewerComponent},
+  {
+    path: 'folder',
+    children: [
+      {
+        path: '**', // Wildcard to match any nested path under 'folder'
+        component: ViewerComponent
+      }
+    ]
+  },
   {path:'filter/home', component:ViewerComponent},
   {path:'filter/recents', component:ViewerComponent},
   {path:'filter/favorites', component:ViewerComponent},
   {path:'filter/trash', component:ViewerComponent},
-  {path:'folder/**', component:ViewerComponent},
   {path:'searchFilter', component:ViewerComponent},
+  {path:'', component:ViewerComponent},
+  { path: '**', redirectTo: 'folder', pathMatch: 'full' },
 ];
 
 @NgModule({

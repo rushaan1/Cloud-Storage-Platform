@@ -22,6 +22,16 @@ namespace CloudStoragePlatform.Web
             }
 
             builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngularLocalhost",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:4200") // Allow Angular's localhost
+                               .AllowAnyMethod() // Allow any HTTP method (GET, POST, etc.)
+                               .AllowAnyHeader();
+                    });
+            });
 
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
@@ -53,7 +63,7 @@ namespace CloudStoragePlatform.Web
                 app.UseSwaggerUI();
             }
             app.UseRouting();
-            app.UseCors();
+            app.UseCors("AllowAngularLocalhost");
             app.UseAuthorization();
             app.MapControllers();
             app.Run();
@@ -88,6 +98,11 @@ namespace CloudStoragePlatform.Web
             // inject user identifying stuff in constructor and in repository's constructor
             // handle database concurrency
             // do not forget to add encryption, 256-bit AES encryption at rest I need to add at rest and TLS at transit about which I don't need to worry at all as it's default but I can still mention it in project description
+
+            /* VALID PATHS 
+             * \home\op
+             * \\home\\op
+             */
         }
     }
 }
