@@ -41,6 +41,7 @@ export class FileLargeComponent implements OnInit {
   renaming = false;
   selected = false;
 
+
   constructor(private itemSelectionService: ItemSelectionService, private router:Router, private activatedRoute:ActivatedRoute, private foldersService:FoldersService, private eventService: EventService) { }
 
   ngOnInit(): void {
@@ -100,12 +101,16 @@ export class FileLargeComponent implements OnInit {
 
   renameEnter(event?:Event) {
     event?.stopPropagation();
+    if (this.renaming==false){
+      return;
+    }
     if (this.fileNameInput?.nativeElement) {
       if (this.renameFormControl.valid) {
         // API Integration part
         this.foldersService.renameFolder(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
           next: (response:File) => {
             this.FileFolder.fileName = response.fileName;
+            this.FileFolder.filePath = response.filePath;
             this.originalName = response.fileName;
             this.name = response.fileName;
             this.eventService.emit("renameSuccessNotif", response.fileName);
