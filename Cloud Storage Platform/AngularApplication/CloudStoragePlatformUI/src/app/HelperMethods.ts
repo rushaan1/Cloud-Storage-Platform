@@ -14,11 +14,28 @@ export class HelperMethods{
     }
   }
 
+  // MAIN Purpose is to combine an array of strings into a string containing \\ before every element string
   public constructFilePathForApi(url:string[]):string{
     let constructedPathForApi = "";
-    for (let i = 1; i< url.length; i++) {
+    for (let i = url.indexOf("home"); i< url.length; i++) {
       constructedPathForApi = constructedPathForApi + "\\" + url[i];
     }
     return constructedPathForApi;
+  }
+
+  public obtainBreadCrumbs(crumbs:string[]):string[] {
+    let breadCrumbs:string[] = [];
+    for (let i = crumbs.indexOf("home"); i < crumbs.length; i++) {
+      breadCrumbs.push(crumbs[i]);
+    }
+    return breadCrumbs;
+  }
+
+  public cleanPath(path:string):string[]{
+    let constructedPath = path.split("\\");
+    let index = constructedPath.indexOf("home");
+    constructedPath = constructedPath.slice(index, constructedPath.length);
+
+    return constructedPath;
   }
 }

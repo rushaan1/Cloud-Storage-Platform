@@ -20,6 +20,8 @@ export class ViewerComponent implements OnInit{
   sortBy?:string;
   sortingOrder?:string;
 
+  crumbs : string[] = [];
+
   constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService) {}
 
   ngOnInit(): void {
@@ -40,7 +42,7 @@ export class ViewerComponent implements OnInit{
 
     this.route.url.subscribe(url => {
       const appUrl = this.router.url.split("/");
-      // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure its not relative but global url is accessed to ensure usability of program structure 
+      // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure its not relative but global url is accessed to ensure usability of program structure
       appUrl.shift();
       if (!appUrl[0]){
         this.router.navigate(["filter", "home"]);
@@ -86,6 +88,7 @@ export class ViewerComponent implements OnInit{
           this.router.navigate(["filter", "home"]);
           break;
       }
+      this.crumbs = new HelperMethods().obtainBreadCrumbs(appUrl);
     });
   }
 

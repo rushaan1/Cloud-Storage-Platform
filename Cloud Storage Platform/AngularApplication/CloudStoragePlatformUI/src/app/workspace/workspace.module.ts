@@ -9,6 +9,7 @@ import { ItemsModule } from '../items/items.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
+import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
 
 
 @NgModule({
@@ -16,7 +17,8 @@ import {HttpClientModule} from "@angular/common/http";
     NavigationDrawerComponent,
     ViewerComponent,
     PanelComponent,
-    NotificationCenterComponent
+    NotificationCenterComponent,
+    BreadcrumbsComponent
   ],
     imports: [
         CommonModule,

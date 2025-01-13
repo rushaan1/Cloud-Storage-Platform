@@ -7,6 +7,7 @@ import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {File} from "../../models/File";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
+import {HelperMethods} from "../../HelperMethods";
 
 @Component({
   selector: 'file-large-item',
@@ -193,13 +194,11 @@ export class FileLargeComponent implements OnInit {
     if (this.fileOptionsVisible || this.renaming){
       return;
     }
-    let constructedPath = this.FileFolder.filePath.split("\\");
-    let index = constructedPath.indexOf("home");
-    constructedPath = constructedPath.slice(index, constructedPath.length);
+
 
     // for (let i = 0; i < constructedPath.length; i++){
     //   constructedPath[i] = "/"+constructedPath[i];
     // }
-    this.router.navigate(["folder", ...constructedPath]);
+    this.router.navigate(["folder", ...new HelperMethods().cleanPath(this.FileFolder.filePath)]);
   }
 }
