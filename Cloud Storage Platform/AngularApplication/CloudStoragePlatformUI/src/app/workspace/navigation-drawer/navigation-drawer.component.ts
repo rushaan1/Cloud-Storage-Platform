@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
+import {EventService} from "../../services/event-service.service";
 
 @Component({
   selector: 'drawer',
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
 export class NavigationDrawerComponent implements OnInit {
   @Output() miniSet = new EventEmitter<boolean>();
   selectedTypeItems: string[] = [];
-  constructor(private router: Router) {
+  constructor(private router: Router, protected eventService:EventService) {
 
   }
   ngOnInit(): void {

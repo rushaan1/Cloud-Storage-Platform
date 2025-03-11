@@ -1,7 +1,7 @@
 <div (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="selectFileCheckbox.nativeElement.style.visibility = 'hidden'" (mouseover)="selectFileCheckbox.nativeElement.style.visibility = 'visible'" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
         <div class="file-option" id="trash-file-option">Move to trash</div>
-        <div #renamingFileOptionDiv (click)="setupInput($event);" class="file-option" id="rename-file-option">Rename</div>
+        <div #renamingFileOptionDiv (click)="setupInput(true, $event);" class="file-option" id="rename-file-option">Rename</div>
         <div class="file-option" id="share-file-option">Share</div>
         <div class="file-option" id="move-file-option">Move to...</div>
         <div class="file-option" id="favorite-file-option">Favorite</div>
@@ -9,7 +9,7 @@
     </div>
 
     <div title="Options" class="file-options">
-        <i #ellipsis (click)="expandOptions($event)" class="fa-solid fa-ellipsis"></i>
+        <i #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
     </div>
 
     <!--150x180.25-->

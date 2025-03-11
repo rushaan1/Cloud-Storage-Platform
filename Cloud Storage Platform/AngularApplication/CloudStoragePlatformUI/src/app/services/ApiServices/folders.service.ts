@@ -55,7 +55,7 @@ export class FoldersService {
   public addFolder(folderName:string, folderPath:string):Observable<File>{
     new HelperMethods().handleStringInvalidError(folderName);
     new HelperMethods().handleStringInvalidError(folderPath);
-    return this.httpClient.post<File>(`${BASE_URL}/add`, {folderName:folderName, folderPath:folderPath.replaceAll("\\","\\\\")});
+    return this.httpClient.post<File>(`${BASE_URL}/add`, {folderName:folderName, folderPath:folderPath});
   }
 
 

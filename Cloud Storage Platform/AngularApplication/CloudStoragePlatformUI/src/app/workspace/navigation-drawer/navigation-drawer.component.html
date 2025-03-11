@@ -17,7 +17,7 @@
   </div>
   <!-- Create a horizontal button with an i element in the left side and Create new folder text on the right side !-->
 
-  <div class="new-folder-button">
+  <div (click)="this.eventService.emit('create new folder')" class="new-folder-button">
     <i class="fa-solid fa-folder-plus"></i>
     <div>Create new folder</div>
   </div>
@@ -80,7 +80,7 @@
           [routerLink]="['/filter/trash']"><a [routerLinkActive]="['active']"><i
         [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i></a></li>
       <li>
-        <i class="fa-solid fa-folder-plus fa-folder-plus-mini"></i>
+        <i (click)="this.eventService.emit('create new folder')" class="fa-solid fa-folder-plus fa-folder-plus-mini"></i>
       </li>
     </ul>
 

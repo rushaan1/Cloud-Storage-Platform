@@ -28,7 +28,8 @@ export class ResponseInterceptor implements HttpInterceptor {
           filePath:data[i].folderPath,
           fileName:data[i].folderName,
           isFavorite:data[i].isFavorite,
-          isTrash:data[i].isTrash
+          isTrash:data[i].isTrash,
+          uncreated:false
         });
       }
       return array;
@@ -39,7 +40,8 @@ export class ResponseInterceptor implements HttpInterceptor {
         filePath:data.folderPath,
         fileName:data.folderName,
         isFavorite:data.isFavorite,
-        isTrash:data.isTrash
+        isTrash:data.isTrash,
+        uncreated: false
       }
     }
   }

@@ -1,4 +1,4 @@
-import {AfterViewChecked, AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewChecked, AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
@@ -24,9 +24,10 @@ export class ViewerComponent implements OnInit{
 
   crumbs : string[] = [];
 
-  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService) {}
 
   ngOnInit(): void {
+    localStorage["uncreatedFolderExists"] = false;
     this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];
       const typeFilter = params['predefinedTypeFilter'];
@@ -97,6 +98,10 @@ export class ViewerComponent implements OnInit{
         console.log("manually initialized breadcrumbs");
       }
     });
+
+    this.eventService.listen("create new folder", () => {
+      this.createNewFolder();
+    });
   }
 
   loadHomeFolder() {
@@ -113,4 +118,21 @@ export class ViewerComponent implements OnInit{
       }
     });
   }
+
+  createNewFolder() {
+    if (localStorage["renaming"] == "true"){
+      return;
+    }
+    let folder:File = {
+      fileId: "",
+      fileName: "New Folder",
+      filePath: new HelperMethods().constructFilePathForApi(this.crumbs)+"\\",
+      isFavorite: false,
+      isTrash: false,
+      uncreated: true
+    };
+    this.folders.push(folder);
+  }
+
+  protected readonly localStorage = localStorage;
 }

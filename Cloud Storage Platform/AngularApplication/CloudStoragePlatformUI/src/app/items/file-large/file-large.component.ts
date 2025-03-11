@@ -56,16 +56,21 @@ export class FileLargeComponent implements OnInit {
       }
     });
 
+    if (this.FileFolder.uncreated) {
+      localStorage["uncreatedFolderExists"] = true;
+      this.setupInput(false);
+    }
+
     this.eventService.listen("file options expanded", (uuid:string)=>{
       if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsVisible == true)
-        this.expandOptions();
+        this.expandOrCollapseOptions();
     });
 
     window.addEventListener("click", (e) => {
       let clickedOnElement = e.target as HTMLElement;
       if (this.fileOptionsVisible){
         if ((clickedOnElement.parentElement!=this.fileOptionsMenu.nativeElement && clickedOnElement!=this.fileOptionsMenu.nativeElement) && clickedOnElement!=this.ellipsis.nativeElement) {
-          this.expandOptions();
+          this.expandOrCollapseOptions();
         }
       }
     });
@@ -78,7 +83,7 @@ export class FileLargeComponent implements OnInit {
     }
   }
 
-  expandOptions(event?:Event) {
+  expandOrCollapseOptions(event?:Event) {
     event?.stopPropagation();
     const menu = this.fileOptionsMenu.nativeElement;
     if (this.fileOptionsVisible == false) {
@@ -107,22 +112,26 @@ export class FileLargeComponent implements OnInit {
     }
     if (this.fileNameInput?.nativeElement) {
       if (this.renameFormControl.valid) {
-        // API Integration part
-        this.foldersService.renameFolder(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
-          next: (response:File) => {
-            this.FileFolder.fileName = response.fileName;
-            this.FileFolder.filePath = response.filePath;
-            this.originalName = response.fileName;
-            this.name = response.fileName;
-            this.eventService.emit("renameSuccessNotif", response.fileName);
-            this.nameResizing();
-          },
-          error: err => {
-            // TODO ErrorNotif for this
+        if (this.FileFolder.uncreated){
+          this.createFolder(this.fileNameInput.nativeElement.value);
+        }
+        else{
+          this.foldersService.renameFolder(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
+            next: (response:File) => {
+              this.FileFolder.fileName = response.fileName;
+              this.FileFolder.filePath = response.filePath;
+              this.originalName = response.fileName;
+              this.name = response.fileName;
+              this.eventService.emit("renameSuccessNotif", response.fileName);
+              this.nameResizing();
+            },
+            error: err => {
+              // TODO ErrorNotif for this
 
-          },
-          complete: () => {}
-        });
+            },
+            complete: () => {}
+          });
+        }
 
         this.renaming = false;
         localStorage["renaming"] = false;
@@ -145,11 +154,11 @@ export class FileLargeComponent implements OnInit {
     }
   }
 
-  setupInput(event?:Event) {
+  setupInput(collapseOptions:boolean, event?:Event) {
     event?.stopPropagation();
     if (localStorage["renaming"] == "true" && !this.renaming){
       this.eventService.emit("alreadyRenamingNotif");
-      this.expandOptions();
+      this.expandOrCollapseOptions();
       return;
     }
 
@@ -158,7 +167,11 @@ export class FileLargeComponent implements OnInit {
     }
 
     this.renaming = true;
-    this.expandOptions();
+
+    if (collapseOptions){
+      this.expandOrCollapseOptions();
+    }
+
     setTimeout(() => {
       if (this.fileNameInput?.nativeElement){
         this.fileNameInput.nativeElement.focus();
@@ -195,5 +208,24 @@ export class FileLargeComponent implements OnInit {
       return;
     }
     this.router.navigate(["folder", ...new HelperMethods().cleanPath(this.FileFolder.filePath)]);
+  }
+
+  createFolder(name:string){
+    this.foldersService.addFolder(name, this.FileFolder.filePath+name).subscribe({
+      next: (response:File) => {
+        this.FileFolder.fileId = response.fileId;
+        this.FileFolder.fileName = response.fileName;
+        this.FileFolder.filePath = response.filePath;
+        this.FileFolder.isFavorite = response.isFavorite;
+        this.FileFolder.isTrash = response.isTrash;
+        this.originalName = response.fileName;
+        this.name = response.fileName;
+        localStorage["uncreatedFolderExists"] = false;
+      },
+      error: err => {
+        // TODO ErrorNotif for this
+      },
+      complete: () => {}
+    })
   }
 }
