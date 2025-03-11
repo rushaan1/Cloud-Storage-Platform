@@ -1,31 +1,60 @@
-.content{
-    text-wrap: wrap;
+.content {
+  text-wrap: wrap;
 }
-.file-large-item-from-viewer{
-    display: inline-block;
-    text-wrap: wrap;
-    width: 120px;
-    z-index: 1;
+
+.file-large-item-from-viewer {
+  display: inline-block;
+  text-wrap: wrap;
+  width: 120px;
+  z-index: 1;
+}
+
+.newFolder {
+  display: flex;
+  /*border: 2px dashed #D3D3D3;*/
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 120px;
+  height: 90px;
+  align-self: center;
+  margin-left: 12px;
+  margin-top: 40px;
+  font-size: 16px;
+  color: grey;
+}
+
+.newFolder:hover {
+  color: unset;
+}
+
+.fa-folder-plus {
+  font-size: 50px;
+  height: 90px;
 }
 
 .text-only {
   display: block !important;
 }
+
 /*} TODO Remove as its most likely redundant*/
 
 
-.trash-btn:hover{
-    background-color: lightgray;
+.trash-btn:hover {
+  background-color: lightgray;
 }
 
-.files-and-folders{
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex-wrap: wrap;
+.files-and-folders {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
-.breadcrumbs-topmost-parent{
+.breadcrumbs-topmost-parent {
   position: sticky;
   top: 60px;
   max-width: 100%;

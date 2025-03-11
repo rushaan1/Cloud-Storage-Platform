@@ -1,6 +1,6 @@
 <div class="content">
 
-  <breadcrumbs class="breadcrumbs-topmost-parent" [crumbs]="crumbs"></breadcrumbs>
+  <breadcrumbs [crumbs]="crumbs" class="breadcrumbs-topmost-parent"></breadcrumbs>
 
   <notification-center></notification-center>
 
@@ -8,5 +8,9 @@
     <file-large-item *ngFor="let folder of folders" [FileFolder]="folder" [type]="'folder'"
                      class="file-large-item-from-viewer"></file-large-item>
     <!--TODO Copy paste and tune above for files-->
+    <div class="newFolder">
+      <i class="fa-solid fa-folder-plus"></i>
+      <div>Create folder</div>
+    </div>
   </div>
 </div>

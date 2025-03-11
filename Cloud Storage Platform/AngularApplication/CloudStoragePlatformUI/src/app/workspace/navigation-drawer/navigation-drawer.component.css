@@ -20,6 +20,10 @@ pre{
     background-color: #F5F5F5;
 }
 
+.m-top-cat{
+  padding-bottom: 25px !important;
+}
+
 .bottom-category{
     padding: 3px 13px 3px 36px;
 }
@@ -192,3 +196,36 @@ a {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+
+.new-folder-button{
+  display: flex;
+  margin-left: 30px;
+  align-items: center;
+  flex-direction: row;
+  font-size: 22px;
+  margin-bottom: 30px;
+  margin-top: 10px;
+  border: 2px solid #D3D3D3;
+  background-color: #D3D3D3;
+  border-radius: 10px;
+  width: fit-content;
+  padding: 10px 15px 10px 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.new-folder-button:hover{
+  background-color: gray;
+  border-color: gray;
+}
+
+.fa-folder-plus-mini{
+  padding-top: 35px;
+  width: 25px !important;
+  font-size: 22px;
+  color: gray
+}
+
+.fa-folder-plus-mini:hover{
+  color: unset;
+}

@@ -92,6 +92,7 @@ export class ViewerComponent implements OnInit{
       }
       this.crumbs = new HelperMethods().obtainBreadCrumbs(appUrl);
       if (this.breadcrumbsComponent) {
+        // Manually initializing breadcrumbs because once its initialized with ngOnInit the ngOnInit function won't run everytime breadcrumbs redirects to route being catched by existing parent component (viewer) already containing breadcrumbs which misses the necessary initialization needed after every navigation by breadcrumbs
         this.breadcrumbsComponent.initializeBreadcrumbs();
         console.log("manually initialized breadcrumbs");
       }
