@@ -5,11 +5,13 @@
     display: inline-block;
     text-wrap: wrap;
     width: 120px;
+    z-index: 1;
 }
 
-.text-only{
-    display: block !important;
+.text-only {
+  display: block !important;
 }
+/*} TODO Remove as its most likely redundant*/
 
 
 .trash-btn:hover{
@@ -21,4 +23,14 @@
     justify-content: flex-start;
     align-items: flex-start;
     flex-wrap: wrap;
+}
+
+.breadcrumbs-topmost-parent{
+  position: sticky;
+  top: 60px;
+  max-width: 100%;
+  background-color: #F5F5F5;
+  display: block;
+  z-index: 2;
+  overflow-x: hidden;
 }

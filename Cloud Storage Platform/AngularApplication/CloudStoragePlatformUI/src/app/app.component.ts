@@ -16,8 +16,8 @@ export class AppComponent implements OnInit {
   miniToggle(event:boolean){
     this.miniset = event;
     const navDrawer = document.getElementsByClassName("navigation-drawer")[0] as HTMLElement;
-    navDrawer.style.width = event ? "50px" : "321px";
-    if (event){
+    navDrawer.style.width = this.miniset ? "50px" : "321px";
+    if (this.miniset){
       (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "54px";
       navDrawer.style.height = "";
     }

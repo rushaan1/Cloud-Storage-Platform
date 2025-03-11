@@ -116,7 +116,7 @@ input.file-name-text-input-red:focus {
     transition: opacity 0.2s ease-in;
 }
 
-
+/*TODO: Remove below, most likely redundant*/
 .move-selection{
     margin-top: 100%;
     visibility: hidden;
@@ -139,6 +139,7 @@ input.file-name-text-input-red:focus {
 .back-btn-moving:hover{
     background-color: lightgray;
 }
+/*TODO: Remove above, most likely redundant*/
 
 .fa-heart{
     position: absolute;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { File } from '../../models/File'; // Adjust the path as needed
+import { File } from '../../models/File';
 
 @Injectable()
 export class ResponseInterceptor implements HttpInterceptor {

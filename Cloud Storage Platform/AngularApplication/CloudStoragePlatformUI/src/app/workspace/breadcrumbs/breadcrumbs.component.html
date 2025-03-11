@@ -1,1 +1,6 @@
-<p>breadcrumbs works!</p>
+<div #breadcrumbs class="breadcrumbs">
+  <span class="breadcrumb-unit" *ngFor="let crumb of crumbs; index as i;">
+    <a (click)="routeTo(i)" [ngClass]="{'capitalize':i==0}" class="crumbAnchorTag">{{decodeURIComponent(crumb)}}</a>
+    <span class="arrow-right-breadcrumb" *ngIf="crumbs.length!=i+1"> > </span>
+  </span>
+</div>

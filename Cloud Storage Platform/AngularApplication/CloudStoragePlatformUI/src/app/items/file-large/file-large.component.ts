@@ -191,14 +191,9 @@ export class FileLargeComponent implements OnInit {
   }
 
   fetchSubFoldersRedirect(){
-    if (this.fileOptionsVisible || this.renaming){
+    if (this.fileOptionsVisible || localStorage["renaming"] == "true") {
       return;
     }
-
-
-    // for (let i = 0; i < constructedPath.length; i++){
-    //   constructedPath[i] = "/"+constructedPath[i];
-    // }
     this.router.navigate(["folder", ...new HelperMethods().cleanPath(this.FileFolder.filePath)]);
   }
 }

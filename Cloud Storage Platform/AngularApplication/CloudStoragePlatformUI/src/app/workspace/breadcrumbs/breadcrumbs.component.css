@@ -1,0 +1,46 @@
+.breadcrumbs{
+  font-size: 30px;
+  font-family: Inter;
+  font-weight: 500;
+  padding-bottom: 5px;
+  padding-right: 200px;
+  margin-left: 23px;
+  user-select: none;
+  height: 55px;
+  overflow-x: scroll;
+  display: flex;
+  white-space: nowrap;
+  align-items: center;
+}
+
+
+::-webkit-scrollbar {
+  height: 4px; /* Set the width of the scrollbar */
+}
+
+.breadcrumb-scroll-active::-webkit-scrollbar-track {
+  background: #eaeaea;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.507);
+  border-radius: 10px;
+  padding-left: 23px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+.crumbAnchorTag{
+  text-decoration: none;
+  padding: 4px 12px 4px 12px;
+  border-radius: 24px;
+}
+.crumbAnchorTag:hover{
+  background-color: antiquewhite;
+  cursor: pointer;
+}
+.capitalize{
+  text-transform: capitalize;
+}

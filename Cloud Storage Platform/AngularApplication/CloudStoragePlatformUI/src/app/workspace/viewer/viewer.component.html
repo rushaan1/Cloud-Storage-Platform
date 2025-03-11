@@ -1,5 +1,9 @@
 <div class="content">
+
+  <breadcrumbs class="breadcrumbs-topmost-parent" [crumbs]="crumbs"></breadcrumbs>
+
   <notification-center></notification-center>
+
   <div class="files-and-folders">
     <file-large-item *ngFor="let folder of folders" [FileFolder]="folder" [type]="'folder'"
                      class="file-large-item-from-viewer"></file-large-item>

@@ -40,7 +40,7 @@
       </div>
 
       <div class="user-info">
-        <div #pfp (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = true;" class="pfp"></div>
+        <div #pfp (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp"></div>
         <div #pfpDropdown *ngIf="this.pfpDropdownShowing" class="top-pointed-dropdown">
           <span #pfpDropDownSpan>
             Hi FirstName, <br>

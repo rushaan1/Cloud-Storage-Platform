@@ -15,6 +15,7 @@ export class NavigationDrawerComponent implements OnInit {
   ngOnInit(): void {
     const miniDrawer = document.getElementsByClassName("mini-drawer")[0] as HTMLElement;
     miniDrawer.style.translate = "-100%";
+    // bg means loader's bg
     setTimeout(()=>{
       (document.getElementsByClassName("bg")[0] as HTMLElement).style.width = "50%";
     console.log(miniDrawer.style.translate);
@@ -64,6 +65,7 @@ export class NavigationDrawerComponent implements OnInit {
   typeItemSelected(event: MouseEvent, liIndex: number) {
     var checkbox = document.getElementById(`${liIndex}-NavCheckbox`) as HTMLInputElement;
     const lis = document.getElementsByClassName("maindrawer-bottom")[0].getElementsByTagName("li");
+
     const li = lis[liIndex];
     const aLi = li.getElementsByTagName("a")[0] as HTMLAnchorElement; // corresponding anchor tag
     const iElement = aLi.getElementsByTagName("i")[0] as HTMLElement;

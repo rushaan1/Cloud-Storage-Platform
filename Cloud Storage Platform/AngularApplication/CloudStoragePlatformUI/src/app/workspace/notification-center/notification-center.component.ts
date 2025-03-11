@@ -38,7 +38,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
     });
     window.addEventListener("scroll", () => {
-      this.updateNotificationAlerts();
+      this.updateNotificationAlertTxt();
     });
 
     this.setNotificationEventListeners();
@@ -54,7 +54,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.selectionInfoPanel.nativeElement.style.display = "none";
     }
 
-    this.updateNotificationAlerts();
+    this.updateNotificationAlertTxt();
     this.computeStickyPanelsTop();
   }
 
@@ -66,7 +66,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.eventService.emit("unselector all", 0);
   }
 
-  updateNotificationAlerts(){
+  updateNotificationAlertTxt(){
     const infoPanels = document.getElementsByClassName("info-panel");
     const visibleInfoPanels = Array.from(infoPanels).filter(panel => {
       return (window.getComputedStyle(panel).display !== "none") && (panel.classList.contains("sticky-notif")==false);
@@ -74,15 +74,16 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
     if (this.mostRecentNonStickyNotification!=null){
       const notificationQuantity = visibleInfoPanels.length;
-      const latestNotif:HTMLElement = this.mostRecentNonStickyNotification.nativeElement.querySelector(".alertTxt");
+
+      const alertTxt:HTMLElement = this.mostRecentNonStickyNotification.nativeElement.querySelector(".alertTxt");
       if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>34){
-        latestNotif.style.display = "inline";
-        latestNotif.innerText = `+${notificationQuantity} alerts!`;
+        alertTxt.style.display = "inline";
+        alertTxt.innerText = `+${notificationQuantity} alerts!`;
       }
       else{
         if (this.mostRecentNonStickyNotification!=null) {
-          latestNotif.innerText = "";
-          latestNotif.style.display = "none";
+          alertTxt.innerText = "";
+          alertTxt.style.display = "none";
         }
       }
     }
@@ -95,14 +96,14 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     });
 
     if (visibleOrderedStickyInfoPanels.length>0){
-      visibleOrderedStickyInfoPanels[0].nativeElement.style.top = `65px`;
+      visibleOrderedStickyInfoPanels[0].nativeElement.style.top = `120px`;
       let cumulativeHeights = 0;
       for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
         let previousInfoPanelHeight:number = parseFloat(
           window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1].nativeElement).height
         );
         cumulativeHeights += previousInfoPanelHeight;
-        visibleOrderedStickyInfoPanels[i].nativeElement.style.top = `${cumulativeHeights+65}px`;
+        visibleOrderedStickyInfoPanels[i].nativeElement.style.top = `${cumulativeHeights+120}px`;
         console.log(previousInfoPanelHeight);
       }
     }
@@ -112,7 +113,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     const infoPanel = event.target as HTMLElement;
     infoPanel.parentElement!.style.display = "none";
     if (this.recentInfoPanelsInSequence.length>0){
-      this.setLatestNotification(this.recentInfoPanelsInSequence.pop() as ElementRef, true);
+      this.setLatestAlertNotification(this.recentInfoPanelsInSequence.pop() as ElementRef, true);
     }
 
 
@@ -121,7 +122,8 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     }
   }
 
-  setLatestNotification(infoPanel:ElementRef, beingRemoved:boolean=false){
+  // Alert notifications can be dismissed and if there are multiple alert notifs only 1 of them will be sticky
+  setLatestAlertNotification(infoPanel:ElementRef, beingRemoved:boolean=false){
     if (this.mostRecentNonStickyNotification){
       this.mostRecentNonStickyNotification.nativeElement.classList.remove("sticky-notif");
       if (!beingRemoved){
@@ -156,23 +158,23 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   setNotificationEventListeners(){
     this.eventService.listen("emptyInputNotif", ()=>{
       this.emptyInputNotif.nativeElement.style.display = "flex";
-      this.setLatestNotification(this.emptyInputNotif);
+      this.setLatestAlertNotification(this.emptyInputNotif);
     });
 
     this.eventService.listen("invalidCharacterNotif", (character:string)=>{
       this.invalidCharacterNotif.nativeElement.style.display = "flex";
-      this.setLatestNotification(this.invalidCharacterNotif);
+      this.setLatestAlertNotification(this.invalidCharacterNotif);
       this.invalidCharacter = character;
     });
 
     this.eventService.listen("alreadyRenamingNotif", ()=>{
       this.alreadyRenamingNotif.nativeElement.style.display = "flex";
-      this.setLatestNotification(this.alreadyRenamingNotif);
+      this.setLatestAlertNotification(this.alreadyRenamingNotif);
     });
 
     this.eventService.listen("renameSuccessNotif", (renamedTo:string)=>{
       this.renameSuccessNotif.nativeElement.style.display = "flex";
-      this.setLatestNotification(this.renameSuccessNotif);
+      this.setLatestAlertNotification(this.renameSuccessNotif);
       this.successRenamedToName = renamedTo;
     });
   }

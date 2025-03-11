@@ -5,6 +5,7 @@ import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {HelperMethods} from "../../HelperMethods";
+import {BreadcrumbsComponent} from "../breadcrumbs/breadcrumbs.component";
 
 @Component({
   selector: 'viewer',
@@ -12,6 +13,7 @@ import {HelperMethods} from "../../HelperMethods";
   styleUrl: './viewer.component.css'
 })
 export class ViewerComponent implements OnInit{
+  @ViewChild(BreadcrumbsComponent) breadcrumbsComponent!: BreadcrumbsComponent;
   folders: File[] = [];
   files: File[] = [];
 
@@ -42,7 +44,7 @@ export class ViewerComponent implements OnInit{
 
     this.route.url.subscribe(url => {
       const appUrl = this.router.url.split("/");
-      // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure its not relative but global url is accessed to ensure usability of program structure
+      // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure it's not relative but global url is accessed to ensure usability of program structure
       appUrl.shift();
       if (!appUrl[0]){
         this.router.navigate(["filter", "home"]);
@@ -89,6 +91,10 @@ export class ViewerComponent implements OnInit{
           break;
       }
       this.crumbs = new HelperMethods().obtainBreadCrumbs(appUrl);
+      if (this.breadcrumbsComponent) {
+        this.breadcrumbsComponent.initializeBreadcrumbs();
+        console.log("manually initialized breadcrumbs");
+      }
     });
   }
 
