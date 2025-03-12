@@ -1,4 +1,4 @@
-<div (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hideCheckbox()" (mouseover)="showCheckbox()" [title]="originalName" class="file">
+<div (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
         <div class="file-option" id="trash-file-option">Move to trash</div>
         <div #renamingFileOptionDiv (click)="setupInput(true, $event);" class="file-option" id="rename-file-option">Rename</div>
@@ -14,7 +14,7 @@
     </div>
 
     <!--150x180.25-->
-    <input *ngIf="localStorage['renaming']!='true'" (click)="selectItemClick($event)" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
+    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? itemSelectionService.addSelectedItem(FileFolder) : itemSelectionService.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
     <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>

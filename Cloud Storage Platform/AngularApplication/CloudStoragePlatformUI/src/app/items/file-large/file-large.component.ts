@@ -14,7 +14,7 @@ import {HelperMethods} from "../../HelperMethods";
   templateUrl: './file-large.component.html',
   styleUrl: './file-large.component.css'
 })
-export class FileLargeComponent implements OnInit {
+export class FileLargeComponent implements OnInit, AfterViewInit {
   /*
   * Important: BaseFileInterface contains all properties contained by Folders and every single one of those properties are also contained by File but File contains additional properties.
   *            File term is sometimes used to refer to Folder, especially in Frontend code (questionable practice)
@@ -41,20 +41,17 @@ export class FileLargeComponent implements OnInit {
   fileOptionsVisible = false;
   renaming = false;
   selected = false;
+  appIsInSelectionState = false;
+  hoveringOver: boolean = false;
 
 
-  constructor(private itemSelectionService: ItemSelectionService, private router:Router, private activatedRoute:ActivatedRoute, private foldersService:FoldersService, private eventService: EventService) { }
+  constructor(protected itemSelectionService: ItemSelectionService, private router:Router, private activatedRoute:ActivatedRoute, private foldersService:FoldersService, private eventService: EventService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
     this.originalName = this.FileFolder.fileName;
     this.name = this.originalName;
     this.nameResizing();
-    this.eventService.listen("unselector all", () => {
-      if (this.selected) {
-        this.selectItemClick(undefined, true);
-      }
-    });
 
     if (this.FileFolder.uncreated) {
       localStorage["uncreatedFolderExists"] = true;
@@ -72,6 +69,34 @@ export class FileLargeComponent implements OnInit {
         if ((clickedOnElement.parentElement!=this.fileOptionsMenu.nativeElement && clickedOnElement!=this.fileOptionsMenu.nativeElement) && clickedOnElement!=this.ellipsis.nativeElement) {
           this.expandOrCollapseOptions();
         }
+      }
+    });
+  }
+
+  ngAfterViewInit() {
+    this.itemSelectionService.selectedItems$.subscribe(items=>{
+      let containsFileId = false;
+      this.appIsInSelectionState = items.length > 0;
+      if (this.appIsInSelectionState){
+        this.showCheckbox();
+      }
+      else if (!this.hoveringOver){
+        this.hideCheckbox();
+      }
+      items.forEach(item=>{
+        if (this.FileFolder.fileId == item.fileId){
+          containsFileId = true;
+          if (this.selected == false){
+            this.selected = true;
+            this.showCheckbox();
+            this.selectFileCheckbox.nativeElement.checked = true;
+          }
+        }
+      });
+      if (!containsFileId && this.selected){
+        this.selected = false;
+        this.hideCheckbox();
+        this.selectFileCheckbox.nativeElement.checked = false;
       }
     });
   }
@@ -184,27 +209,8 @@ export class FileLargeComponent implements OnInit {
     localStorage["renaming"] = true;
   }
 
-
-  selectItemClick(event?:Event, unselectorAll: boolean = false) {
-    event?.stopPropagation()
-    if (this.selected) {
-      this.itemSelectionService.deSelectItem();
-      this.selected = false;
-      this.selectFileCheckbox.nativeElement.classList.remove("visible-checkbox");
-      if (unselectorAll) {
-        this.selectFileCheckbox.nativeElement.checked = false;
-      }
-    }
-    else {
-      this.itemSelectionService.selectItem();
-      this.selected = true;
-      this.selectFileCheckbox.nativeElement.classList.add("visible-checkbox");
-    }
-    this.eventService.emit("checkbox selection change");
-  }
-
   fetchSubFoldersRedirect(){
-    if (this.fileOptionsVisible || localStorage["renaming"] == "true") {
+    if (this.fileOptionsVisible || localStorage["renaming"] == "true" || this.appIsInSelectionState) {
       return;
     }
     this.router.navigate(["folder", ...new HelperMethods().cleanPath(this.FileFolder.filePath)]);
@@ -222,6 +228,9 @@ export class FileLargeComponent implements OnInit {
         this.originalName = response.fileName;
         this.name = response.fileName;
         localStorage["uncreatedFolderExists"] = false;
+        if (this.appIsInSelectionState) {
+          setTimeout(()=>{this.showCheckbox();},100);
+        }
       },
       error: err => {
         // TODO ErrorNotif for this
@@ -244,5 +253,4 @@ export class FileLargeComponent implements OnInit {
 
 
   protected readonly localStorage = localStorage;
-  protected readonly console = console;
 }

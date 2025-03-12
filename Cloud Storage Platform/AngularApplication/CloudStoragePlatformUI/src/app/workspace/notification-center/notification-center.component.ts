@@ -1,6 +1,7 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
+import {File} from "../../models/File";
 import {timestamp} from "rxjs";
 
 @Component({
@@ -23,6 +24,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
   invalidCharacter:string="";
   successRenamedToName:string="";
+  selectedItems:File[] = [];
   /*
 
   The terminologies info-panel, notif and notification mean the same.
@@ -34,9 +36,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   ngAfterViewInit(): void {
     this.orderedInfoPanels = [this.selectionInfoPanel, this.emptyInputNotif, this.invalidCharacterNotif, this.alreadyRenamingNotif, this.renameSuccessNotif];
     //any new info panel must be added in the array above based on its position in the HTML file
-    this.eventService.listen("checkbox selection change",()=>{
-      this.itemsSelected = this.itemSelectionService.selectedItems.length; // had to do this because change was not being detected when checkbox was being selected/unselected until mouse moved
-    });
+
     window.addEventListener("scroll", () => {
       this.updateNotificationAlertTxt();
     });
@@ -45,25 +45,12 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   ngAfterViewChecked(): void {
-    let isSelected = this.anyItemsSelected();
-    if (isSelected){
-      this.selectionInfoPanel.nativeElement.style.display = "flex";
-      this.itemsSelected = this.itemSelectionService.selectedItems.length;
-    }
-    else{
-      this.selectionInfoPanel.nativeElement.style.display = "none";
-    }
-
     this.updateNotificationAlertTxt();
     this.computeStickyPanelsTop();
   }
 
-  anyItemsSelected():boolean{
-    return (this.itemSelectionService.selectedItems.length>0);
-  }
-
   unselect(){
-    this.eventService.emit("unselector all", 0);
+    this.itemSelectionService.deSelectAll();
   }
 
   updateNotificationAlertTxt(){
@@ -156,6 +143,18 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
 
   setNotificationEventListeners(){
+
+    this.itemSelectionService.selectedItems$.subscribe(selectionInfoPanels => {
+      this.selectedItems = selectionInfoPanels;
+      if (this.selectedItems.length > 0) {
+        this.selectionInfoPanel.nativeElement.style.display = "flex";
+      }
+      else{
+        this.selectionInfoPanel.nativeElement.style.display = "none";
+      }
+      this.itemsSelected = this.selectedItems.length;
+    });
+
     this.eventService.listen("emptyInputNotif", ()=>{
       this.emptyInputNotif.nativeElement.style.display = "flex";
       this.setLatestAlertNotification(this.emptyInputNotif);

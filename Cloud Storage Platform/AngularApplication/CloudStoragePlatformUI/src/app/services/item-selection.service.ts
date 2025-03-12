@@ -1,23 +1,28 @@
 import { Injectable } from '@angular/core';
+import {BehaviorSubject} from "rxjs";
+import {File} from "../models/File";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ItemSelectionService {
-  public selectedItems:any[]=[];
+  private selectedItems = new BehaviorSubject<File[]>([]);
+  selectedItems$ = this.selectedItems.asObservable();
 
-  selectItem(/**TODO Parameter*/){
-    //TODO Add actual item to selectedItems
-    this.selectedItems.push("Sample Item");
+  addSelectedItem(item: File){
+    this.selectedItems.next([...this.selectedItems.value, item]);
   }
 
-  deSelectItem(/**TODO Parameter*/){
-    //TODO Pop the actualy iem from selectedItems
-    this.selectedItems.pop();
+  deselectItem(item:File){
+    let items = this.selectedItems.value;
+    items = items.filter(f => f.fileId == item.fileId);
+    let indexOfItemTobeRemoved = this.selectedItems.value.indexOf(items[0]);
+    this.selectedItems.value.splice(indexOfItemTobeRemoved, 1)
+    this.selectedItems.next(this.selectedItems.value);
   }
 
   deSelectAll(){
-    this.selectedItems = [];
+    this.selectedItems.next([]);
   }
 
   constructor() { }
