@@ -22,9 +22,8 @@ export class FileLargeComponent implements OnInit {
   * */
   @Input() type: string = "";
   @Input() FileFolder!:File;
-  @Input() fileInfo?:any; // TODO
-  @Output() favoriteChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() itemSelected: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() destroy = new EventEmitter();
+  hoveringOverDestroy = false;
 
   @ViewChild("fileNameInput", { static: false }) fileNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild("selectFile") selectFileCheckbox!: ElementRef<HTMLInputElement>;
@@ -32,6 +31,7 @@ export class FileLargeComponent implements OnInit {
   @ViewChild("file") file!: ElementRef<HTMLDivElement>;
   @ViewChild("ellipsis") ellipsis!: ElementRef<HTMLElement>;
   @ViewChild("renamingFileOptionDiv") renamingFileOptionDiv?: ElementRef<HTMLDivElement>;
+  @ViewChild("abortCreationCross", {static:true}) abortCreationCross?: ElementRef;
 
   renameFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
 
@@ -218,6 +218,7 @@ export class FileLargeComponent implements OnInit {
         this.FileFolder.filePath = response.filePath;
         this.FileFolder.isFavorite = response.isFavorite;
         this.FileFolder.isTrash = response.isTrash;
+        this.FileFolder.uncreated = false;
         this.originalName = response.fileName;
         this.name = response.fileName;
         localStorage["uncreatedFolderExists"] = false;
@@ -228,4 +229,20 @@ export class FileLargeComponent implements OnInit {
       complete: () => {}
     })
   }
+
+  hideCheckbox(){
+    if (this.selectFileCheckbox){
+      this.selectFileCheckbox.nativeElement.style.visibility = 'hidden'
+    }
+  }
+
+  showCheckbox(){
+    if (this.selectFileCheckbox){
+      this.selectFileCheckbox.nativeElement.style.visibility = 'visible';
+    }
+  }
+
+
+  protected readonly localStorage = localStorage;
+  protected readonly console = console;
 }

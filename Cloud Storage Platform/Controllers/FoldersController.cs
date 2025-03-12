@@ -95,7 +95,7 @@ namespace Cloud_Storage_Platform.Controllers
         {
             FolderAddRequest updatedAddRequest = folderAddRequest;
             updatedAddRequest.FolderPath = _configuration["InitialPathForStorage"] + folderAddRequest.FolderPath;
-
+            // TODO Check whats up with the above code? redundant?
             FolderResponse folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
             return folderResponse;
         }

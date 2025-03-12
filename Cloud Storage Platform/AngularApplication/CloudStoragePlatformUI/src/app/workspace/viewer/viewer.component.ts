@@ -46,7 +46,13 @@ export class ViewerComponent implements OnInit{
     this.route.url.subscribe(url => {
       const appUrl = this.router.url.split("/");
       // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure it's not relative but global url is accessed to ensure usability of program structure
-      appUrl.shift();
+      if (appUrl[0]==""){
+        appUrl.shift();
+      }
+      if (appUrl[appUrl.length-1]==""){
+        appUrl.pop();
+      }
+
       if (!appUrl[0]){
         this.router.navigate(["filter", "home"]);
         return;
@@ -123,9 +129,28 @@ export class ViewerComponent implements OnInit{
     if (localStorage["renaming"] == "true"){
       return;
     }
+    const folderWithNewFolderNameExists:boolean = this.folders.filter(f=>f.fileName == "New Folder").length > 0;
+    let uniqueNewFolderNameFound = false;
+    let folderNameToBeUsed = "New Folder";
+    let newFolderIndex = 1;
+
+    while (!uniqueNewFolderNameFound) {
+      if (folderWithNewFolderNameExists) {
+        let nextFolderName = "New Folder (" + newFolderIndex + ")";
+        if (this.folders.filter(f => f.fileName == nextFolderName).length == 0) {
+          uniqueNewFolderNameFound = true;
+          folderNameToBeUsed = nextFolderName;
+        } else {
+          newFolderIndex++;
+        }
+      } else {
+        uniqueNewFolderNameFound = true;
+      }
+    }
+
     let folder:File = {
       fileId: "",
-      fileName: "New Folder",
+      fileName: folderNameToBeUsed,
       filePath: new HelperMethods().constructFilePathForApi(this.crumbs)+"\\",
       isFavorite: false,
       isTrash: false,

@@ -75,7 +75,7 @@ namespace CloudStoragePlatform.Web
             // keep in mind ApplicationDbContext is seeding data with hard coded initial directory path to avoid complexity
             // 
 
-            // Path supplied as query string params need \ and via request body need \\ as path separator
+            // Path should always be supplied with single slash \ but swagger's request body for some reason needs \\
 
             /*
              * Additional Points:
@@ -101,7 +101,6 @@ namespace CloudStoragePlatform.Web
 
             /* VALID PATHS 
              * \home\op
-             * \\home\\op
              */
         }
     }

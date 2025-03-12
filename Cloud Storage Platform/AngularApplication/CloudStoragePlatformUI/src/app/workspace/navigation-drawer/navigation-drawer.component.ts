@@ -210,4 +210,10 @@ export class NavigationDrawerComponent implements OnInit {
       }
     }
   }
+
+  createFolderClick(){
+    this.eventService.emit('create new folder');
+  }
+
+  protected readonly localStorage = localStorage;
 }
