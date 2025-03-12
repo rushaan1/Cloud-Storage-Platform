@@ -46,6 +46,13 @@ export class FoldersService {
     return this.httpClient.get<File[]>(`${BASE_URL}/getFilteredFolders`, {params:params});
   }
 
+  public getAllFavoriteFolders():Observable<File[]>{
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFavoriteFolders`);
+  }
+  public getAllTrashFolders():Observable<File[]>{
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllTrashFolders`);
+  }
+
 
 
 
@@ -71,7 +78,7 @@ export class FoldersService {
     const params = new HttpParams()
       .set('folderId', folderId)
       .set('newFolderPath', newFolderPath);
-    return this.httpClient.patch<File>(`${BASE_URL}/move`, {params:params});
+    return this.httpClient.patch<File>(`${BASE_URL}/move`,null, {params:params});
   }
 
   public deleteFolder(folderId:string):Observable<File>{
@@ -85,13 +92,13 @@ export class FoldersService {
     new HelperMethods().handleStringInvalidError(folderId);
     const params = new HttpParams()
       .set('folderId', folderId)
-    return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromFavorite`, {params:params});
+    return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromFavorite`, null, {params:params});
   }
 
   public addOrRemoveFromTrash(folderId:string):Observable<File>{
     new HelperMethods().handleStringInvalidError(folderId);
     const params = new HttpParams()
       .set('folderId', folderId)
-    return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromTrash`, {params:params});
+    return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromTrash`, null, {params:params});
   }
 }

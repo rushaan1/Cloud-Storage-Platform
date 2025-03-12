@@ -63,12 +63,29 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getFilteredFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, SortOrderOptions sortOrder)
+        public async Task<ActionResult<List<FolderResponse>>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
         {
             string searchStringTrimmed = searchString.Trim();
             List<FolderResponse> folders = await _foldersRetrievalService.GetFilteredFolders(searchStringTrimmed, sortOrder);
             return folders;
         }
+
+        [HttpGet]
+        [Route("getAllFavoriteFolders")]
+        public async Task<ActionResult<List<FolderResponse>>> GetAllFavoriteFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        {
+            List<FolderResponse> folders = await _foldersRetrievalService.GetAllFavoriteFolders(sortOrder);
+            return folders;
+        }
+
+        [HttpGet]
+        [Route("getAllTrashFolders")]
+        public async Task<ActionResult<List<FolderResponse>>> GetAllTrashFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        {
+            List<FolderResponse> folders = await _foldersRetrievalService.GetAllTrashFolders(sortOrder);
+            return folders;
+        }
+
 
         [HttpGet]
         [Route("getFolderById")]

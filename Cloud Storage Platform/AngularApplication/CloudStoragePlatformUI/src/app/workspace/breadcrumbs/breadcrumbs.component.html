@@ -1,6 +1,6 @@
 <div #breadcrumbs class="breadcrumbs">
   <span class="breadcrumb-unit" *ngFor="let crumb of crumbs; index as i;">
-    <a (click)="routeTo(i)" [ngClass]="{'capitalize':i==0}" class="crumbAnchorTag">{{decodeURIComponent(crumb)}}</a>
+    <a (click)="i != crumbs.length - 1 ? routeTo(i) : false;" [ngClass]="{'capitalize':i==0}" class="crumbAnchorTag">{{decodeURIComponent(crumb)}}</a>
     <span class="arrow-right-breadcrumb" *ngIf="crumbs.length!=i+1"> > </span>
   </span>
 </div>

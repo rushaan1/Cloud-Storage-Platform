@@ -1,4 +1,15 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -44,8 +55,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   appIsInSelectionState = false;
   hoveringOver: boolean = false;
 
-
-  constructor(protected itemSelectionService: ItemSelectionService, private router:Router, private activatedRoute:ActivatedRoute, private foldersService:FoldersService, private eventService: EventService) { }
+  constructor(protected itemSelectionService: ItemSelectionService, private router:Router, private cdRef: ChangeDetectorRef, private foldersService:FoldersService, private eventService: EventService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
@@ -53,27 +63,18 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     this.name = this.originalName;
     this.nameResizing();
 
-    if (this.FileFolder.uncreated) {
-      localStorage["uncreatedFolderExists"] = true;
-      this.setupInput(false);
-    }
-
     this.eventService.listen("file options expanded", (uuid:string)=>{
       if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsVisible == true)
         this.expandOrCollapseOptions();
     });
-
-    window.addEventListener("click", (e) => {
-      let clickedOnElement = e.target as HTMLElement;
-      if (this.fileOptionsVisible){
-        if ((clickedOnElement.parentElement!=this.fileOptionsMenu.nativeElement && clickedOnElement!=this.fileOptionsMenu.nativeElement) && clickedOnElement!=this.ellipsis.nativeElement) {
-          this.expandOrCollapseOptions();
-        }
-      }
-    });
   }
 
   ngAfterViewInit() {
+    if (this.FileFolder.uncreated) {
+      localStorage.setItem("uncreatedFolderExists", "true");
+      this.setupInput(false);
+    }
+
     this.itemSelectionService.selectedItems$.subscribe(items=>{
       let containsFileId = false;
       this.appIsInSelectionState = items.length > 0;
@@ -101,10 +102,19 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     });
   }
 
+  @HostListener('window:click', ['$event'])
+  onWindowClick(e: Event) {
+    let clickedOnElement = e.target as HTMLElement;
+    if (this.fileOptionsVisible){
+      if ((clickedOnElement.parentElement!=this.fileOptionsMenu.nativeElement && clickedOnElement!=this.fileOptionsMenu.nativeElement) && clickedOnElement!=this.ellipsis.nativeElement) {
+        this.expandOrCollapseOptions();
+      }
+    }
+  }
+
   nameResizing() {
     if (this.name.length >= 32) {
-      let portionToBeExcluded = this.name.slice(32, this.name.length);
-      this.name= this.name.replace(portionToBeExcluded, "") + "...";
+      this.name = this.name.substring(0, 32) + "...";
     }
   }
 
@@ -137,6 +147,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     }
     if (this.fileNameInput?.nativeElement) {
       if (this.renameFormControl.valid) {
+        let renameCompleted = false;
         if (this.FileFolder.uncreated){
           this.createFolder(this.fileNameInput.nativeElement.value);
         }
@@ -149,22 +160,19 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
               this.name = response.fileName;
               this.eventService.emit("renameSuccessNotif", response.fileName);
               this.nameResizing();
+              renameCompleted = true;
             },
             error: err => {
-              // TODO ErrorNotif for this
+              // TODO ErrorNotif for this, set renameCompleted to false incase of error
 
             },
-            complete: () => {}
+            complete: () => {
+              if (renameCompleted){
+                this.finishRenaming();
+              }
+            }
           });
         }
-
-        this.renaming = false;
-        localStorage["renaming"] = false;
-        if (this.renamingFileOptionDiv?.nativeElement){
-          this.renamingFileOptionDiv.nativeElement.innerText = "Rename";
-        }
-
-        // (9th Jan, 2025) The above code should execute regardless of Observable error
       }
       else if (this.renameFormControl.invalid){
         if (this.renameFormControl.hasError("invalidCharacter")){
@@ -181,7 +189,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   setupInput(collapseOptions:boolean, event?:Event) {
     event?.stopPropagation();
-    if (localStorage["renaming"] == "true" && !this.renaming){
+    if (localStorage.getItem("renaming")=="true" && !this.renaming){
       this.eventService.emit("alreadyRenamingNotif");
       this.expandOrCollapseOptions();
       return;
@@ -197,26 +205,34 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       this.expandOrCollapseOptions();
     }
 
-    setTimeout(() => {
-      if (this.fileNameInput?.nativeElement){
-        this.fileNameInput.nativeElement.focus();
-        this.fileNameInput.nativeElement.classList.remove("file-name-text-input-red");
-        this.fileNameInput.nativeElement.value = this.originalName;
-        this.fileNameInput.nativeElement.select();
-        this.renameFormControl.setValue(this.originalName);
-      }
-    }, 90);
-    localStorage["renaming"] = true;
+    this.cdRef.detectChanges();
+    if (this.fileNameInput?.nativeElement){
+      this.fileNameInput.nativeElement.focus();
+      this.fileNameInput.nativeElement.classList.remove("file-name-text-input-red");
+      this.fileNameInput.nativeElement.value = this.originalName;
+      this.fileNameInput.nativeElement.select();
+      this.renameFormControl.setValue(this.originalName);
+    }
+    localStorage.setItem("renaming","true");
+  }
+
+  finishRenaming(){
+    this.renaming = false;
+    localStorage.setItem("renaming","false");
+    if (this.renamingFileOptionDiv?.nativeElement){
+      this.renamingFileOptionDiv.nativeElement.innerText = "Rename";
+    }
   }
 
   fetchSubFoldersRedirect(){
-    if (this.fileOptionsVisible || localStorage["renaming"] == "true" || this.appIsInSelectionState) {
+    if (this.fileOptionsVisible || localStorage.getItem("renaming") == "true" || this.appIsInSelectionState) {
       return;
     }
     this.router.navigate(["folder", ...new HelperMethods().cleanPath(this.FileFolder.filePath)]);
   }
 
   createFolder(name:string){
+    let folderCreationCompleted = false;
     this.foldersService.addFolder(name, this.FileFolder.filePath+name).subscribe({
       next: (response:File) => {
         this.FileFolder.fileId = response.fileId;
@@ -227,15 +243,21 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.FileFolder.uncreated = false;
         this.originalName = response.fileName;
         this.name = response.fileName;
-        localStorage["uncreatedFolderExists"] = false;
+        localStorage.setItem("uncreatedFolderExists", "false");
         if (this.appIsInSelectionState) {
-          setTimeout(()=>{this.showCheckbox();},100);
+          this.cdRef.detectChanges();
+          this.showCheckbox();
         }
+        folderCreationCompleted = true;
       },
       error: err => {
         // TODO ErrorNotif for this
       },
-      complete: () => {}
+      complete: () => {
+        if (folderCreationCompleted){
+          this.finishRenaming();
+        }
+      }
     })
   }
 
@@ -251,6 +273,30 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  toggleFavorite(event:MouseEvent){
+    event.stopPropagation();
+    this.foldersService.addOrRemoveFromFavorite(this.FileFolder.fileId).subscribe({
+      next: (response:File) => {
+        this.FileFolder.isFavorite = response.isFavorite;
+      },
+      error: err => {
+        // TODO ErrorNotif for this
+      }
+    });
+  }
+
+  trash(event:MouseEvent){
+    event.stopPropagation();
+    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId).subscribe({
+      next: (response:File) => {
+        this.FileFolder.isTrash = response.isTrash;
+        this.destroy.emit();
+      },
+      error: err => {
+        // TODO ErrorNotif for this
+      }
+    });
+  }
 
   protected readonly localStorage = localStorage;
 }

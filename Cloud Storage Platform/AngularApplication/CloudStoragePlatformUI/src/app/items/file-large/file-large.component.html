@@ -1,10 +1,10 @@
 <div (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
-        <div class="file-option" id="trash-file-option">Move to trash</div>
+        <div (click)="trash($event)" class="file-option" id="trash-file-option">Move to trash</div>
         <div #renamingFileOptionDiv (click)="setupInput(true, $event);" class="file-option" id="rename-file-option">Rename</div>
         <div class="file-option" id="share-file-option">Share</div>
         <div class="file-option" id="move-file-option">Move to...</div>
-        <div class="file-option" id="favorite-file-option">Favorite</div>
+        <div (click)="toggleFavorite($event); expandOrCollapseOptions()" class="file-option" id="favorite-file-option">Favorite</div>
         <div class="file-option" id="info-file-option">Info</div>
     </div>
 

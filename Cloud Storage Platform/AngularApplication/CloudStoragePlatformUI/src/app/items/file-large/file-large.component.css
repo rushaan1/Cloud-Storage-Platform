@@ -37,6 +37,7 @@
     margin-right: 34px;
     padding: 4px;
     border-radius: 10px;
+  position: relative;
 }
 
 .fa-ellipsis:hover{

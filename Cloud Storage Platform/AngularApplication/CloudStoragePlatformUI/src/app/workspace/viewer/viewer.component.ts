@@ -57,6 +57,7 @@ export class ViewerComponent implements OnInit{
         this.router.navigate(["filter", "home"]);
         return;
       }
+      this.crumbs = new HelperMethods().obtainBreadCrumbs(appUrl);
       switch(appUrl[0]){
         case "filter":
           if (appUrl[1]){
@@ -66,13 +67,16 @@ export class ViewerComponent implements OnInit{
                 this.loadHomeFolder();
                 break;
               case "recents":
+                this.crumbs = ["Recents"];
                 break;
               case "favorites":
-                this.folders = this.folders.filter(folder => {return folder.isFavorite});
+                this.loadFavoriteFolders();
+                this.crumbs = ["Favorites"];
                 // TODO For files
                 break;
               case "trash":
-                this.folders = this.folders.filter(folder => {return folder.isTrash});
+                this.loadTrashFolders();
+                this.crumbs = ["Trash"];
                 break;
             }
           }
@@ -97,7 +101,7 @@ export class ViewerComponent implements OnInit{
           this.router.navigate(["filter", "home"]);
           break;
       }
-      this.crumbs = new HelperMethods().obtainBreadCrumbs(appUrl);
+
       if (this.breadcrumbsComponent) {
         // Manually initializing breadcrumbs because once its initialized with ngOnInit the ngOnInit function won't run everytime breadcrumbs redirects to route being catched by existing parent component (viewer) already containing breadcrumbs which misses the necessary initialization needed after every navigation by breadcrumbs
         this.breadcrumbsComponent.initializeBreadcrumbs();
@@ -113,6 +117,36 @@ export class ViewerComponent implements OnInit{
   loadHomeFolder() {
     // API
     this.foldersService.getAllFoldersInHome().subscribe({
+      next: (response) => {
+        this.folders = response;
+      },
+      error: (error) => {
+        // TODO
+      },
+      complete: () => {
+
+      }
+    });
+  }
+
+  loadFavoriteFolders() {
+    // API
+    this.foldersService.getAllFavoriteFolders().subscribe({
+      next: (response) => {
+        this.folders = response;
+      },
+      error: (error) => {
+        // TODO
+      },
+      complete: () => {
+
+      }
+    });
+  }
+
+  loadTrashFolders() {
+    // API
+    this.foldersService.getAllTrashFolders().subscribe({
       next: (response) => {
         this.folders = response;
       },

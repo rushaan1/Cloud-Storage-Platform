@@ -11,7 +11,7 @@ export class ResponseInterceptor implements HttpInterceptor {
       map((event: HttpEvent<any>) => {
         if (event instanceof HttpResponse && req.url.toLowerCase().includes('folders')) {
           return event.clone({
-            body: this.transformToFileModel(event.body)
+            body: this.transformToFileModel(event.body, req.url)
           });
         }
         return event;
@@ -19,10 +19,13 @@ export class ResponseInterceptor implements HttpInterceptor {
     );
   }
 
-  private transformToFileModel(data: any): File|File[] {
+  private transformToFileModel(data: any, url:string): File|File[] {
     if (data instanceof Array) {
       let array:Array<any> = [];
       for (let i = 0; i < data.length; i++) {
+        if (data[i].isTrash.toString() == "true" && !url.includes("getAllTrashFolders")){
+          continue;
+        }
         array.push({
           fileId:data[i].folderId,
           filePath:data[i].folderPath,
