@@ -4,7 +4,7 @@ import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
 import {FoldersService} from "../../services/ApiServices/folders.service";
-import {HelperMethods} from "../../HelperMethods";
+import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../breadcrumbs/breadcrumbs.component";
 
 @Component({
@@ -57,7 +57,8 @@ export class ViewerComponent implements OnInit{
         this.router.navigate(["filter", "home"]);
         return;
       }
-      this.crumbs = new HelperMethods().obtainBreadCrumbs(appUrl);
+      this.crumbs = Utils.obtainBreadCrumbs(appUrl);
+      localStorage.setItem("breadcrumbs", JSON.stringify(this.crumbs));
       switch(appUrl[0]){
         case "filter":
           if (appUrl[1]){
@@ -82,9 +83,9 @@ export class ViewerComponent implements OnInit{
           }
           break;
         case "folder":
-          const constructedPathForApi = new HelperMethods().constructFilePathForApi(appUrl);
+          const constructedPathForApi = Utils.constructFilePathForApi(appUrl);
           // API
-          if (new HelperMethods().validString(constructedPathForApi)){
+          if (Utils.validString(constructedPathForApi)){
             this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
               next: response => {
                 this.folders = response;
@@ -185,7 +186,7 @@ export class ViewerComponent implements OnInit{
     let folder:File = {
       fileId: "",
       fileName: folderNameToBeUsed,
-      filePath: new HelperMethods().constructFilePathForApi(this.crumbs)+"\\",
+      filePath: Utils.constructFilePathForApi(this.crumbs)+"\\",
       isFavorite: false,
       isTrash: false,
       uncreated: true
@@ -194,4 +195,6 @@ export class ViewerComponent implements OnInit{
   }
 
   protected readonly localStorage = localStorage;
+  protected readonly JSON = JSON;
+  protected readonly HelperMethods = Utils;
 }

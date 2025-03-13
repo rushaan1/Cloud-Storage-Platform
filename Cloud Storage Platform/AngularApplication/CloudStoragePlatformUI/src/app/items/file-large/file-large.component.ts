@@ -18,7 +18,7 @@ import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {File} from "../../models/File";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
-import {HelperMethods} from "../../HelperMethods";
+import {Utils} from "../../Utils";
 
 @Component({
   selector: 'file-large-item',
@@ -228,7 +228,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     if (this.fileOptionsVisible || localStorage.getItem("renaming") == "true" || this.appIsInSelectionState) {
       return;
     }
-    this.router.navigate(["folder", ...new HelperMethods().cleanPath(this.FileFolder.filePath)]);
+    this.router.navigate(["folder", ...Utils.cleanPath(this.FileFolder.filePath)]);
   }
 
   createFolder(name:string){
@@ -291,6 +291,36 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
+        this.eventService.emit("folderSuccessfullyMovedToTrashNotif", this.name);
+      },
+      error: err => {
+        // TODO ErrorNotif for this
+      }
+    });
+  }
+
+  delete(event:MouseEvent){
+    event.stopPropagation();
+    this.eventService.emit("deleteConfirmNotif", this.name, ()=>{
+      this.foldersService.deleteFolder(this.FileFolder.fileId).subscribe({
+        next: (response:File) => {
+          this.eventService.emit("folderSuccessfullyDeletedNotif", this.name);
+          this.destroy.emit();
+        },
+        error: err => {
+          // TODO ErrorNotif for this
+        }
+      });
+    });
+  }
+
+  restore(event:MouseEvent) {
+    event.stopPropagation();
+    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId).subscribe({
+      next: (response:File) => {
+        this.FileFolder.isTrash = response.isTrash;
+        this.destroy.emit();
+        this.eventService.emit("folderSuccessfullyRestoredNotif", this.name);
       },
       error: err => {
         // TODO ErrorNotif for this
@@ -299,4 +329,6 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   }
 
   protected readonly localStorage = localStorage;
+  protected readonly HelperMethods = Utils;
+  protected readonly Utils = Utils;
 }

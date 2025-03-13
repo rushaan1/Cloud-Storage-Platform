@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {HTTP_INTERCEPTORS, HttpClient, HttpParams} from "@angular/common/http";
 import {File} from "../../models/File";
 import {Observable} from "rxjs";
-import {HelperMethods} from "../../HelperMethods";
+import {Utils} from "../../Utils";
 import {ResponseInterceptor} from "./response.interceptor";
 
 
@@ -19,28 +19,28 @@ export class FoldersService {
   }
 
   public getAllSubFoldersByParentFolderPath(folderPath:string):Observable<File[]>{
-    new HelperMethods().handleStringInvalidError(folderPath);
+    Utils.handleStringInvalidError(folderPath);
     const params = new HttpParams()
       .set('path', folderPath);
     return this.httpClient.get<File[]>(`${BASE_URL}/getAllSubFoldersByPath`, {params:params});
   }
 
   public getFolderByFolderId(folderId:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderId);
+    Utils.handleStringInvalidError(folderId);
     const params = new HttpParams()
       .set('folderId', folderId);
     return this.httpClient.get<File>(`${BASE_URL}/getFolderById`, {params:params});
   }
 
   public getFolderByFolderPath(path:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(path);
+    Utils.handleStringInvalidError(path);
     const params = new HttpParams()
       .set('path', path);
     return this.httpClient.get<File>(`${BASE_URL}/getFolderByPath`, {params:params});
   }
 
   public getFilteredFolders(searchString:string):Observable<File[]>{
-    new HelperMethods().handleStringInvalidError(searchString);
+    Utils.handleStringInvalidError(searchString);
     const params = new HttpParams()
       .set('searchString', searchString);
     return this.httpClient.get<File[]>(`${BASE_URL}/getFilteredFolders`, {params:params});
@@ -60,21 +60,21 @@ export class FoldersService {
 
 
   public addFolder(folderName:string, folderPath:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderName);
-    new HelperMethods().handleStringInvalidError(folderPath);
+    Utils.handleStringInvalidError(folderName);
+    Utils.handleStringInvalidError(folderPath);
     return this.httpClient.post<File>(`${BASE_URL}/add`, {folderName:folderName, folderPath:folderPath});
   }
 
 
   public renameFolder(folderId:string, folderNewName:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderId);
-    new HelperMethods().handleStringInvalidError(folderNewName);
+    Utils.handleStringInvalidError(folderId);
+    Utils.handleStringInvalidError(folderNewName);
     return this.httpClient.patch<File>(`${BASE_URL}/rename`, {folderId:folderId, folderNewName:folderNewName});
   }
 
   public moveFolder(folderId:string, newFolderPath:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderId);
-    new HelperMethods().handleStringInvalidError(newFolderPath);
+    Utils.handleStringInvalidError(folderId);
+    Utils.handleStringInvalidError(newFolderPath);
     const params = new HttpParams()
       .set('folderId', folderId)
       .set('newFolderPath', newFolderPath);
@@ -82,21 +82,21 @@ export class FoldersService {
   }
 
   public deleteFolder(folderId:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderId);
+    Utils.handleStringInvalidError(folderId);
     const params = new HttpParams()
       .set('folderId', folderId)
     return this.httpClient.delete<File>(`${BASE_URL}/delete`, {params:params});
   }
 
   public addOrRemoveFromFavorite(folderId:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderId);
+    Utils.handleStringInvalidError(folderId);
     const params = new HttpParams()
       .set('folderId', folderId)
     return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromFavorite`, null, {params:params});
   }
 
   public addOrRemoveFromTrash(folderId:string):Observable<File>{
-    new HelperMethods().handleStringInvalidError(folderId);
+    Utils.handleStringInvalidError(folderId);
     const params = new HttpParams()
       .set('folderId', folderId)
     return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromTrash`, null, {params:params});

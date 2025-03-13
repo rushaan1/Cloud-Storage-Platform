@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import {EventService} from "../../services/event-service.service";
+import {Utils} from "../../Utils";
 
 @Component({
   selector: 'drawer',
@@ -216,4 +217,5 @@ export class NavigationDrawerComponent implements OnInit {
   }
 
   protected readonly localStorage = localStorage;
+    protected readonly HelperMethods = Utils;
 }

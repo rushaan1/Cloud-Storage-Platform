@@ -5,18 +5,26 @@ import { Observable, Subject } from "rxjs";
 export class EventService {
   private subject = new Subject();
 
-  emit(eventName: string, payload: any=null) {
-    if (payload==null){
+  emit(eventName: string, payload: any=null, callback?: (event: any) => void) {
+    if (payload==null && callback==null){
       this.subject.next({ eventName });
       return;
     }
-    this.subject.next({ eventName, payload });
+    else if (payload==null && callback!=null){
+      this.subject.next({ eventName, callback });
+      return;
+    }
+    else if (payload!=null && callback==null){
+      this.subject.next({ eventName, payload });
+      return;
+    }
+    this.subject.next({ eventName, payload, callback });
   }
 
-  listen(eventName: string, callback: (event: any) => void) {
-    this.subject.asObservable().subscribe((nextObj: any) => {
-      if (eventName === nextObj.eventName) {
-        callback(nextObj.payload);
+  listen(eventName: string, callback: (payload: any, callBackFn?:()=>void) => void) {
+    this.subject.asObservable().subscribe((obj: any) => {
+      if (eventName === obj.eventName) {
+        callback(obj.payload, obj.callback);
       }
     });
   }

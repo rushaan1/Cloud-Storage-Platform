@@ -68,6 +68,28 @@ namespace CloudStoragePlatform.Core.Services
             return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
         }
 
+        public async Task<List<FolderResponse>> GetAllFavoriteFolders(SortOrderOptions sortOptions)
+        {
+            List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.IsFavorite);
+            if (folders.Count <= 0)
+            {
+                return new List<FolderResponse>();
+            }
+            List<Folder> sortedFolderzzzzzz = Utilities.Sort(folders, sortOptions);
+            return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
+        } //TODO Unit test this service
+
+        public async Task<List<FolderResponse>> GetAllTrashFolders(SortOrderOptions sortOptions)
+        {
+            List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.IsTrash);
+            if (folders.Count <= 0)
+            {
+                return new List<FolderResponse>();
+            }
+            List<Folder> sortedFolderzzzzzz = Utilities.Sort(folders, sortOptions);
+            return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
+        } //TODO Unit test this service
+
         public async Task<FolderResponse?> GetFolderByFolderId(Guid fid)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);

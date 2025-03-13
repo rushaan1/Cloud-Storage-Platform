@@ -24,4 +24,26 @@
   <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
   <div class="margin-left infoText">Successfully renamed to {{successRenamedToName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
 </div>
+
+<div #deleteSuccessNotif class="info-panel">
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Successfully deleted {{folderSuccessfullyDeletedName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
+</div>
+
+<div #deleteConfirmNotif class="info-panel sticky-notif">
+  <div class="margin-left infoText">Are you sure you want to delete {{folderToBeDeletedName}}?</div>
+  <button (click)="deleteFunc ? deleteFunc() : false; dismissNotificationAlert($event);" class="panel-selected-menu-btn">Yes</button>
+  <button (click)="dismissNotificationAlert($event)" class="panel-selected-menu-btn">No</button>
+</div>
+
+<div #restoreSuccessNotif class="info-panel">
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Successfully restored {{folderSuccessfullyRestoredName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
+</div>
+
+<div #movedToTrashNotif class="info-panel">
+  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
+  <div class="margin-left infoText">Successfully moved {{folderMovedToTrashName}} to trash. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
+</div>
+
 <!--TODO: De-clutter alertTxt anchor tag by utilizing a single-line reusable function-->
