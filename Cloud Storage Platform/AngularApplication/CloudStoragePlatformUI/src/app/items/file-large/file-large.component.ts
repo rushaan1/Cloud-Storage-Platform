@@ -10,7 +10,7 @@ import {
   Output,
   ViewChild
 } from '@angular/core';
-import { ItemSelectionService } from '../../services/item-selection.service';
+import { ItemSelectionService } from '../../services/StateManagementServices/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import { v4 as uuidv4 } from 'uuid';
 import {FormControl, Validators} from "@angular/forms";

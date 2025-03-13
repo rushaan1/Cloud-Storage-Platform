@@ -1,6 +1,6 @@
 <div class="content">
 
-  <div class="navigation-drawer">
+  <div #navigationDrawer class="navigation-drawer">
     <drawer class="drawer-component" (miniSet)="miniToggle($event)"></drawer>
   </div>
 
@@ -10,15 +10,15 @@
       <panel class="panel"></panel>
     </div>
 
-    <router-outlet></router-outlet>
+    <div class="router-container">
+      <router-outlet></router-outlet>
+
+      <div *ngIf="loading" class="overlay">
+        <div class="loader"></div>
+      </div>
+    </div>
+
+
   </div>
 </div>
 
-
-
-
-<!-- <div class="overlay">
-    <div class="overlay-content">
-      <p>This is the content in the white div</p>
-    </div>
-  </div> -->

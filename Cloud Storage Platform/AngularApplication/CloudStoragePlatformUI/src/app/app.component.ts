@@ -1,29 +1,42 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {LoadingService} from "./services/StateManagementServices/loading.service";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
-  ngOnInit(): void {
-    this.miniToggle(false);
+export class AppComponent implements AfterViewInit {
+  @ViewChild("navigationDrawer") navDrawer!: ElementRef<HTMLElement>;
+  @ViewChild("loaderOverlay") loaderOverlay!: ElementRef<HTMLElement>;
+  loading = false;
+  miniset:boolean = false;
+  initialMiniSet:boolean = false;
+  title = 'CloudStoragePlatformUI';
+
+  constructor(private loadingService:LoadingService) {}
+
+  ngAfterViewInit(): void {
+    this.loadingService.loading$.subscribe(loading => {
+      this.loading = loading;
+      if (!this.initialMiniSet){
+        this.miniToggle(this.miniset);
+        this.initialMiniSet = true;
+      }
+    });
   }
 
-  title = 'CloudStoragePlatformUI';
-  miniset:boolean = false;
 
   miniToggle(event:boolean){
     this.miniset = event;
-    const navDrawer = document.getElementsByClassName("navigation-drawer")[0] as HTMLElement;
-    navDrawer.style.width = this.miniset ? "50px" : "321px";
+    this.navDrawer.nativeElement.style.width = this.miniset ? "50px" : "321px";
     if (this.miniset){
-      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "54px";
-      navDrawer.style.height = "";
+      this.navDrawer.nativeElement.style.minWidth = "54px";
+      this.navDrawer.nativeElement.style.height = "";
     }
     else{
-      (document.getElementsByClassName("navigation-drawer")[0] as HTMLElement).style.minWidth = "290px";
-      navDrawer.style.height = `${document.documentElement.scrollHeight}px`;
+      this.navDrawer.nativeElement.style.minWidth = "290px";
+      this.navDrawer.nativeElement.style.height = `${document.documentElement.scrollHeight}px`;
     }
   }
 }

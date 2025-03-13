@@ -1,11 +1,12 @@
 import {AfterViewChecked, AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import { ItemSelectionService } from '../../services/item-selection.service';
+import { ItemSelectionService } from '../../services/StateManagementServices/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../breadcrumbs/breadcrumbs.component";
+import {LoadingService} from "../../services/StateManagementServices/loading.service";
 
 @Component({
   selector: 'viewer',
@@ -16,6 +17,7 @@ export class ViewerComponent implements OnInit{
   @ViewChild(BreadcrumbsComponent) breadcrumbsComponent!: BreadcrumbsComponent;
   folders: File[] = [];
   files: File[] = [];
+  emptyFolderTxtActive = false;
 
   searchQuery?:string;
   predefinedTypeFilter?:string;
@@ -24,7 +26,7 @@ export class ViewerComponent implements OnInit{
 
   crumbs : string[] = [];
 
-  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService) {}
 
   ngOnInit(): void {
     localStorage["uncreatedFolderExists"] = false;
@@ -65,17 +67,20 @@ export class ViewerComponent implements OnInit{
             switch (appUrl[1]){
               case "home":
                 // TODO
+                this.loaderService.loadingStart();
                 this.loadHomeFolder();
                 break;
               case "recents":
                 this.crumbs = ["Recents"];
                 break;
               case "favorites":
+                this.loaderService.loadingStart();
                 this.loadFavoriteFolders();
                 this.crumbs = ["Favorites"];
                 // TODO For files
                 break;
               case "trash":
+                this.loaderService.loadingStart();
                 this.loadTrashFolders();
                 this.crumbs = ["Trash"];
                 break;
@@ -125,7 +130,7 @@ export class ViewerComponent implements OnInit{
         // TODO
       },
       complete: () => {
-
+        this.loaderService.loadingEnd();
       }
     });
   }
@@ -140,7 +145,8 @@ export class ViewerComponent implements OnInit{
         // TODO
       },
       complete: () => {
-
+        this.loaderService.loadingEnd();
+        this.emptyFolderTxtActive = true;
       }
     });
   }
@@ -155,7 +161,8 @@ export class ViewerComponent implements OnInit{
         // TODO
       },
       complete: () => {
-
+        this.loaderService.loadingEnd();
+        this.emptyFolderTxtActive = true;
       }
     });
   }

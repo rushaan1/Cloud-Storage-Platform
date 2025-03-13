@@ -59,6 +59,14 @@
   max-width: 100%;
   background-color: #F5F5F5;
   display: block;
-  z-index: 2;
+  z-index: 11;
   overflow-x: hidden;
+}
+
+.emptyFolder{
+  text-align: center;
+  font-size: 20px;
+  margin-top: 150px;
+  color: grey;
+  font-family: Roboto;
 }

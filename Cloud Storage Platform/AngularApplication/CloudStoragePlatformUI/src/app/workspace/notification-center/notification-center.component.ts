@@ -7,7 +7,7 @@ import {
   Renderer2,
   ViewChild
 } from '@angular/core';
-import { ItemSelectionService } from '../../services/item-selection.service';
+import { ItemSelectionService } from '../../services/StateManagementServices/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import {File} from "../../models/File";
 import {timestamp} from "rxjs";
@@ -91,14 +91,14 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     });
 
     if (visibleOrderedStickyInfoPanels.length>0){
-      visibleOrderedStickyInfoPanels[0].style.top = `120px`;
+      visibleOrderedStickyInfoPanels[0].style.top = `119.5px`;
       let cumulativeHeights = 0;
       for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
         let previousInfoPanelHeight:number = parseFloat(
           window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1]).height
         );
         cumulativeHeights += previousInfoPanelHeight;
-        visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+120}px`;
+        visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+119.5}px`;
         console.log(previousInfoPanelHeight);
       }
     }

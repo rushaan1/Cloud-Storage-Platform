@@ -6,66 +6,80 @@
 /*  max-width: 100% !important; !* Prevent elements from overflowing *!*/
 /*  box-sizing: border-box;*/
 /*}*/
-.navigation-drawer{
-    height: 100vh;
+.navigation-drawer {
+  height: 100vh;
 }
 
-.drawer-component{
-    height: 100vh;
+.drawer-component {
+  height: 100vh;
 }
 
 /*When integrating backend make sure to have dynamic routing with variable route paramters for every fodler*/
-.navigation-drawer{
-    /*TODO WHEN ADDING RESPONSIVENESS remove min-width with media query for mobile */
-    transition: min-width 1s ease;
-    z-index: 2;
-    background-color: #F5F5F5;
+.navigation-drawer {
+  /*TODO WHEN ADDING RESPONSIVENESS remove min-width with media query for mobile */
+  transition: min-width 1s ease;
+  z-index: 2;
+  background-color: #F5F5F5;
 }
 
-.content{
-    display: flex;
-    max-width: 99.5%;
+.content {
+  display: flex;
+  max-width: 99.5%;
 }
 
-.top-panel{
-    height: 65px;
-    position: sticky;
-    top: 0px;
-    z-index: 14;
+.top-panel {
+  height: 65px;
+  position: sticky;
+  top: 0px;
+  z-index: 14;
 }
 
-.panel{
-    height: 100%;
-    display: block;
-    top: 0px;
+.panel {
+  height: 100%;
+  display: block;
+  top: 0px;
 }
 
-.dashboard{
-    width: 100%;
+.dashboard {
+  width: 100%;
+}
+
+.router-container {
+  position: relative;
+  min-height: 100%;
 }
 
 
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
 
+.loader {
+  border: 8px solid white;
+  border-top: 8px solid bisque;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  top: 100px;
+  left: 50%;
+  position: absolute;
+  animation: spin 1s linear infinite;
+}
 
-
-
-/* .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vh;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-
-  .overlay-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    z-index: 1001;
-  } */
+  100% {
+    transform: rotate(360deg);
+  }
+}
