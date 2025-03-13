@@ -1,5 +1,5 @@
 import {AfterViewChecked, AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import { ItemSelectionService } from '../../services/StateManagementServices/item-selection.service';
+import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
 import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
@@ -7,6 +7,7 @@ import {FoldersService} from "../../services/ApiServices/folders.service";
 import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../breadcrumbs/breadcrumbs.component";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
+import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 
 @Component({
   selector: 'viewer',
@@ -23,13 +24,14 @@ export class ViewerComponent implements OnInit{
   predefinedTypeFilter?:string;
   sortBy?:string;
   sortingOrder?:string;
-
+  anyItemRenaming = false;
+  anyFolderUncreated = false;
   crumbs : string[] = [];
 
-  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, private filesState:FilesStateService) {}
 
   ngOnInit(): void {
-    localStorage["uncreatedFolderExists"] = false;
+    this.filesState.setUncreatedFolderExists(false);
     this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];
       const typeFilter = params['predefinedTypeFilter'];
@@ -40,7 +42,7 @@ export class ViewerComponent implements OnInit{
       this.predefinedTypeFilter = typeFilter;
       this.sortBy = sortBy;
       this.sortingOrder = sortingOrder;
-      localStorage["renaming"] = false;
+      this.filesState.setRenaming(false);
       // use !queryName to see if query param is valid or empty/null/undefined
     });
 
@@ -60,7 +62,7 @@ export class ViewerComponent implements OnInit{
         return;
       }
       this.crumbs = Utils.obtainBreadCrumbs(appUrl);
-      localStorage.setItem("breadcrumbs", JSON.stringify(this.crumbs));
+      this.breadcrumbService.setBreadcrumbs(this.crumbs);
       switch(appUrl[0]){
         case "filter":
           if (appUrl[1]){
@@ -94,6 +96,9 @@ export class ViewerComponent implements OnInit{
             this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
               next: response => {
                 this.folders = response;
+                if (appUrl[appUrl.length-1]=='home'){
+                  this.eventService.emit("home folder set active");
+                }
               },
               error: err => {}, //TODO
               complete: () => {} //TODO
@@ -117,6 +122,13 @@ export class ViewerComponent implements OnInit{
 
     this.eventService.listen("create new folder", () => {
       this.createNewFolder();
+    });
+
+    this.filesState.isRenaming$.subscribe(isRenaming => {
+      this.anyItemRenaming = isRenaming;
+    });
+    this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
+      this.anyFolderUncreated = uncreated;
     });
   }
 
@@ -146,7 +158,9 @@ export class ViewerComponent implements OnInit{
       },
       complete: () => {
         this.loaderService.loadingEnd();
-        this.emptyFolderTxtActive = true;
+        if (this.folders.length == 0) {
+          this.emptyFolderTxtActive = true;
+        }
       }
     });
   }
@@ -162,13 +176,15 @@ export class ViewerComponent implements OnInit{
       },
       complete: () => {
         this.loaderService.loadingEnd();
-        this.emptyFolderTxtActive = true;
+        if (this.folders.length == 0) {
+          this.emptyFolderTxtActive = true;
+        }
       }
     });
   }
 
   createNewFolder() {
-    if (localStorage["renaming"] == "true"){
+    if (this.anyItemRenaming){
       return;
     }
     const folderWithNewFolderNameExists:boolean = this.folders.filter(f=>f.fileName == "New Folder").length > 0;
@@ -200,8 +216,4 @@ export class ViewerComponent implements OnInit{
     };
     this.folders.push(folder);
   }
-
-  protected readonly localStorage = localStorage;
-  protected readonly JSON = JSON;
-  protected readonly HelperMethods = Utils;
 }

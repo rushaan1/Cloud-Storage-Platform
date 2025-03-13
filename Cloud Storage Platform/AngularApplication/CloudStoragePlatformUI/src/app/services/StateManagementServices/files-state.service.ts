@@ -5,9 +5,15 @@ import {File} from "../../models/File";
 @Injectable({
   providedIn: 'root'
 })
-export class ItemSelectionService {
+export class FilesStateService {
   private selectedItems = new BehaviorSubject<File[]>([]);
   selectedItems$ = this.selectedItems.asObservable();
+
+  private isRenaming = new BehaviorSubject<boolean>(false);
+  isRenaming$ = this.isRenaming.asObservable();
+
+  private uncreatedFolderExists = new BehaviorSubject<boolean>(false);
+  uncreatedFolderExists$ = this.uncreatedFolderExists.asObservable();
 
   addSelectedItem(item: File){
     this.selectedItems.next([...this.selectedItems.value, item]);
@@ -23,6 +29,14 @@ export class ItemSelectionService {
 
   deSelectAll(){
     this.selectedItems.next([]);
+  }
+
+  setRenaming(val:boolean){
+    this.isRenaming.next(val);
+  }
+
+  setUncreatedFolderExists(val:boolean){
+    this.uncreatedFolderExists.next(val);
   }
 
   constructor() { }

@@ -17,7 +17,7 @@
   </div>
   <!-- Create a horizontal button with an i element in the left side and Create new folder text on the right side !-->
 
-  <div *ngIf="localStorage['renaming']!='true' && HelperMethods.getCrumbs()[0]=='home'" (click)="createFolderClick()" class="new-folder-button">
+  <div *ngIf="!anyItemRenaming && breadCrumbs[0]=='home'" (click)="createFolderClick()" class="new-folder-button">
     <i class="fa-solid fa-folder-plus"></i>
     <div>Create new folder</div>
   </div>
@@ -26,12 +26,15 @@
     <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
         [routerLink]="['/filter/recents']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-regular fa-clock"></i>Recents</a></li>
-    <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
-        [routerLink]="['/filter/home']"><a [routerLinkActive]="['active']"><i
-      [routerLinkActive]="['active']" class="fa-solid fa-house"></i>Home</a></li>
+
+    <li #homeLi (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
+        [routerLink]="['/filter/home']"><a #homeLiA [routerLinkActive]="['active']"><i
+      [routerLinkActive]="['active']" #homei class="fa-solid fa-house"></i>Home</a></li>
+
     <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
         [routerLink]="['/filter/favorites']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-regular fa-heart"></i>Favorites</a></li>
+
     <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
         [routerLink]="['/filter/trash']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i>Trash</a></li>
@@ -70,17 +73,21 @@
       <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
           [routerLink]="['/filter/recents']"><a [routerLinkActive]="['active']"><i
         [routerLinkActive]="['active']" class="fa-regular fa-clock"></i></a></li>
-      <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
-          [routerLink]="['/filter/home']"><a [routerLinkActive]="['active']"><i
-        [routerLinkActive]="['active']" class="fa-solid fa-house"></i></a></li>
+
+      <li #miniDrawerHomeLi (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
+          [routerLink]="['/filter/home']"><a #miniDrawerHomeLiA [routerLinkActive]="['active']"><i
+        #miniDrawerHomei [routerLinkActive]="['active']" class="fa-solid fa-house"></i></a></li>
+
       <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
           [routerLink]="['/filter/favorites']"><a [routerLinkActive]="['active']"><i
         [routerLinkActive]="['active']" class="fa-regular fa-heart"></i></a></li>
+
       <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
           [routerLink]="['/filter/trash']"><a [routerLinkActive]="['active']"><i
         [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i></a></li>
+
       <li>
-        <i *ngIf="localStorage['renaming']!='true' && HelperMethods.getCrumbs()[0]=='home'" (click)="createFolderClick()" class="fa-solid fa-folder-plus fa-folder-plus-mini"></i>
+        <i *ngIf="!anyItemRenaming && breadCrumbs[0]=='home'" (click)="createFolderClick()" class="fa-solid fa-folder-plus fa-folder-plus-mini"></i>
       </li>
     </ul>
 

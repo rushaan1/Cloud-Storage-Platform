@@ -1,22 +1,22 @@
 <div (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
-        <div *ngIf="Utils.getCrumbs()[Utils.getCrumbs().length-1]!='trash'" (click)="trash($event); expandOrCollapseOptions();" class="file-option" id="trash-file-option">Move to trash</div>
-        <div *ngIf="Utils.getCrumbs()[Utils.getCrumbs().length-1]=='trash'" (click)="restore($event); expandOrCollapseOptions();" class="file-option" id="restore">Restore</div>
-        <div *ngIf="Utils.getCrumbs()[Utils.getCrumbs().length-1]=='trash'" (click)="delete($event); expandOrCollapseOptions();" class="file-option" id="delete">Delete Permanently</div>
+        <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="trash($event); expandOrCollapseOptions();" class="file-option" id="trash-file-option">Move to trash</div>
+        <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="restore($event); expandOrCollapseOptions();" class="file-option" id="restore">Restore</div>
+        <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="delete($event); expandOrCollapseOptions();" class="file-option" id="delete">Delete Permanently</div>
         <div #renamingFileOptionDiv (click)="setupInput(true, $event);" class="file-option" id="rename-file-option">Rename</div>
-        <div *ngIf="Utils.getCrumbs()[Utils.getCrumbs().length-1]!='trash'" class="file-option" id="share-file-option">Share</div>
-        <div *ngIf="Utils.getCrumbs()[Utils.getCrumbs().length-1]!='trash'" class="file-option" id="move-file-option">Move to...</div>
+        <div *ngIf="crumbs[crumbs.length-1]!='trash'" class="file-option" id="share-file-option">Share</div>
+        <div *ngIf="crumbs[crumbs.length-1]!='trash'" class="file-option" id="move-file-option">Move to...</div>
         <div (click)="toggleFavorite($event); expandOrCollapseOptions();" class="file-option" id="favorite-file-option">Favorite</div>
         <div class="file-option" id="info-file-option">Info</div>
     </div>
 
     <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" class="file-options">
-        <i *ngIf="localStorage['uncreatedFolderExists']!='true'" #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
-        <i (mouseenter)="hoveringOverDestroy=true" (mouseleave)="hoveringOverDestroy=false" #abortCreationCross (click)="destroy.emit(); localStorage['renaming']=false; localStorage['uncreatedFolderExists']=false;" *ngIf="this.FileFolder.uncreated" class="fa-solid fa-xmark"></i>
+        <i #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
+        <i (mouseenter)="hoveringOverDestroy=true" (mouseleave)="hoveringOverDestroy=false" #abortCreationCross (click)="destroy.emit(); filesState.setRenaming(false); filesState.setUncreatedFolderExists(false);" *ngIf="this.FileFolder.uncreated" class="fa-solid fa-xmark"></i>
     </div>
 
     <!--150x180.25-->
-    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? itemSelectionService.addSelectedItem(FileFolder) : itemSelectionService.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
+    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
     <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>

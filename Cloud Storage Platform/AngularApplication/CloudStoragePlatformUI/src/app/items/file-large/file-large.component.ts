@@ -10,7 +10,7 @@ import {
   Output,
   ViewChild
 } from '@angular/core';
-import { ItemSelectionService } from '../../services/StateManagementServices/item-selection.service';
+import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
 import { EventService } from '../../services/event-service.service';
 import { v4 as uuidv4 } from 'uuid';
 import {FormControl, Validators} from "@angular/forms";
@@ -19,6 +19,7 @@ import {FoldersService} from "../../services/ApiServices/folders.service";
 import {File} from "../../models/File";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {Utils} from "../../Utils";
+import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 
 @Component({
   selector: 'file-large-item',
@@ -54,8 +55,11 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   selected = false;
   appIsInSelectionState = false;
   hoveringOver: boolean = false;
+  crumbs: string[] = [];
+  anyFileIsRenaming = false;
+  anyUncreatedFolderExists = false;
 
-  constructor(protected itemSelectionService: ItemSelectionService, private router:Router, private cdRef: ChangeDetectorRef, private foldersService:FoldersService, private eventService: EventService) { }
+  constructor(protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
@@ -67,15 +71,26 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsVisible == true)
         this.expandOrCollapseOptions();
     });
+
+    this.breadcrumbService.breadcrumbs$.subscribe((crumbs)=>{
+      this.crumbs = crumbs;
+    });
+
+    this.filesState.isRenaming$.subscribe((isRenaming)=>{
+      this.anyFileIsRenaming = isRenaming;
+    });
+
+    this.filesState.uncreatedFolderExists$.subscribe((uncreatedFolderExists)=> {
+      this.anyUncreatedFolderExists = uncreatedFolderExists;
+    });
   }
 
   ngAfterViewInit() {
     if (this.FileFolder.uncreated) {
-      localStorage.setItem("uncreatedFolderExists", "true");
       this.setupInput(false);
     }
 
-    this.itemSelectionService.selectedItems$.subscribe(items=>{
+    this.filesState.selectedItems$.subscribe(items=>{
       let containsFileId = false;
       this.appIsInSelectionState = items.length > 0;
       if (this.appIsInSelectionState){
@@ -189,7 +204,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   setupInput(collapseOptions:boolean, event?:Event) {
     event?.stopPropagation();
-    if (localStorage.getItem("renaming")=="true" && !this.renaming){
+    if (this.anyFileIsRenaming && !this.renaming){
       this.eventService.emit("addNotif", ["Please finish renaming the current file first", 15000]);
       this.expandOrCollapseOptions();
       return;
@@ -213,19 +228,19 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       this.fileNameInput.nativeElement.select();
       this.renameFormControl.setValue(this.originalName);
     }
-    localStorage.setItem("renaming","true");
+    this.filesState.setRenaming(true)
   }
 
   finishRenaming(){
     this.renaming = false;
-    localStorage.setItem("renaming","false");
+    this.filesState.setRenaming(false);
     if (this.renamingFileOptionDiv?.nativeElement){
       this.renamingFileOptionDiv.nativeElement.innerText = "Rename";
     }
   }
 
   fetchSubFoldersRedirect(){
-    if (this.fileOptionsVisible || localStorage.getItem("renaming") == "true" || this.appIsInSelectionState) {
+    if (this.fileOptionsVisible || this.anyFileIsRenaming || this.appIsInSelectionState) {
       return;
     }
     this.router.navigate(["folder", ...Utils.cleanPath(this.FileFolder.filePath)]);
@@ -243,7 +258,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.FileFolder.uncreated = false;
         this.originalName = response.fileName;
         this.name = response.fileName;
-        localStorage.setItem("uncreatedFolderExists", "false");
+        this.filesState.setUncreatedFolderExists(false);
         if (this.appIsInSelectionState) {
           this.cdRef.detectChanges();
           this.showCheckbox();
@@ -327,8 +342,4 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
-  protected readonly localStorage = localStorage;
-  protected readonly HelperMethods = Utils;
-  protected readonly Utils = Utils;
 }

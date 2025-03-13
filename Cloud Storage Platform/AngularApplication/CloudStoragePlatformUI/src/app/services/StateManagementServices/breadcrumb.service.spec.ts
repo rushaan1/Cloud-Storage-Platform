@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FilesStateService } from './files-state.service';
+import { BreadcrumbService } from './breadcrumb.service';
 
-describe('ItemSelectionService', () => {
-  let service: FilesStateService;
+describe('BreadcrumbService', () => {
+  let service: BreadcrumbService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(FilesStateService);
+    service = TestBed.inject(BreadcrumbService);
   });
 
   it('should be created', () => {

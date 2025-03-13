@@ -40,7 +40,4 @@ export class Utils {
     return constructedPath;
   }
 
-  public static getCrumbs():string[]{
-    return JSON.parse(localStorage.getItem('breadcrumbs')!);
-  }
 }

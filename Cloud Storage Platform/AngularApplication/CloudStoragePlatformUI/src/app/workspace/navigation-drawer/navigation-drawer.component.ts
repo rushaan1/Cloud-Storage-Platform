@@ -1,7 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import { Router } from '@angular/router';
 import {EventService} from "../../services/event-service.service";
 import {Utils} from "../../Utils";
+import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
+import {FilesStateService} from "../../services/StateManagementServices/files-state.service";
 
 @Component({
   selector: 'drawer',
@@ -9,9 +11,19 @@ import {Utils} from "../../Utils";
   styleUrl: './navigation-drawer.component.css'
 })
 export class NavigationDrawerComponent implements OnInit {
+  @ViewChild("homeLi") homeLi!: ElementRef<HTMLElement>;
+  @ViewChild("homeLiA") homeALi!: ElementRef<HTMLElement>;
+  @ViewChild("homei") homeILi!: ElementRef<HTMLElement>;
+
+  @ViewChild("miniDrawerHomeLi") miniDrawerHomeLi!: ElementRef<HTMLElement>;
+  @ViewChild("miniDrawerHomeLiA") miniDrawerHomeALi!: ElementRef<HTMLElement>;
+  @ViewChild("miniDrawerHomei") miniDrawerHomeILi!: ElementRef<HTMLElement>;
+
   @Output() miniSet = new EventEmitter<boolean>();
   selectedTypeItems: string[] = [];
-  constructor(private router: Router, protected eventService:EventService) {
+  breadCrumbs: string[] = [];
+  anyItemRenaming = false;
+  constructor(private router: Router, protected eventService:EventService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {
 
   }
   ngOnInit(): void {
@@ -22,6 +34,22 @@ export class NavigationDrawerComponent implements OnInit {
       (document.getElementsByClassName("bg")[0] as HTMLElement).style.width = "50%";
     console.log(miniDrawer.style.translate);
     },100);
+
+    this.breadcrumbService.breadcrumbs$.subscribe(breadcrumbs=>{
+      this.breadCrumbs = breadcrumbs;
+    });
+    this.filesState.isRenaming$.subscribe(isRenaming => {
+      this.anyItemRenaming = isRenaming;
+    });
+
+    this.eventService.listen("home folder set active", ()=>{
+      this.homeLi.nativeElement.classList.add("active");
+      this.homeALi.nativeElement.classList.add("active");
+      this.homeILi.nativeElement.classList.add("active");
+      this.miniDrawerHomeLi.nativeElement.classList.add("active");
+      this.miniDrawerHomeALi.nativeElement.classList.add("active");
+      this.miniDrawerHomeILi.nativeElement.classList.add("active");
+    });
   }
 
   hoverTransitionTrigger(event: MouseEvent) {
@@ -215,7 +243,4 @@ export class NavigationDrawerComponent implements OnInit {
   createFolderClick(){
     this.eventService.emit('create new folder');
   }
-
-  protected readonly localStorage = localStorage;
-    protected readonly HelperMethods = Utils;
 }

@@ -7,7 +7,7 @@ import {
   Renderer2,
   ViewChild
 } from '@angular/core';
-import { ItemSelectionService } from '../../services/StateManagementServices/item-selection.service';
+import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
 import { EventService } from '../../services/event-service.service';
 import {File} from "../../models/File";
 import {timestamp} from "rxjs";
@@ -38,7 +38,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2){}
+  constructor(public itemSelectionService:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2){}
 
   ngAfterViewInit(): void {
     this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement];
