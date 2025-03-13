@@ -65,10 +65,10 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   searchClick(){
     if (this.searchFormControl.invalid){
       if (this.searchFormControl.hasError("invalidCharacter")){
-        this.eventService.emit("invalidCharacterNotif", this.searchFormControl.errors?.['invalidCharactersString']);
+        this.eventService.emit("addNotif",["Invalid character in input: "+this.searchFormControl.errors?.['invalidCharactersString'], 8000]);
       }
       else{
-        this.eventService.emit("emptyInputNotif");
+        this.eventService.emit("addNotif",["Input cannot be empty", 8000]);
       }
       this.searchDiv.nativeElement.classList.add("red-search-border");
     }

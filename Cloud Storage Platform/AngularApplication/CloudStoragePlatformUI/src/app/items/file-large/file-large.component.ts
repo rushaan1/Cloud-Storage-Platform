@@ -156,9 +156,9 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
             next: (response:File) => {
               this.FileFolder.fileName = response.fileName;
               this.FileFolder.filePath = response.filePath;
-              this.originalName = response.fileName;
               this.name = response.fileName;
-              this.eventService.emit("renameSuccessNotif", response.fileName);
+              this.eventService.emit("addNotif", ["Successfully renamed "+this.originalName+" to "+response.fileName, 15000]);
+              this.originalName = response.fileName;
               this.nameResizing();
               renameCompleted = true;
             },
@@ -176,10 +176,10 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       }
       else if (this.renameFormControl.invalid){
         if (this.renameFormControl.hasError("invalidCharacter")){
-          this.eventService.emit("invalidCharacterNotif", this.renameFormControl.errors?.['invalidCharactersString']);
+          this.eventService.emit("addNotif", ["Invalid character in input: "+this.renameFormControl.errors?.['invalidCharactersString'], 12000]);
         }
         else {
-          this.eventService.emit("emptyInputNotif");
+          this.eventService.emit("addNotif", ["Input cannot be empty", 12000]);
         }
         this.fileNameInput.nativeElement.focus();
         this.fileNameInput.nativeElement.classList.add("file-name-text-input-red");
@@ -190,7 +190,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   setupInput(collapseOptions:boolean, event?:Event) {
     event?.stopPropagation();
     if (localStorage.getItem("renaming")=="true" && !this.renaming){
-      this.eventService.emit("alreadyRenamingNotif");
+      this.eventService.emit("addNotif", ["Please finish renaming the current file first", 15000]);
       this.expandOrCollapseOptions();
       return;
     }
@@ -291,7 +291,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
-        this.eventService.emit("folderSuccessfullyMovedToTrashNotif", this.name);
+        this.eventService.emit("addNotif", ["Successfully moved "+this.name+" in trash", 20000]);
       },
       error: err => {
         // TODO ErrorNotif for this
@@ -301,10 +301,10 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   delete(event:MouseEvent){
     event.stopPropagation();
-    this.eventService.emit("deleteConfirmNotif", this.name, ()=>{
+    this.eventService.emit("deleteConfirmNotif", "Are you sure you want to permanently delete "+this.name+"?", ()=>{
       this.foldersService.deleteFolder(this.FileFolder.fileId).subscribe({
         next: (response:File) => {
-          this.eventService.emit("folderSuccessfullyDeletedNotif", this.name);
+          this.eventService.emit("addNotif", ["Successfully deleted "+this.name, 20000]);
           this.destroy.emit();
         },
         error: err => {
@@ -320,7 +320,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
-        this.eventService.emit("folderSuccessfullyRestoredNotif", this.name);
+        this.eventService.emit("addNotif", ["Successfully restored " + this.name, 20000]);
       },
       error: err => {
         // TODO ErrorNotif for this

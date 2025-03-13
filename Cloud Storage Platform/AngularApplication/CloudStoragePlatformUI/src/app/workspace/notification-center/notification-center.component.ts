@@ -1,4 +1,12 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  Renderer2,
+  ViewChild
+} from '@angular/core';
 import { ItemSelectionService } from '../../services/item-selection.service';
 import { EventService } from '../../services/event-service.service';
 import {File} from "../../models/File";
@@ -11,30 +19,17 @@ import {timestamp} from "rxjs";
 })
 export class NotificationCenterComponent implements AfterViewChecked, AfterViewInit {
   protected readonly window = window;
-  @ViewChild("emptyInputNotif") emptyInputNotif!:ElementRef;
-  @ViewChild("invalidCharacterNotif") invalidCharacterNotif!:ElementRef;
-  @ViewChild("alreadyRenamingNotif") alreadyRenamingNotif!:ElementRef;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
-  @ViewChild("renameSuccessNotif") renameSuccessNotif!:ElementRef;
   @ViewChild("deleteConfirmNotif") deleteConfirmNotif!:ElementRef;
-  @ViewChild("deleteSuccessNotif") deleteSuccessNotif!:ElementRef;
-  @ViewChild("restoreSuccessNotif") restoreSuccessNotif!:ElementRef;
-  @ViewChild("movedToTrashNotif") movedToTrashNotif!:ElementRef;
 
-  orderedInfoPanels:ElementRef[] = [];
-  recentInfoPanelsInSequence:ElementRef[] = [];
+  orderedInfoPanels:HTMLElement[] = [];
+  recentInfoPanelsInSequence:HTMLElement[] = [];
 
   itemsSelected = 0;
-  mostRecentNonStickyNotification:ElementRef | null = null;
+  mostRecentNonStickyNotification:HTMLElement | null = null;
 
-  invalidCharacter:string="";
-  successRenamedToName:string="";
   selectedItems:File[] = [];
-  folderToBeDeletedName:string="";
-  folderSuccessfullyDeletedName:string="";
-  folderSuccessfullyRestoredName:string="";
   deleteFunc: (() => void) | undefined;
-  folderMovedToTrashName: string = "";
 
   /*
 
@@ -43,17 +38,18 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService){}
+  constructor(public itemSelectionService:ItemSelectionService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2){}
 
   ngAfterViewInit(): void {
-    this.orderedInfoPanels = [this.selectionInfoPanel, this.emptyInputNotif, this.invalidCharacterNotif, this.alreadyRenamingNotif, this.renameSuccessNotif, this.deleteSuccessNotif, this.deleteConfirmNotif, this.restoreSuccessNotif, this.movedToTrashNotif];
+    this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement];
     //any new info panel must be added in the array above based on its position in the HTML file
 
-    window.addEventListener("scroll", () => {
-      this.updateNotificationAlertTxt();
-    });
-
     this.setNotificationEventListeners();
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowClick() {
+    this.updateNotificationAlertTxt();
   }
 
   ngAfterViewChecked(): void {
@@ -74,35 +70,35 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     if (this.mostRecentNonStickyNotification!=null){
       const notificationQuantity = visibleInfoPanels.length;
 
-      const alertTxt:HTMLElement = this.mostRecentNonStickyNotification.nativeElement.querySelector(".alertTxt");
+      const alertTxt:HTMLElement|null = this.mostRecentNonStickyNotification.querySelector(".alertTxt");
       if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>34){
-        alertTxt.style.display = "inline";
-        alertTxt.innerText = `+${notificationQuantity} notifications!`;
+        alertTxt!.style.display = "inline";
+        alertTxt!.innerText = `+${notificationQuantity} notifications!`;
       }
       else{
         if (this.mostRecentNonStickyNotification!=null) {
-          alertTxt.innerText = "";
-          alertTxt.style.display = "none";
+          alertTxt!.innerText = "";
+          alertTxt!.style.display = "none";
         }
       }
     }
   }
 
   computeStickyPanelsTop(){
-    let visibleOrderedStickyInfoPanels:ElementRef[] = this.orderedInfoPanels;
+    let visibleOrderedStickyInfoPanels:HTMLElement[] = this.orderedInfoPanels;
     visibleOrderedStickyInfoPanels = Array.from(visibleOrderedStickyInfoPanels).filter(panel => {
-      return (window.getComputedStyle(panel.nativeElement).display !== "none") && (panel.nativeElement.classList.contains("sticky-notif")==true);
+      return (window.getComputedStyle(panel).display !== "none") && (panel.classList.contains("sticky-notif")==true);
     });
 
     if (visibleOrderedStickyInfoPanels.length>0){
-      visibleOrderedStickyInfoPanels[0].nativeElement.style.top = `120px`;
+      visibleOrderedStickyInfoPanels[0].style.top = `120px`;
       let cumulativeHeights = 0;
       for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
         let previousInfoPanelHeight:number = parseFloat(
-          window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1].nativeElement).height
+          window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1]).height
         );
         cumulativeHeights += previousInfoPanelHeight;
-        visibleOrderedStickyInfoPanels[i].nativeElement.style.top = `${cumulativeHeights+120}px`;
+        visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+120}px`;
         console.log(previousInfoPanelHeight);
       }
     }
@@ -112,28 +108,30 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     const infoPanel = event.target as HTMLElement;
     infoPanel.parentElement!.style.display = "none";
     if (this.recentInfoPanelsInSequence.length>0){
-      this.setLatestAlertNotification(this.recentInfoPanelsInSequence.pop() as ElementRef, true);
-    }
-
-
-    if (infoPanel.parentElement==this.invalidCharacterNotif.nativeElement){
-      this.invalidCharacter = "";
+      this.setLatestAlertNotification(this.recentInfoPanelsInSequence.pop() as HTMLElement, true);
     }
   }
 
+  dissmissTextNotif(div:any){
+    if (this.recentInfoPanelsInSequence.length>0){
+      this.setLatestAlertNotification(this.recentInfoPanelsInSequence.pop() as HTMLElement, true);
+    }
+    this.renderer.removeChild(this.el.nativeElement, div);
+  }
+
   // Alert notifications can be dismissed and if there are multiple alert notifs only 1 of them will be sticky
-  setLatestAlertNotification(infoPanel:ElementRef, beingRemoved:boolean=false){
+  setLatestAlertNotification(infoPanel:HTMLElement, beingRemoved:boolean=false){
     if (this.mostRecentNonStickyNotification){
-      this.mostRecentNonStickyNotification.nativeElement.classList.remove("sticky-notif");
+      this.mostRecentNonStickyNotification.classList.remove("sticky-notif");
       if (!beingRemoved){
         this.recentInfoPanelsInSequence.push(this.mostRecentNonStickyNotification);
       }
     }
     this.mostRecentNonStickyNotification = infoPanel;
-    this.mostRecentNonStickyNotification.nativeElement.classList.add("sticky-notif");
+    this.mostRecentNonStickyNotification.classList.add("sticky-notif");
 
-    const infoText = this.mostRecentNonStickyNotification.nativeElement.querySelector(".infoText");
-    const timestamp = infoText.querySelector(".timestamp");
+    const infoText = this.mostRecentNonStickyNotification.querySelector(".infoText");
+    const timestamp:HTMLElement|null|undefined = infoText?.querySelector(".timestamp");
 
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
@@ -149,7 +147,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       newTimestamp.style.paddingLeft = "8px";
       newTimestamp.style.color = "gray";
       newTimestamp.classList.add("timestamp");
-      infoText.appendChild(newTimestamp);
+      infoText?.appendChild(newTimestamp);
     }
   }
 
@@ -167,50 +165,51 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.itemsSelected = this.selectedItems.length;
     });
 
-    this.eventService.listen("emptyInputNotif", ()=>{
-      this.emptyInputNotif.nativeElement.style.display = "flex";
-      this.setLatestAlertNotification(this.emptyInputNotif);
-    });
-
-    this.eventService.listen("invalidCharacterNotif", (character:string)=>{
-      this.invalidCharacterNotif.nativeElement.style.display = "flex";
-      this.setLatestAlertNotification(this.invalidCharacterNotif);
-      this.invalidCharacter = character;
-    });
-
-    this.eventService.listen("alreadyRenamingNotif", ()=>{
-      this.alreadyRenamingNotif.nativeElement.style.display = "flex";
-      this.setLatestAlertNotification(this.alreadyRenamingNotif);
-    });
-
-    this.eventService.listen("renameSuccessNotif", (renamedTo:string)=>{
-      this.renameSuccessNotif.nativeElement.style.display = "flex";
-      this.setLatestAlertNotification(this.renameSuccessNotif);
-      this.successRenamedToName = renamedTo;
-    });
-
-    this.eventService.listen("deleteConfirmNotif", (folderToBeDeletedName:string, deleteFunc: (() => void) | undefined)=>{
+    this.eventService.listen("deleteConfirmNotif", (notifMsg:string, deleteFunc: (() => void) | undefined)=>{
       this.deleteConfirmNotif.nativeElement.style.display = "flex";
-      this.folderToBeDeletedName = folderToBeDeletedName;
+      this.deleteConfirmNotif.nativeElement.querySelector(".infoText").innerText = notifMsg;
       this.deleteFunc = deleteFunc;
     });
 
-    this.eventService.listen("folderSuccessfullyDeletedNotif", (folderSuccessfullyDeletedName:string)=>{
-      this.deleteSuccessNotif.nativeElement.style.display = "flex";
-      this.folderSuccessfullyDeletedName = folderSuccessfullyDeletedName;
-      this.setLatestAlertNotification(this.deleteSuccessNotif);
-    });
-
-    this.eventService.listen("folderSuccessfullyRestoredNotif", (folderSuccessfullyRestoredName:string)=>{
-      this.restoreSuccessNotif.nativeElement.style.display = "flex";
-      this.folderSuccessfullyRestoredName = folderSuccessfullyRestoredName;
-      this.setLatestAlertNotification(this.restoreSuccessNotif);
-    });
-
-    this.eventService.listen("folderSuccessfullyMovedToTrashNotif", (folderMovedToTrashName:string)=>{
-      this.movedToTrashNotif.nativeElement.style.display = "flex";
-      this.folderMovedToTrashName = folderMovedToTrashName;
-      this.setLatestAlertNotification(this.movedToTrashNotif);
+    this.eventService.listen("addNotif", (args:string|number[])=>{
+      const notification:HTMLElement = this.createNotificationDiv(args[0] as string);
+      this.setLatestAlertNotification(notification);
+      setTimeout(()=>{
+        this.dissmissTextNotif(notification);
+      },args[1] as number)
     });
   }
+
+
+  createNotificationDiv(notificationText:string): any {
+    const infoPanel = this.renderer.createElement('div');
+    infoPanel.style.display = "flex";
+
+    this.renderer.addClass(infoPanel, 'info-panel');
+
+    const icon = this.renderer.createElement('i');
+    this.renderer.addClass(icon, 'fa-solid');
+    this.renderer.addClass(icon, 'fa-square-xmark');
+    this.renderer.listen(icon, 'click', (event: MouseEvent) => this.dissmissTextNotif(infoPanel));
+
+    const textDiv = this.renderer.createElement('div');
+    this.renderer.addClass(textDiv, 'margin-left');
+    this.renderer.addClass(textDiv, 'infoText');
+
+    const textNode = this.renderer.createText(notificationText + " ");
+    this.renderer.appendChild(textDiv, textNode);
+
+    const anchor = this.renderer.createElement('a');
+    this.renderer.addClass(anchor, 'alertTxt');
+    this.renderer.listen(anchor, 'click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    this.renderer.appendChild(textDiv, anchor);
+    this.renderer.appendChild(infoPanel, icon);
+    this.renderer.appendChild(infoPanel, textDiv);
+    this.renderer.appendChild(this.el.nativeElement, infoPanel);
+    this.orderedInfoPanels.push(infoPanel);
+    return infoPanel;
+  }
+
 }

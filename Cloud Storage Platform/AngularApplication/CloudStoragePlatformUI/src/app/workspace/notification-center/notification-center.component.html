@@ -4,46 +4,10 @@
   <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
 </div>
 
-<div #emptyInputNotif class="info-panel">
-  <!--KEEP IN MIND notification dismissing function will dismiss the parent element of the i element-->
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">The input cannot be empty! <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
-</div>
-
-<div #invalidCharacterNotif class="info-panel">
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Invalid character provided in the input {{invalidCharacter}} <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
-</div>
-
-<div #alreadyRenamingNotif class="info-panel">
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Unable to rename another file. Please complete renaming the current file/folder. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
-</div>
-
-<div #renameSuccessNotif class="info-panel">
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Successfully renamed to {{successRenamedToName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
-</div>
-
-<div #deleteSuccessNotif class="info-panel">
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Successfully deleted {{folderSuccessfullyDeletedName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
-</div>
-
 <div #deleteConfirmNotif class="info-panel sticky-notif">
-  <div class="margin-left infoText">Are you sure you want to delete {{folderToBeDeletedName}}?</div>
+  <div class="margin-left infoText"></div>
   <button (click)="deleteFunc ? deleteFunc() : false; dismissNotificationAlert($event);" class="panel-selected-menu-btn">Yes</button>
   <button (click)="dismissNotificationAlert($event)" class="panel-selected-menu-btn">No</button>
-</div>
-
-<div #restoreSuccessNotif class="info-panel">
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Successfully restored {{folderSuccessfullyRestoredName}}. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
-</div>
-
-<div #movedToTrashNotif class="info-panel">
-  <i (click)="dismissNotificationAlert($event)" class="fa-solid fa-square-xmark"></i>
-  <div class="margin-left infoText">Successfully moved {{folderMovedToTrashName}} to trash. <a (click)="window.scrollTo({top:0, behavior:'smooth'})" class="alertTxt"></a></div>
 </div>
 
 <!--TODO: De-clutter alertTxt anchor tag by utilizing a single-line reusable function-->

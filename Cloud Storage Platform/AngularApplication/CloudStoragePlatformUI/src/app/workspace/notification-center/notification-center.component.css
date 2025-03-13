@@ -41,7 +41,6 @@
 
 .alertTxt{
   cursor: pointer;
-  color: red;
   text-decoration: underline;
   display: none;
 }
