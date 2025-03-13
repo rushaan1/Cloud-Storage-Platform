@@ -4,7 +4,7 @@
 
   <notification-center></notification-center>
 
-  <div *ngIf="emptyFolderTxtActive" class="emptyFolder">Empty Folder</div>
+  <div *ngIf="emptyFolderTxtActive" class="emptyFolder">{{emptyTxt}}</div>
   <div class="files-and-folders">
     <file-large-item *ngFor="let folder of folders; index as i" [FileFolder]="folder" [type]="'folder'"
                      class="file-large-item-from-viewer" (destroy)="this.folders.splice(i,1)"></file-large-item>

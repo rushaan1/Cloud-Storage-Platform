@@ -27,6 +27,7 @@ export class ViewerComponent implements OnInit{
   anyItemRenaming = false;
   anyFolderUncreated = false;
   crumbs : string[] = [];
+  emptyTxt = "No folders to show";
 
   constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, private filesState:FilesStateService) {}
 
@@ -43,12 +44,16 @@ export class ViewerComponent implements OnInit{
       this.sortBy = sortBy;
       this.sortingOrder = sortingOrder;
       this.filesState.setRenaming(false);
+
+      if(this.crumbs[0]=="Search Results"){
+        this.handleSearchOperation();
+      }
       // use !queryName to see if query param is valid or empty/null/undefined
     });
 
 
     this.route.url.subscribe(url => {
-      const appUrl = this.router.url.split("/");
+      let appUrl = this.router.url.split("?q=")[0].split("/");
       // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure it's not relative but global url is accessed to ensure usability of program structure
       if (appUrl[0]==""){
         appUrl.shift();
@@ -106,7 +111,7 @@ export class ViewerComponent implements OnInit{
           }
           break;
         case "searchFilter":
-          // incase if search query param is not present redirect to home predefined filter because you cannot search empty or only spaces
+          this.handleSearchOperation();
           break;
         default:
           this.router.navigate(["filter", "home"]);
@@ -215,5 +220,26 @@ export class ViewerComponent implements OnInit{
       uncreated: true
     };
     this.folders.push(folder);
+  }
+
+  handleSearchOperation(){
+    if (Utils.validString(this.searchQuery)){
+      this.loaderService.loadingStart();
+      this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
+        next: res => {
+          this.folders = res;
+          this.breadcrumbService.setBreadcrumbs(["Search Results"]);
+          this.crumbs = ["Search Results"];
+        },
+        error: err => {},
+        complete: () => {
+          this.loaderService.loadingEnd();
+          if (this.folders.length == 0) {
+            this.emptyTxt = "No search results match "+this.searchQuery;
+            this.emptyFolderTxtActive = true;
+          }
+        }
+      });
+    }
   }
 }

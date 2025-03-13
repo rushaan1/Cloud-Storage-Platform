@@ -2,6 +2,7 @@ import {AfterViewChecked, Component, ElementRef, OnInit, ViewChild} from '@angul
 import {FormControl, Validators} from "@angular/forms";
 import {EventService} from "../../services/event-service.service";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'panel',
@@ -19,7 +20,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
 
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
-  constructor(public eventService:EventService){}
+  constructor(public eventService:EventService, private router: Router){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
@@ -72,6 +73,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       }
       this.searchDiv.nativeElement.classList.add("red-search-border");
     }
+    this.router.navigate(["searchFilter"], {queryParams:{q:this.searchFormControl.value}});
   }
 
   showPfpDropdown(onlyHiText:boolean){

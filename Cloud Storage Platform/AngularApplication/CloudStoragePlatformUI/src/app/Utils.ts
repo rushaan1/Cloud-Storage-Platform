@@ -2,7 +2,7 @@ import {ArgumentInvalidException} from "./ArgumentInvalidException";
 
 export class Utils {
   private constructor() {}
-  public static validString(str:string):boolean{
+  public static validString(str:string|undefined|null):boolean{
     if (str && str.trim().length > 0){
       return true;
     }
