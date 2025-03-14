@@ -4,7 +4,8 @@
 
   <notification-center></notification-center>
 
-  <div *ngIf="emptyFolderTxtActive" class="emptyFolder">{{emptyTxt}}</div>
+  <div *ngIf="!emptyFolderTxtActive && crumbs[0]=='Search Results'" class="topTxt resultsTxt">Search Results for {{searchQuery}}</div>
+  <div *ngIf="emptyFolderTxtActive" class="topTxt">{{emptyTxt}}</div>
   <div class="files-and-folders">
     <file-large-item *ngFor="let folder of folders; index as i" [FileFolder]="folder" [type]="'folder'"
                      class="file-large-item-from-viewer" (destroy)="this.folders.splice(i,1)"></file-large-item>

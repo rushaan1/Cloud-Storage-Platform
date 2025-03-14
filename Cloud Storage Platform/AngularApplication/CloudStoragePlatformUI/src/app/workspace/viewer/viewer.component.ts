@@ -111,6 +111,8 @@ export class ViewerComponent implements OnInit{
           }
           break;
         case "searchFilter":
+          this.breadcrumbService.setBreadcrumbs(["Search Results"]);
+          this.crumbs = ["Search Results"];
           this.handleSearchOperation();
           break;
         default:
@@ -163,9 +165,7 @@ export class ViewerComponent implements OnInit{
       },
       complete: () => {
         this.loaderService.loadingEnd();
-        if (this.folders.length == 0) {
-          this.emptyFolderTxtActive = true;
-        }
+        this.handleEmptyTxt();
       }
     });
   }
@@ -181,9 +181,7 @@ export class ViewerComponent implements OnInit{
       },
       complete: () => {
         this.loaderService.loadingEnd();
-        if (this.folders.length == 0) {
-          this.emptyFolderTxtActive = true;
-        }
+        this.handleEmptyTxt();
       }
     });
   }
@@ -228,18 +226,23 @@ export class ViewerComponent implements OnInit{
       this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
         next: res => {
           this.folders = res;
-          this.breadcrumbService.setBreadcrumbs(["Search Results"]);
-          this.crumbs = ["Search Results"];
         },
         error: err => {},
         complete: () => {
           this.loaderService.loadingEnd();
-          if (this.folders.length == 0) {
-            this.emptyTxt = "No search results match "+this.searchQuery;
-            this.emptyFolderTxtActive = true;
-          }
+          this.handleEmptyTxt("No search results match "+this.searchQuery);
         }
       });
+    }
+  }
+
+  handleEmptyTxt(txt:string=this.emptyTxt){
+    if (this.folders.length == 0) {
+      this.emptyFolderTxtActive = true;
+      this.emptyTxt = txt;
+    }
+    else {
+      this.emptyFolderTxtActive = false;
     }
   }
 }

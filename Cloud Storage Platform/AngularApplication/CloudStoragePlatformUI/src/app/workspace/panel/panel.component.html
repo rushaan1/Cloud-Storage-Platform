@@ -2,10 +2,11 @@
   <div class="panel-main">
     <div #panelMainFlex class="panel-main-flex">
 
-      <div #searchDiv class="search">
-        <input (blur)="searchLightenBorder()" (focus)="searchDarkenBorder()"
+      <div (mouseenter)="searchCrossVisibleDueToHover=true;" (mouseleave)="searchCrossVisibleDueToHover=false" #searchDiv class="search">
+        <input (blur)="searchLightenBorder(); searchCrossVisibleDueToFocus=false;" (focus)="searchDarkenBorder(); searchCrossVisibleDueToFocus=true;"
                (keydown.enter)="this.searchClick()" [formControl]="this.searchFormControl" class="searchbox" id="search" name="search"
                placeholder="Search the cloud" type="text">
+        <i (click)="searchClear()" *ngIf="(searchCrossVisibleDueToHover || searchCrossVisibleDueToFocus) && searchFormControl!.value!.trim().length>0" class="fa-solid fa-circle-xmark"></i>
 
         <div (click)="this.searchClick()" class="search-btn">
           <i class="fa-solid fa-magnifying-glass"></i>

@@ -3,6 +3,7 @@ import {FormControl, Validators} from "@angular/forms";
 import {EventService} from "../../services/event-service.service";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
 import {Router} from "@angular/router";
+import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 
 @Component({
   selector: 'panel',
@@ -17,13 +18,19 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   @ViewChild('pfpDropDownSpan') pfpDropDownSpan!: ElementRef<HTMLSpanElement>;
   mouseHoveringOverPfp = false;
   onlyHiText = false;
+  searchCrossVisibleDueToFocus = false;
+  searchCrossVisibleDueToHover = false;
 
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
-  constructor(public eventService:EventService, private router: Router){}
+  crumbs:string[] = [];
+  constructor(public eventService:EventService, private router: Router, private breadCrumbService:BreadcrumbService){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
+    this.breadCrumbService.breadcrumbs$.subscribe((crumbs)=>{
+      this.crumbs = crumbs;
+    });
   }
 
   ngAfterViewChecked(){
@@ -93,5 +100,13 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         this.hidePfpDropdown();
       }
     }, 8000);
+  }
+
+  searchClear(){
+    this.searchFormControl.setValue("");
+    this.searchDiv.nativeElement.classList.remove("red-search-border");
+    if (this.crumbs[0]=="Search Results"){
+      this.router.navigate(["filter", "home"]);
+    }
   }
 }

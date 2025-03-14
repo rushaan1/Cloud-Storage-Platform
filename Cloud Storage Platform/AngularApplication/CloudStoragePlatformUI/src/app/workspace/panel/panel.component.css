@@ -187,3 +187,14 @@ span {
   border-bottom: 6px solid white;
   z-index: 19;
 }
+
+
+.fa-circle-xmark{
+  margin-right: 3px;
+  color: gray;
+}
+
+.fa-circle-xmark:hover{
+  color: unset;
+  cursor: pointer;
+}
