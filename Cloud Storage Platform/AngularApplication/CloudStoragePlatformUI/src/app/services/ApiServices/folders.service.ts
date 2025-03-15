@@ -15,42 +15,65 @@ export class FoldersService {
   constructor(private httpClient:HttpClient) { }
 
   public getAllFoldersInHome():Observable<File[]>{
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFoldersInHome`);
+    let params = new HttpParams();
+    const sortVal = localStorage.getItem("sort")?.toString();
+    if (sortVal){
+      params = params.set('sortOrder', sortVal);
+    }
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFoldersInHome`, {params: params});
   }
 
   public getAllSubFoldersByParentFolderPath(folderPath:string):Observable<File[]>{
     Utils.handleStringInvalidError(folderPath);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('path', folderPath);
+    const sortVal = localStorage.getItem("sort")?.toString();
+    if (sortVal){
+      params = params.set('sortOrder', sortVal);
+    }
     return this.httpClient.get<File[]>(`${BASE_URL}/getAllSubFoldersByPath`, {params:params});
   }
 
   public getFolderByFolderId(folderId:string):Observable<File>{
     Utils.handleStringInvalidError(folderId);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('folderId', folderId);
     return this.httpClient.get<File>(`${BASE_URL}/getFolderById`, {params:params});
   }
 
   public getFolderByFolderPath(path:string):Observable<File>{
     Utils.handleStringInvalidError(path);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('path', path);
     return this.httpClient.get<File>(`${BASE_URL}/getFolderByPath`, {params:params});
   }
 
   public getFilteredFolders(searchString:string):Observable<File[]>{
     Utils.handleStringInvalidError(searchString);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('searchString', searchString);
+    const sortVal = localStorage.getItem("sort")?.toString();
+    if (sortVal){
+      params = params.set('sortOrder', sortVal);
+    }
     return this.httpClient.get<File[]>(`${BASE_URL}/getFilteredFolders`, {params:params});
   }
 
   public getAllFavoriteFolders():Observable<File[]>{
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFavoriteFolders`);
+    let params = new HttpParams();
+    const sortVal = localStorage.getItem("sort")?.toString();
+    if (sortVal){
+      params = params.set('sortOrder', sortVal);
+    }
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFavoriteFolders`, {params:params});
   }
   public getAllTrashFolders():Observable<File[]>{
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllTrashFolders`);
+    let params = new HttpParams();
+    const sortVal = localStorage.getItem("sort")?.toString();
+    if (sortVal){
+      params = params.set('sortOrder', sortVal);
+    }
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllTrashFolders`, {params:params});
   }
 
 
@@ -75,7 +98,7 @@ export class FoldersService {
   public moveFolder(folderId:string, newFolderPath:string):Observable<File>{
     Utils.handleStringInvalidError(folderId);
     Utils.handleStringInvalidError(newFolderPath);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('folderId', folderId)
       .set('newFolderPath', newFolderPath);
     return this.httpClient.patch<File>(`${BASE_URL}/move`,null, {params:params});
@@ -83,21 +106,21 @@ export class FoldersService {
 
   public deleteFolder(folderId:string):Observable<File>{
     Utils.handleStringInvalidError(folderId);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('folderId', folderId)
     return this.httpClient.delete<File>(`${BASE_URL}/delete`, {params:params});
   }
 
   public addOrRemoveFromFavorite(folderId:string):Observable<File>{
     Utils.handleStringInvalidError(folderId);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('folderId', folderId)
     return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromFavorite`, null, {params:params});
   }
 
   public addOrRemoveFromTrash(folderId:string):Observable<File>{
     Utils.handleStringInvalidError(folderId);
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('folderId', folderId)
     return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromTrash`, null, {params:params});
   }

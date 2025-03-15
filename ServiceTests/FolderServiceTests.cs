@@ -705,7 +705,7 @@ namespace ServiceTests
         public async Task GetAllFoldersInHomeFolder_NoFoldersFound_ReturnsEmptyList()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
                 .ReturnsAsync(new Folder());
 
@@ -721,7 +721,7 @@ namespace ServiceTests
         public async Task GetAllFoldersInHomeFolder_Success_Alphabetical()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
             
             var folders = new List<Folder>
             {
@@ -747,7 +747,7 @@ namespace ServiceTests
         public async Task GetAllFoldersInHomeFolder_Success_Size()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.SIZE;
+            var sortOptions = SortOrderOptions.SIZE_ASCENDING;
             
             var folders = new List<Folder>
     {
@@ -776,7 +776,7 @@ namespace ServiceTests
         public async Task GetAllSubFolders_FolderDoesntExists()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync((Folder) null!);
 
@@ -794,7 +794,7 @@ namespace ServiceTests
         public async Task GetAllSubFolders_NoSubFolders()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
             var folder = new Folder() { FolderId = _fixture.Create<Guid>() };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
@@ -811,7 +811,7 @@ namespace ServiceTests
         public async Task GetAllSubFolders_Success_AlphabeticalAscending()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
             
             var folders = new List<Folder>
             {
@@ -839,7 +839,7 @@ namespace ServiceTests
         [Fact]
         public async Task GetFilteredFolders_FolderDoesntExists()
         {
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
             _foldersRepositoryMock.Setup(f => f.GetFilteredFolders(It.IsAny<Expression<Func<Folder, bool>>>()))
                 .ReturnsAsync(new List<Folder>());
 
@@ -854,7 +854,7 @@ namespace ServiceTests
         public async Task GetFilteredFolders_FolderSearchSuccessful()
         {
             // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL;
+            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
 
             var filteredFolders = new List<Folder>
             {

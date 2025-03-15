@@ -16,14 +16,13 @@ import {BreadcrumbService} from "../../services/StateManagementServices/breadcru
 })
 export class ViewerComponent implements OnInit{
   @ViewChild(BreadcrumbsComponent) breadcrumbsComponent!: BreadcrumbsComponent;
+  appUrl: string[] = [];
   folders: File[] = [];
   files: File[] = [];
   emptyFolderTxtActive = false;
 
   searchQuery?:string;
-  predefinedTypeFilter?:string;
-  sortBy?:string;
-  sortingOrder?:string;
+  sort?:string;
   anyItemRenaming = false;
   anyFolderUncreated = false;
   crumbs : string[] = [];
@@ -35,14 +34,10 @@ export class ViewerComponent implements OnInit{
     this.filesState.setUncreatedFolderExists(false);
     this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];
-      const typeFilter = params['predefinedTypeFilter'];
-      const sortBy = params['sortBy'];
-      const sortingOrder = params['sortingOrder'];
+      const sort = params["sort"];
 
       this.searchQuery = searchQuery;
-      this.predefinedTypeFilter = typeFilter;
-      this.sortBy = sortBy;
-      this.sortingOrder = sortingOrder;
+      this.sort = sort;
       this.filesState.setRenaming(false);
 
       if(this.crumbs[0]=="Search Results"){
@@ -53,7 +48,7 @@ export class ViewerComponent implements OnInit{
 
 
     this.route.url.subscribe(url => {
-      let appUrl = this.router.url.split("?q=")[0].split("/");
+      let appUrl = this.router.url.split("?")[0].split("/");
       // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure it's not relative but global url is accessed to ensure usability of program structure
       if (appUrl[0]==""){
         appUrl.shift();
@@ -66,59 +61,8 @@ export class ViewerComponent implements OnInit{
         this.router.navigate(["filter", "home"]);
         return;
       }
-      this.crumbs = Utils.obtainBreadCrumbs(appUrl);
-      this.breadcrumbService.setBreadcrumbs(this.crumbs);
-      switch(appUrl[0]){
-        case "filter":
-          if (appUrl[1]){
-            switch (appUrl[1]){
-              case "home":
-                // TODO
-                this.loaderService.loadingStart();
-                this.loadHomeFolder();
-                break;
-              case "recents":
-                this.crumbs = ["Recents"];
-                break;
-              case "favorites":
-                this.loaderService.loadingStart();
-                this.loadFavoriteFolders();
-                this.crumbs = ["Favorites"];
-                // TODO For files
-                break;
-              case "trash":
-                this.loaderService.loadingStart();
-                this.loadTrashFolders();
-                this.crumbs = ["Trash"];
-                break;
-            }
-          }
-          break;
-        case "folder":
-          const constructedPathForApi = Utils.constructFilePathForApi(appUrl);
-          // API
-          if (Utils.validString(constructedPathForApi)){
-            this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
-              next: response => {
-                this.folders = response;
-                if (appUrl[appUrl.length-1]=='home'){
-                  this.eventService.emit("home folder set active");
-                }
-              },
-              error: err => {}, //TODO
-              complete: () => {} //TODO
-            });
-          }
-          break;
-        case "searchFilter":
-          this.breadcrumbService.setBreadcrumbs(["Search Results"]);
-          this.crumbs = ["Search Results"];
-          this.handleSearchOperation();
-          break;
-        default:
-          this.router.navigate(["filter", "home"]);
-          break;
-      }
+      this.appUrl = appUrl;
+      this.handleFolderLoaders();
 
       if (this.breadcrumbsComponent) {
         // Manually initializing breadcrumbs because once its initialized with ngOnInit the ngOnInit function won't run everytime breadcrumbs redirects to route being catched by existing parent component (viewer) already containing breadcrumbs which misses the necessary initialization needed after every navigation by breadcrumbs
@@ -131,12 +75,73 @@ export class ViewerComponent implements OnInit{
       this.createNewFolder();
     });
 
+    this.eventService.listen("sort changed", () => {
+      this.handleFolderLoaders();
+    });
+
     this.filesState.isRenaming$.subscribe(isRenaming => {
       this.anyItemRenaming = isRenaming;
     });
     this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
     });
+  }
+
+  handleFolderLoaders(){
+    const appUrl = this.appUrl;
+    this.crumbs = Utils.obtainBreadCrumbs(appUrl);
+    this.breadcrumbService.setBreadcrumbs(this.crumbs);
+    switch(appUrl[0]){
+      case "filter":
+        if (appUrl[1]){
+          switch (appUrl[1]){
+            case "home":
+              // TODO
+              this.loaderService.loadingStart();
+              this.loadHomeFolder();
+              break;
+            case "recents":
+              this.crumbs = ["Recents"];
+              break;
+            case "favorites":
+              this.loaderService.loadingStart();
+              this.loadFavoriteFolders();
+              this.crumbs = ["Favorites"];
+              // TODO For files
+              break;
+            case "trash":
+              this.loaderService.loadingStart();
+              this.loadTrashFolders();
+              this.crumbs = ["Trash"];
+              break;
+          }
+        }
+        break;
+      case "folder":
+        const constructedPathForApi = Utils.constructFilePathForApi(appUrl);
+
+        if (Utils.validString(constructedPathForApi)){
+          this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
+            next: response => {
+              this.folders = response;
+              if (appUrl[appUrl.length-1]=='home'){
+                this.eventService.emit("home folder set active");
+              }
+            },
+            error: err => {}, //TODO
+            complete: () => {} //TODO
+          });
+        }
+        break;
+      case "searchFilter":
+        this.breadcrumbService.setBreadcrumbs(["Search Results"]);
+        this.crumbs = ["Search Results"];
+        this.handleSearchOperation();
+        break;
+      default:
+        this.router.navigate(["filter", "home"]);
+        break;
+    }
   }
 
   loadHomeFolder() {

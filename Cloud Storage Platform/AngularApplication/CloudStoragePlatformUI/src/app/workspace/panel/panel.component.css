@@ -102,15 +102,20 @@ span {
   cursor: pointer;
 }
 
+.sort-parent-div{
+  display: flex;
+  max-width: 7%;
+  flex-direction: column;
+}
 
 #sortBy {
-  height: 39.8px;
-  width: 8.3%;
-  padding: 0 2.5px 0 2.5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  height: fit-content;
+  max-width: 100%;
+  padding: 0 2.5px 1px 2.5px;
+  /*display: flex;*/
+  /*justify-content: center;*/
+  /*align-items: center;*/
+  /*text-align: center;*/
   background: transparent;
   border: none;
 }
@@ -122,6 +127,11 @@ span {
 
 #sortBy:focus-visible {
   outline: none;
+}
+
+.sort-parent-div span{
+  font-size: 10px;
+  padding-left: 5px;
 }
 
 .style {
@@ -198,3 +208,4 @@ span {
   color: unset;
   cursor: pointer;
 }
+

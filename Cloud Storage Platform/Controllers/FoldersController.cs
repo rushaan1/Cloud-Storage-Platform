@@ -30,7 +30,7 @@ namespace Cloud_Storage_Platform.Controllers
         #region Retrievals
         [HttpGet]
         [Route("getAllFoldersInHome")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllFoldersInHomeFolder(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED) 
+        public async Task<ActionResult<List<FolderResponse>>> GetAllFoldersInHomeFolder(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
         {
             List<FolderResponse> folders = await _foldersRetrievalService.GetAllFoldersInHomeFolder(sortOrder);
             if (folders.Count == 0) 
@@ -42,7 +42,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllSubFoldersById")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED) 
+        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
         {
             List<FolderResponse> folders = await _foldersRetrievalService.GetAllSubFolders(parentFolderId, sortOrder);
             return folders;
@@ -50,7 +50,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllSubFoldersByPath")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders([ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders([ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             FolderResponse? parent = await _foldersRetrievalService.GetFolderByFolderPath(path);
             if (parent == null) 
@@ -63,7 +63,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getFilteredFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        public async Task<ActionResult<List<FolderResponse>>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             string searchStringTrimmed = searchString.Trim();
             List<FolderResponse> folders = await _foldersRetrievalService.GetFilteredFolders(searchStringTrimmed, sortOrder);
@@ -72,7 +72,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllFavoriteFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllFavoriteFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        public async Task<ActionResult<List<FolderResponse>>> GetAllFavoriteFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             List<FolderResponse> folders = await _foldersRetrievalService.GetAllFavoriteFolders(sortOrder);
             return folders;
@@ -80,7 +80,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllTrashFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllTrashFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED)
+        public async Task<ActionResult<List<FolderResponse>>> GetAllTrashFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             List<FolderResponse> folders = await _foldersRetrievalService.GetAllTrashFolders(sortOrder);
             return folders;

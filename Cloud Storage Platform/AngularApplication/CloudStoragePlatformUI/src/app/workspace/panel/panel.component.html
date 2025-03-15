@@ -18,20 +18,23 @@
         Upload
       </button>
 
-      <select id="sortBy">
-        <option [selected]="true">Sort by</option>
-        <option id="sort-0-0">Alphabetical (A to Z)</option>
-        <option id="sort-0-1">Alphabetical (Z to A)</option>
-        <option id="sort-1-0">Date Added (New to Old)</option>
-        <option id="sort-1-1">Date Added (Old to New)</option>
-        <option id="sort-3-0">Size (Low to High)</option>
-        <option id="sort-3-1">Size (High to Low)</option>
-        <option id="sort-2-0">Last Opened (Recently opened first)</option>
-        <option id="sort-2-1">Last Opened (Least recently opened first)</option>
-      </select>
+      <div #sortParent class="sort-parent-div">
+        <select #sortSelection (change)="sortingChanged($event)" id="sortBy">
+          <option>Sort by</option>
+          <option class="asc" value="0">Alphabetical (A to Z)</option>
+          <option class="desc" value="1">Alphabetical (Z to A)</option>
+          <option class="desc" value="3">Date Added (New to Old)</option>
+          <option class="asc" value="2">Date Added (Old to New)</option>
+          <option class="asc" value="6">Size (Low to High)</option>
+          <option class="desc" value="7">Size (High to Low)</option>
+          <option class="desc" value="5">Last Opened (Recently opened first)</option>
+          <option class="asc" value="4">Last Opened (Least recently opened first)</option>
+        </select>
+        <span #sorting></span>
+      </div>
+
 
       <div class="style">
-        <!--                <input [checked]="true" type="checkbox" name="style" id="style"/>-->
         <div class="large-icon-text">Switch to list style</div>
       </div>
 

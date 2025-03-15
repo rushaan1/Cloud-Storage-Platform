@@ -54,17 +54,29 @@ namespace CloudStoragePlatform.Core
             List<Folder> sorted = new List<Folder>();
             switch (option)
             {
-                case SortOrderOptions.ALPHABETICAL:
+                case SortOrderOptions.ALPHABETICAL_ASCENDING:
                     sorted = folders.OrderBy(f => f.FolderName).ToList();
                     break;
-                case SortOrderOptions.DATEADDED:
+                case SortOrderOptions.ALPHABETICAL_DESCENDING:
+                    sorted = folders.OrderByDescending(f => f.FolderName).ToList();
+                    break;
+                case SortOrderOptions.DATEADDED_ASCENDING:
                     sorted = folders.OrderBy(f => f.CreationDate).ToList();
                     break;
-                case SortOrderOptions.LASTOPENED:
+                case SortOrderOptions.DATEADDED_DESCENDING:
+                    sorted = folders.OrderByDescending(f => f.CreationDate).ToList();
+                    break;
+                case SortOrderOptions.LASTOPENED_ASCENDING:
                     sorted = folders.OrderBy(f => f.Metadata?.LastOpened).ToList();
                     break;
-                case SortOrderOptions.SIZE:
+                case SortOrderOptions.LASTOPENED_DESCENDING:
+                    sorted = folders.OrderByDescending(f => f.Metadata?.LastOpened).ToList();
+                    break;
+                case SortOrderOptions.SIZE_ASCENDING:
                     sorted = folders.OrderBy(f => f.Metadata?.Size).ToList();
+                    break;
+                case SortOrderOptions.SIZE_DESCENDING:
+                    sorted = folders.OrderByDescending(f => f.Metadata?.Size).ToList();
                     break;
             }
             return sorted;

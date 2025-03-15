@@ -2,7 +2,7 @@ import {AfterViewChecked, Component, ElementRef, OnInit, ViewChild} from '@angul
 import {FormControl, Validators} from "@angular/forms";
 import {EventService} from "../../services/event-service.service";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 
 @Component({
@@ -16,6 +16,10 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   @ViewChild('panelMainFlex') panelMainFlex!: ElementRef<HTMLDivElement>;
   @ViewChild('pfp') pfp!: ElementRef<HTMLDivElement>;
   @ViewChild('pfpDropDownSpan') pfpDropDownSpan!: ElementRef<HTMLSpanElement>;
+  @ViewChild('sortSelection') sortSelection!: ElementRef<HTMLSelectElement>;
+  @ViewChild("sorting") sortingTxt!: ElementRef<HTMLSpanElement>;
+  @ViewChild('sortParent') sortParent!: ElementRef<HTMLDivElement>;
+
   mouseHoveringOverPfp = false;
   onlyHiText = false;
   searchCrossVisibleDueToFocus = false;
@@ -24,7 +28,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
   crumbs:string[] = [];
-  constructor(public eventService:EventService, private router: Router, private breadCrumbService:BreadcrumbService){}
+  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
@@ -109,4 +113,28 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       this.router.navigate(["filter", "home"]);
     }
   }
+
+  sortingChanged(event:Event){
+    const selectElem:HTMLSelectElement = event.target as HTMLSelectElement;
+    const val = selectElem.value;
+    const selected = selectElem.options[selectElem.selectedIndex];
+    if (selected.className=="asc"){
+      this.sortingTxt.nativeElement.innerHTML = selected.text.split(" (")[0] + "  &uarr;";
+    }
+    else{
+      this.sortingTxt.nativeElement.innerHTML = selected.text.split(" (")[0] + "  &darr;";
+    }
+    this.sortParent.nativeElement.style.marginTop = "12px";
+    localStorage.setItem("sort",val);
+    this.sortSelection.nativeElement.selectedIndex = 0;
+    this.router.navigate([], {
+      relativeTo:this.route,
+      queryParams: {
+        sort: val
+      },
+      queryParamsHandling:'merge'
+    });
+    this.eventService.emit("sort changed");
+  }
+
 }
