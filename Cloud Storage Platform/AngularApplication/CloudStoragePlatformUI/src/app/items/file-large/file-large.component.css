@@ -5,6 +5,20 @@
   width: 90px;
 }
 
+.file-item-icon-move-state {
+  background: url('../item-icons/document-icon.png');
+  background-size: cover;
+  height: 45px;
+  width: 45px;
+}
+
+.file-move-state{
+  display: flex;
+  flex-direction: row;
+  padding: 15px 15px 5px 15px;
+  margin-top: 15px;
+}
+
 .picture {
   background: url('../item-icons/pic-icon.png');
   background-size: cover;
@@ -125,6 +139,12 @@ input.file-name-text-input-red:focus {
   text-align: center;
 }
 
+.file-name-text-div-move-state{
+  font-size: 16px;
+  width: fit-content !important;
+  margin-left: 10px;
+}
+
 .move-opacity-settings {
   opacity: 0;
   transition: opacity 0.2s ease-in;
@@ -175,4 +195,17 @@ input.file-name-text-input-red:focus {
 
 .visible-checkbox {
   visibility: visible !important;
+}
+
+.move-options{
+  cursor: pointer;
+  padding: 0px 5px 0px 5px;
+  /*width: 40%;*/
+  /*min-height: 46px;*/
+}
+
+.btn-container {
+  display: flex;
+  flex-direction: row;
+  margin-right: 25px;
 }
