@@ -11,12 +11,12 @@
     </div>
 
     <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" class="file-options">
-        <i #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
+        <i [ngClass]="{'ellipsis-visible':!this.selected}" #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
         <i (mouseenter)="hoveringOverDestroy=true" (mouseleave)="hoveringOverDestroy=false" #abortCreationCross (click)="destroy.emit(); filesState.setRenaming(false); filesState.setUncreatedFolderExists(false);" *ngIf="this.FileFolder.uncreated" class="fa-solid fa-xmark"></i>
     </div>
 
     <!--150x180.25-->
-    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
+    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : this.filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
     <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
     <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>

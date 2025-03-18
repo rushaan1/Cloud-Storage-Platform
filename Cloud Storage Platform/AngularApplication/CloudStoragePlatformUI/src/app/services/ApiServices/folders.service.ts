@@ -124,4 +124,30 @@ export class FoldersService {
       .set('folderId', folderId)
     return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromTrash`, null, {params:params});
   }
+
+  public batchAddOrRemoveFromTrash(folderIds:string[]):Observable<object>{
+    for (let id of folderIds){
+      Utils.handleStringInvalidError(id);
+    }
+    return this.httpClient.patch(`${BASE_URL}/batchAddOrRemoveFromTrash`, folderIds);
+  }
+
+  public batchDelete(folderIds:string[]):Observable<object>{
+    for (let id of folderIds){
+      Utils.handleStringInvalidError(id);
+    }
+    let params = new HttpParams();
+    folderIds.forEach(id => {params = params.append('folderIds', id)});
+    return this.httpClient.delete(`${BASE_URL}/batchDelete`, {params:params});
+  }
+
+  public batchMove(folderIds:string[], newPath:string):Observable<object>{
+    Utils.handleStringInvalidError(newPath);
+    for (let id of folderIds){
+      Utils.handleStringInvalidError(id);
+    }
+    let params = new HttpParams()
+      .set('newFolderPath', newPath);
+    return this.httpClient.patch(`${BASE_URL}/batchMove`, folderIds, {params:params});
+  }
 }

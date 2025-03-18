@@ -13,5 +13,8 @@ export class BreadcrumbService {
     this.breadcrumbs.next(breadcrumbs);
   }
 
+  getBreadcrumbs():string[] {
+    return this.breadcrumbs.value;
+  }
 
 }

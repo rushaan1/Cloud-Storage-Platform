@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, Subject } from "rxjs";
+import {Observable, Subject, Subscription} from "rxjs";
 
 @Injectable({ providedIn: "root" })
 export class EventService {
@@ -21,8 +21,8 @@ export class EventService {
     this.subject.next({ eventName, payload, callback });
   }
 
-  listen(eventName: string, callback: (payload: any, callBackFn?:()=>void) => void) {
-    this.subject.asObservable().subscribe((obj: any) => {
+  listen(eventName: string, callback: (payload: any, callBackFn?:()=>void) => void):Subscription {
+    return this.subject.asObservable().subscribe((obj: any) => {
       if (eventName === obj.eventName) {
         callback(obj.payload, obj.callback);
       }

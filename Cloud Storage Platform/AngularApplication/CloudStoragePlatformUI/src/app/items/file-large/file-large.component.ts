@@ -239,8 +239,20 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     }
   }
 
+
   fetchSubFoldersRedirect(){
     if (this.fileOptionsVisible || this.anyFileIsRenaming || this.appIsInSelectionState) {
+      if (this.appIsInSelectionState){
+        if (this.selected){
+          this.filesState.deselectItem(this.FileFolder);
+          this.selectFileCheckbox.nativeElement.checked = false;
+          this.showCheckbox();
+        }
+        else if (!this.selected){
+          this.filesState.addSelectedItem(this.FileFolder);
+          this.selectFileCheckbox.nativeElement.checked = true;
+        }
+      }
       return;
     }
     this.router.navigate(["folder", ...Utils.cleanPath(this.FileFolder.filePath)]);

@@ -11,6 +11,8 @@ import { FilesStateService } from '../../services/StateManagementServices/files-
 import { EventService } from '../../services/event-service.service';
 import {File} from "../../models/File";
 import {timestamp} from "rxjs";
+import {FoldersService} from "../../services/ApiServices/folders.service";
+import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 
 @Component({
   selector: 'notification-center',
@@ -38,7 +40,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public itemSelectionService:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2){}
+  constructor(public itemSelectionService:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FoldersService, protected breadcrumbService:BreadcrumbService){}
 
   ngAfterViewInit(): void {
     this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement];
@@ -154,8 +156,8 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
   setNotificationEventListeners(){
 
-    this.itemSelectionService.selectedItems$.subscribe(selectionInfoPanels => {
-      this.selectedItems = selectionInfoPanels;
+    this.itemSelectionService.selectedItems$.subscribe(selectedFiles => {
+      this.selectedItems = selectedFiles;
       if (this.selectedItems.length > 0) {
         this.selectionInfoPanel.nativeElement.style.display = "flex";
       }
@@ -210,6 +212,36 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.renderer.appendChild(this.el.nativeElement, infoPanel);
     this.orderedInfoPanels.push(infoPanel);
     return infoPanel;
+  }
+
+  moveToTrash(){
+    this.foldersService.batchAddOrRemoveFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
+      next:()=>{
+        this.eventService.emit("addNotif", ["Moved to trash "+this.itemsSelected+" items.", 12000]);
+        this.itemSelectionService.deSelectAll();
+        this.eventService.emit("reload viewer list");
+      }
+    });
+  }
+
+  restore(){
+    this.foldersService.batchAddOrRemoveFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
+      next:()=>{
+        this.eventService.emit("addNotif", ["Restored "+this.itemsSelected+" items.", 12000]);
+        this.itemSelectionService.deSelectAll();
+        this.eventService.emit("reload viewer list");
+      }
+    });
+  }
+
+  delete(){
+    this.foldersService.batchDelete(this.selectedItems.map((f)=>f.fileId)).subscribe({
+      next:()=>{
+        this.eventService.emit("addNotif", ["Deleted permanently "+this.itemsSelected+" items.", 12000]);
+        this.itemSelectionService.deSelectAll();
+        this.eventService.emit("reload viewer list");
+      }
+    });
   }
 
 }

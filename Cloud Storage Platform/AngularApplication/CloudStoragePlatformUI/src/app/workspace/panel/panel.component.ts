@@ -134,7 +134,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       },
       queryParamsHandling:'merge'
     });
-    this.eventService.emit("sort changed");
+    this.eventService.emit("reload viewer list");
   }
 
 }

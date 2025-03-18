@@ -86,8 +86,8 @@ namespace CloudStoragePlatform.Core.Services
             {
                 return new List<FolderResponse>();
             }
-            List<Folder> sortedFolderzzzzzz = Utilities.Sort(folders, sortOptions);
-            return sortedFolderzzzzzz.Select(f => f.ToFolderResponse()).ToList();
+            List<Folder> sortedFolders = Utilities.Sort(folders, sortOptions);
+            return sortedFolders.Select(f => f.ToFolderResponse()).ToList();
         } //TODO Unit test this service
 
         public async Task<FolderResponse?> GetFolderByFolderId(Guid fid)

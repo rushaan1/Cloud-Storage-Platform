@@ -1,7 +1,10 @@
 <div #selectionInfoPanel class="info-panel sticky-notif">
   <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
   <span class="items-select-txt txt">{{itemsSelected}} Item(s) Selected</span>
-  <button class="trash-btn panel-selected-menu-btn">Move to Trash</button>
+  <button *ngIf="this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]!='trash'"(click)="moveToTrash()" class="trash-btn panel-selected-menu-btn">Move to Trash</button>
+  <button *ngIf="this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]=='trash'" (click)="restore()" class="trash-btn panel-selected-menu-btn">Restore</button>
+  <button *ngIf="this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]=='trash'" (click)="delete()" class="trash-btn panel-selected-menu-btn">Delete Permanently</button>
+  <button class="trash-btn panel-selected-menu-btn">Move to other folder</button>
 </div>
 
 <div #deleteConfirmNotif class="info-panel sticky-notif">

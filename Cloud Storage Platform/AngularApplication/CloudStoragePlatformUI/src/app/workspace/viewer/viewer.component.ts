@@ -1,4 +1,4 @@
-import {AfterViewChecked, AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewChecked, AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
 import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
@@ -8,17 +8,19 @@ import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../breadcrumbs/breadcrumbs.component";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'viewer',
   templateUrl: './viewer.component.html',
   styleUrl: './viewer.component.css'
 })
-export class ViewerComponent implements OnInit{
+export class ViewerComponent implements OnInit, OnDestroy{
   @ViewChild(BreadcrumbsComponent) breadcrumbsComponent!: BreadcrumbsComponent;
   appUrl: string[] = [];
   folders: File[] = [];
   files: File[] = [];
+  subscriptions: Subscription[] = [];
   emptyFolderTxtActive = false;
 
   searchQuery?:string;
@@ -32,7 +34,7 @@ export class ViewerComponent implements OnInit{
 
   ngOnInit(): void {
     this.filesState.setUncreatedFolderExists(false);
-    this.route.queryParams.subscribe(params => {
+    this.subscriptions.push(this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];
       const sort = params["sort"];
 
@@ -44,10 +46,10 @@ export class ViewerComponent implements OnInit{
         this.handleSearchOperation();
       }
       // use !queryName to see if query param is valid or empty/null/undefined
-    });
+    }));
 
 
-    this.route.url.subscribe(url => {
+    this.subscriptions.push(this.route.url.subscribe(url => {
       let appUrl = this.router.url.split("?")[0].split("/");
       // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure it's not relative but global url is accessed to ensure usability of program structure
       if (appUrl[0]==""){
@@ -69,22 +71,27 @@ export class ViewerComponent implements OnInit{
         this.breadcrumbsComponent.initializeBreadcrumbs();
         console.log("manually initialized breadcrumbs");
       }
-    });
+    }));
 
-    this.eventService.listen("create new folder", () => {
+    this.subscriptions.push(this.eventService.listen("create new folder", () => {
       this.createNewFolder();
-    });
+    }));
 
-    this.eventService.listen("sort changed", () => {
+    this.subscriptions.push(this.eventService.listen("reload viewer list", () => {
       this.handleFolderLoaders();
-    });
+    }));
 
-    this.filesState.isRenaming$.subscribe(isRenaming => {
+    this.subscriptions.push(this.filesState.isRenaming$.subscribe(isRenaming => {
       this.anyItemRenaming = isRenaming;
-    });
-    this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
+    }));
+
+    this.subscriptions.push(this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
-    });
+    }));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   handleFolderLoaders(){

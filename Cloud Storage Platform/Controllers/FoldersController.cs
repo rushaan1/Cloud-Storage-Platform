@@ -110,9 +110,6 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("add")]
         public async Task<ActionResult<FolderResponse>> AddFolder(FolderAddRequest folderAddRequest)
         {
-            FolderAddRequest updatedAddRequest = folderAddRequest;
-            updatedAddRequest.FolderPath = _configuration["InitialPathForStorage"] + folderAddRequest.FolderPath;
-            // TODO Check whats up with the above code? redundant?
             FolderResponse folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
             return folderResponse;
         }
@@ -155,6 +152,43 @@ namespace Cloud_Storage_Platform.Controllers
         {
             bool isDeleted = await _foldersModificationService.DeleteFolder(folderId);
             return isDeleted;
+        }
+
+        [HttpPatch]
+        [Route("batchAddOrRemoveFromTrash")]
+        public async Task<ActionResult> BatchAddOrRemoveFromTrash(List<Guid> folderIds) 
+        {
+            foreach (Guid id in folderIds) 
+            {
+                await _foldersModificationService.AddOrRemoveTrash(id);
+            }
+            return NoContent();
+        }
+
+        [HttpDelete]
+        [Route("batchDelete")]
+        public async Task<ActionResult> BatchDelete([FromQuery] List<Guid> folderIds) 
+        {
+            int deleted = 0;
+            foreach (Guid id in folderIds)
+            {
+                if (await _foldersModificationService.DeleteFolder(id))
+                {
+                    deleted++;
+                }
+            }
+            return (deleted == folderIds.Count) ? NoContent() : StatusCode(500);
+        }
+
+        [HttpPatch]
+        [Route("batchMove")]
+        public async Task<ActionResult> BatchMove(List<Guid> folderIds, [ModelBinder(typeof(AppendToPath))] string newFolderPath) 
+        {
+            foreach (Guid id in folderIds) 
+            {
+                await _foldersModificationService.MoveFolder(id, newFolderPath);
+            }
+            return NoContent();
         }
         #endregion
 
