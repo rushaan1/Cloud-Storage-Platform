@@ -15,7 +15,7 @@ export class Utils {
     }
   }
 
-  // MAIN Purpose is to combine an array of strings into a string containing \\ before every element string
+  // MAIN Purpose is to combine an array of strings into a string containing \ before every element string
   public static constructFilePathForApi(url:string[]):string{
     let constructedPathForApi = "";
     for (let i = url.indexOf("home"); i< url.length; i++) {

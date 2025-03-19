@@ -17,7 +17,7 @@
   </div>
   <!-- Create a horizontal button with an i element in the left side and Create new folder text on the right side !-->
 
-  <div *ngIf="!anyItemRenaming && breadCrumbs[0]=='home'" (click)="createFolderClick()" class="new-folder-button">
+  <div *ngIf="!anyItemRenaming && breadCrumbs[0]=='home' && filesState.getItemsBeingMoved().length==0" (click)="createFolderClick()" class="new-folder-button">
     <i class="fa-solid fa-folder-plus"></i>
     <div>Create new folder</div>
   </div>
@@ -39,7 +39,7 @@
         [routerLink]="['/filter/trash']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i>Trash</a></li>
   </ul>
-  <ul class="category bottom-category maindrawer-bottom">
+  <ul *ngIf="filesState.getItemsBeingMoved().length==0" class="category bottom-category maindrawer-bottom">
     <li (click)="typeItemSelected($event, 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
         class="category-tab" id="Images"
         style="padding-left: 0;"><input id="0-NavCheckbox" type="checkbox"/><a><i class="fa-regular fa-image"></i>Images</a>
@@ -87,12 +87,12 @@
         [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i></a></li>
 
       <li>
-        <i *ngIf="!anyItemRenaming && breadCrumbs[0]=='home'" (click)="createFolderClick()" class="fa-solid fa-folder-plus fa-folder-plus-mini"></i>
+        <i *ngIf="!anyItemRenaming && breadCrumbs[0]=='home' && filesState.getItemsBeingMoved().length==0" (click)="createFolderClick()" class="fa-solid fa-folder-plus fa-folder-plus-mini"></i>
       </li>
     </ul>
 
 
-    <ul class="category bottom-category m-bottom-cat">
+    <ul *ngIf="filesState.getItemsBeingMoved().length==0" class="category bottom-category m-bottom-cat">
       <li (click)="typeItemSelectedMini($event,'Images', 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Images" id="Images"
           style="padding-left: 0;"><a><i class="fa-regular fa-image"></i></a></li>

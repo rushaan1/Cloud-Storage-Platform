@@ -6,6 +6,10 @@ import {File} from "../../models/File";
   providedIn: 'root'
 })
 export class FilesStateService {
+
+  private itemsBeingMoved = new BehaviorSubject<File[]>([]);
+  itemsBeingMoved$ = this.itemsBeingMoved.asObservable();
+
   private selectedItems = new BehaviorSubject<File[]>([]);
   selectedItems$ = this.selectedItems.asObservable();
 
@@ -37,6 +41,14 @@ export class FilesStateService {
 
   setUncreatedFolderExists(val:boolean){
     this.uncreatedFolderExists.next(val);
+  }
+
+  setItemsBeingMoved(items:File[]){
+    this.itemsBeingMoved.next(items);
+  }
+
+  getItemsBeingMoved():File[]{
+    return this.itemsBeingMoved.value;
   }
 
   constructor() { }

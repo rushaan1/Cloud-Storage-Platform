@@ -29,6 +29,11 @@
   padding: 2px 6.5px 2px 6.5px;
 }
 
+.panel-selected-menu-btn:hover{
+  background-color: lightgray;
+  cursor: pointer;
+}
+
 .items-select-txt{
   margin-left: 5px;
 }
@@ -43,4 +48,9 @@
   cursor: pointer;
   text-decoration: underline;
   display: none;
+}
+
+.items-move-text{
+  font-weight: bold;
+  text-decoration: underline;
 }

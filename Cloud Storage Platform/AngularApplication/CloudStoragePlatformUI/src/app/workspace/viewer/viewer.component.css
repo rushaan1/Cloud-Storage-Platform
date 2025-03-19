@@ -5,7 +5,11 @@
 .file-large-item-from-viewer {
   display: inline-block;
   text-wrap: wrap;
-  width: 200px;
+  width: 120px;
+}
+
+.file-move-state-width-override{
+  width: 200px !important;
 }
 
 .newFolder {

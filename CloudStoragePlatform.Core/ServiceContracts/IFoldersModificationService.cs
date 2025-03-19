@@ -11,6 +11,9 @@ namespace CloudStoragePlatform.Core.ServiceContracts
     {
         Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest);
         Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest);
+
+
+
         /// <summary>
         /// 
         /// </summary>

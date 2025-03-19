@@ -1,11 +1,11 @@
-<div *ngIf="false else moveFile" (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file">
+<div *ngIf="this.filesState.getItemsBeingMoved().length==0 else moveFile" (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file">
     <div #fileOptionsMenu class="file-options-menu">
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="trash($event); expandOrCollapseOptions();" class="file-option" id="trash-file-option">Move to trash</div>
         <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="restore($event); expandOrCollapseOptions();" class="file-option" id="restore">Restore</div>
         <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="delete($event); expandOrCollapseOptions();" class="file-option" id="delete">Delete Permanently</div>
         <div #renamingFileOptionDiv (click)="setupInput(true, $event);" class="file-option" id="rename-file-option">Rename</div>
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" class="file-option" id="share-file-option">Share</div>
-        <div *ngIf="crumbs[crumbs.length-1]!='trash'" class="file-option" id="move-file-option">Move to...</div>
+        <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="activateMoveState($event); expandOrCollapseOptions();" class="file-option" id="move-file-option">Move to...</div>
         <div (click)="toggleFavorite($event); expandOrCollapseOptions();" class="file-option" id="favorite-file-option">Favorite</div>
         <div class="file-option" id="info-file-option">Info</div>
     </div>
@@ -29,12 +29,15 @@
 </div>
 
 <ng-template #moveFile class="file-move-state">
-  <div class="file-move-state">
-    <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon-move-state"></div>
-    <div *ngIf="!this.renaming" class="file-name-text-div file-name-text-div-move-state">{{this.name}}</div>
+  <div>
+    <div class="file-move-state">
+      <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon-move-state"></div>
+      <div *ngIf="!this.renaming" class="file-name-text-div file-name-text-div-move-state">{{this.name}}</div>
+    </div>
+    <div class="btn-container">
+      <button (click)="move();" class="move-options">Move inside this folder</button>
+      <button (click)="fetchSubFoldersRedirect();" class="move-options">Open Folder</button>
+    </div>
   </div>
-  <div class="btn-container">
-    <button class="move-options">Move inside this folder</button>
-    <button class="move-options">Open Folder</button>
-  </div>
+
 </ng-template>

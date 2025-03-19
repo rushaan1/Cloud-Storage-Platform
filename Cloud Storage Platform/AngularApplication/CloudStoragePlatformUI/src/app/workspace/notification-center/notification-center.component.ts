@@ -13,6 +13,8 @@ import {File} from "../../models/File";
 import {timestamp} from "rxjs";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
+import {Utils} from "../../Utils";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'notification-center',
@@ -23,6 +25,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   protected readonly window = window;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
   @ViewChild("deleteConfirmNotif") deleteConfirmNotif!:ElementRef;
+  @ViewChild("moveNotif") moveNotif!:ElementRef;
 
   orderedInfoPanels:HTMLElement[] = [];
   recentInfoPanelsInSequence:HTMLElement[] = [];
@@ -31,6 +34,8 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   mostRecentNonStickyNotification:HTMLElement | null = null;
 
   selectedItems:File[] = [];
+  itemsBeingMoved:File[] = [];
+  numberOfItemsBeingMoved = 0;
   deleteFunc: (() => void) | undefined;
 
   /*
@@ -40,10 +45,10 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public itemSelectionService:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FoldersService, protected breadcrumbService:BreadcrumbService){}
+  constructor(public itemSelectionService:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
 
   ngAfterViewInit(): void {
-    this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement];
+    this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement, this.moveNotif.nativeElement];
     //any new info panel must be added in the array above based on its position in the HTML file
 
     this.setNotificationEventListeners();
@@ -167,6 +172,17 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.itemsSelected = this.selectedItems.length;
     });
 
+    this.itemSelectionService.itemsBeingMoved$.subscribe(items => {
+      if (items.length > 0) {
+        this.moveNotif.nativeElement.style.display = "flex";
+      }
+      else{
+        this.moveNotif.nativeElement.style.display = "none";
+      }
+      this.itemsBeingMoved = items;
+      this.numberOfItemsBeingMoved = items.length;
+    });
+
     this.eventService.listen("deleteConfirmNotif", (notifMsg:string, deleteFunc: (() => void) | undefined)=>{
       this.deleteConfirmNotif.nativeElement.style.display = "flex";
       this.deleteConfirmNotif.nativeElement.querySelector(".infoText").innerText = notifMsg;
@@ -242,6 +258,43 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
         this.eventService.emit("reload viewer list");
       }
     });
+  }
+
+  activateMoveState(){
+    this.itemSelectionService.setItemsBeingMoved(this.selectedItems);
+    this.itemSelectionService.deSelectAll();
+    this.router.navigate(["filter", "home"]);
+  }
+
+  move(){
+    const crumbsLowerCase:string[] = this.breadcrumbService.getBreadcrumbs().map(c=>c.toLowerCase());
+    let destinationCrumbs = this.breadcrumbService.getBreadcrumbs();
+    if (crumbsLowerCase.includes("filter")){
+      if (crumbsLowerCase.includes("home")){
+        destinationCrumbs = ["home"];
+      }
+      else {
+        return;
+      }
+    }
+
+    this.foldersService.batchMove(this.itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)).subscribe({
+      next:()=>{
+        this.eventService.emit("addNotif", ["Moved "+this.itemsBeingMoved.length+" item(s) to "+this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]+".", 12000]);
+        this.itemSelectionService.setItemsBeingMoved([]);
+        this.eventService.emit("reload viewer list");
+      }
+    });
+    this.eventService.emit("reload viewer list");
+  }
+
+  moveAbort(){
+    this.itemSelectionService.setItemsBeingMoved([]);
+    this.eventService.emit("reload viewer list");
+  }
+
+  getConcatenatedMovingItemsNames(){
+    return this.itemsBeingMoved.map(f=>f.fileName).join(", ");
   }
 
 }

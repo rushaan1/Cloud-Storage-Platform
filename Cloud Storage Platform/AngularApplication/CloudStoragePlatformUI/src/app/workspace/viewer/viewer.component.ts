@@ -30,7 +30,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   crumbs : string[] = [];
   emptyTxt = "No folders to show";
 
-  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, private filesState:FilesStateService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
 
   ngOnInit(): void {
     this.filesState.setUncreatedFolderExists(false);
@@ -87,6 +87,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
     this.subscriptions.push(this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
+    }));
+
+    this.subscriptions.push(this.filesState.itemsBeingMoved$.subscribe(items => {
+      this.folders = this.folders.filter(f=>{return !items.map(i => i.fileId).includes(f.fileId)});
     }));
   }
 

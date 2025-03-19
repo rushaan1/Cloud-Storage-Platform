@@ -260,6 +260,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   createFolder(name:string){
     let folderCreationCompleted = false;
+    // filePath for creation set by viewer
     this.foldersService.addFolder(name, this.FileFolder.filePath+name).subscribe({
       next: (response:File) => {
         this.FileFolder.fileId = response.fileId;
@@ -351,6 +352,23 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       },
       error: err => {
         // TODO ErrorNotif for this
+      }
+    });
+  }
+
+  activateMoveState(event:MouseEvent){
+    event.stopPropagation();
+    this.filesState.setItemsBeingMoved([this.FileFolder]);
+    this.router.navigate(["filter","home"]);
+  }
+
+  move(){
+    const itemsBeingMoved = this.filesState.getItemsBeingMoved();
+    this.foldersService.batchMove(itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi([...this.breadcrumbService.getBreadcrumbs(), this.originalName])).subscribe({
+      next:()=>{
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+itemsBeingMoved.length+" item(s) to this folder.", 12000]);},800);
+        this.filesState.setItemsBeingMoved([]);
+        this.fetchSubFoldersRedirect();
       }
     });
   }
