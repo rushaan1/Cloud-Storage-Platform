@@ -15,7 +15,7 @@
 
 <div #moveNotif class="info-panel sticky-notif">
   <div class="margin-left infoText">Select the folder inside which <span [title]="getConcatenatedMovingItemsNames()" class="items-move-text">{{numberOfItemsBeingMoved}} item(s)</span> will be moved.</div>
-  <button *ngIf="!(breadcrumbService.getBreadcrumbs()[breadcrumbService.getBreadcrumbs().length-1]!='home' && breadcrumbService.getBreadcrumbs().includes('filter'))" (click)="move(); dismissNotificationAlert($event)" class="panel-selected-menu-btn">Move over here</button>
+  <button *ngIf="crumbs[0]=='home'" (click)="move(); dismissNotificationAlert($event)" class="panel-selected-menu-btn">Move over here</button>
   <button (click)="moveAbort(); dismissNotificationAlert($event)" class="panel-selected-menu-btn">Cancel</button>
 </div>
 

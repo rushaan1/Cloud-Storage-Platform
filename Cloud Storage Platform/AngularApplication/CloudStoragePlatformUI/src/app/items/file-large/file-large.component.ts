@@ -369,9 +369,9 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   move(){
     const itemsBeingMoved = this.filesState.getItemsBeingMoved();
-    this.foldersService.batchMove(itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi([...this.breadcrumbService.getBreadcrumbs(), this.originalName])).subscribe({
+    this.foldersService.batchMove(itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath))).subscribe({
       next:()=>{
-        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+itemsBeingMoved.length+" item(s) to this folder.", 12000]);},800);
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+itemsBeingMoved.length+" item(s) to "+this.name+".", 12000]);},800);
         this.filesState.setItemsBeingMoved([]);
         this.fetchSubFoldersRedirect();
       }

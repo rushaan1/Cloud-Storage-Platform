@@ -38,6 +38,8 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   numberOfItemsBeingMoved = 0;
   deleteFunc: (() => void) | undefined;
 
+  crumbs:string[] = [];
+
   /*
 
   The terminologies info-panel, notif and notification mean the same.
@@ -52,6 +54,9 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     //any new info panel must be added in the array above based on its position in the HTML file
 
     this.setNotificationEventListeners();
+    this.breadcrumbService.breadcrumbs$.subscribe((c)=>{
+      this.crumbs = c;
+    });
   }
 
   @HostListener('window:scroll', ['$event'])
