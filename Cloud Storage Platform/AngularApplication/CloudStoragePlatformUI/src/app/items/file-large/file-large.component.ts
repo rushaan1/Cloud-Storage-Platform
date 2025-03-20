@@ -102,7 +102,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       items.forEach(item=>{
         if (this.FileFolder.fileId == item.fileId){
           containsFileId = true;
-          if (this.selected == false){
+          if (!this.selected){
             this.selected = true;
             this.showCheckbox();
             this.selectFileCheckbox.nativeElement.checked = true;
@@ -271,12 +271,17 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.FileFolder.uncreated = false;
         this.originalName = response.fileName;
         this.name = response.fileName;
+        this.nameResizing();
         this.filesState.setUncreatedFolderExists(false);
+        folderCreationCompleted = true;
+
+        this.cdRef.detectChanges();
         if (this.appIsInSelectionState) {
-          this.cdRef.detectChanges();
           this.showCheckbox();
         }
-        folderCreationCompleted = true;
+        else if (this.hoveringOver){
+          this.showCheckbox();
+        }
       },
       error: err => {
         // TODO ErrorNotif for this

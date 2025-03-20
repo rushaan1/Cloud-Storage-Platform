@@ -9,6 +9,7 @@ import {LoadingService} from "./services/StateManagementServices/loading.service
 export class AppComponent implements AfterViewInit {
   @ViewChild("navigationDrawer") navDrawer!: ElementRef<HTMLElement>;
   @ViewChild("loaderOverlay") loaderOverlay!: ElementRef<HTMLElement>;
+  @ViewChild("routerContainer") routerContainer!: ElementRef<HTMLElement>;
   loading = false;
   miniset:boolean = false;
   initialMiniSet:boolean = false;
@@ -33,10 +34,12 @@ export class AppComponent implements AfterViewInit {
     if (this.miniset){
       this.navDrawer.nativeElement.style.minWidth = "54px";
       this.navDrawer.nativeElement.style.height = "";
+      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 54px)";
     }
     else{
       this.navDrawer.nativeElement.style.minWidth = "290px";
       this.navDrawer.nativeElement.style.height = `${document.documentElement.scrollHeight}px`;
+      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 290px)";
     }
   }
 }

@@ -44,3 +44,6 @@
 .capitalize{
   text-transform: capitalize;
 }
+.margin-right{
+  margin-right: 75px;
+}

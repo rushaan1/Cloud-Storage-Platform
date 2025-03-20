@@ -88,10 +88,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.subscriptions.push(this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
     }));
+  }
 
-    this.subscriptions.push(this.filesState.itemsBeingMoved$.subscribe(items => {
-      this.folders = this.folders.filter(f=>{return !items.map(i => i.fileId).includes(f.fileId)});
-    }));
+  filterOutFoldersBeingMoved(){
+    this.folders = this.folders.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
   }
 
   ngOnDestroy() {
@@ -135,6 +135,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
           this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
             next: response => {
               this.folders = response;
+              this.filterOutFoldersBeingMoved();
               if (appUrl[appUrl.length-1]=='home'){
                 this.eventService.emit("home folder set active");
               }
@@ -160,6 +161,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.foldersService.getAllFoldersInHome().subscribe({
       next: (response) => {
         this.folders = response;
+        this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
         // TODO
@@ -175,6 +177,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.foldersService.getAllFavoriteFolders().subscribe({
       next: (response) => {
         this.folders = response;
+        this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
         // TODO
@@ -191,6 +194,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.foldersService.getAllTrashFolders().subscribe({
       next: (response) => {
         this.folders = response;
+        this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
         // TODO
@@ -206,6 +210,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     if (this.anyItemRenaming){
       return;
     }
+    this.filesState.setUncreatedFolderExists(true);
     const folderWithNewFolderNameExists:boolean = this.folders.filter(f=>f.fileName == "New Folder").length > 0;
     let uniqueNewFolderNameFound = false;
     let folderNameToBeUsed = "New Folder";
@@ -242,6 +247,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
         next: res => {
           this.folders = res;
+          this.filterOutFoldersBeingMoved();
         },
         error: err => {},
         complete: () => {

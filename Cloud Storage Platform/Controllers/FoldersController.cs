@@ -110,6 +110,7 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("add")]
         public async Task<ActionResult<FolderResponse>> AddFolder(FolderAddRequest folderAddRequest)
         {
+            folderAddRequest.FolderPath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(folderAddRequest.FolderPath);
             FolderResponse folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
             return folderResponse;
         }

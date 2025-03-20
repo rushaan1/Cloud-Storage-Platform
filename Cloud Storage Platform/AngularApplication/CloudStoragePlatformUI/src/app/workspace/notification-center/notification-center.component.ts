@@ -45,7 +45,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public itemSelectionService:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
+  constructor(public filesState:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
 
   ngAfterViewInit(): void {
     this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement, this.moveNotif.nativeElement];
@@ -65,7 +65,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   unselect(){
-    this.itemSelectionService.deSelectAll();
+    this.filesState.deSelectAll();
   }
 
   updateNotificationAlertTxt(){
@@ -161,7 +161,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
   setNotificationEventListeners(){
 
-    this.itemSelectionService.selectedItems$.subscribe(selectedFiles => {
+    this.filesState.selectedItems$.subscribe(selectedFiles => {
       this.selectedItems = selectedFiles;
       if (this.selectedItems.length > 0) {
         this.selectionInfoPanel.nativeElement.style.display = "flex";
@@ -172,7 +172,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.itemsSelected = this.selectedItems.length;
     });
 
-    this.itemSelectionService.itemsBeingMoved$.subscribe(items => {
+    this.filesState.itemsBeingMoved$.subscribe(items => {
       if (items.length > 0) {
         this.moveNotif.nativeElement.style.display = "flex";
       }
@@ -234,7 +234,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.foldersService.batchAddOrRemoveFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Moved to trash "+this.itemsSelected+" items.", 12000]);
-        this.itemSelectionService.deSelectAll();
+        this.filesState.deSelectAll();
         this.eventService.emit("reload viewer list");
       }
     });
@@ -244,7 +244,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.foldersService.batchAddOrRemoveFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Restored "+this.itemsSelected+" items.", 12000]);
-        this.itemSelectionService.deSelectAll();
+        this.filesState.deSelectAll();
         this.eventService.emit("reload viewer list");
       }
     });
@@ -254,15 +254,15 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.foldersService.batchDelete(this.selectedItems.map((f)=>f.fileId)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Deleted permanently "+this.itemsSelected+" items.", 12000]);
-        this.itemSelectionService.deSelectAll();
+        this.filesState.deSelectAll();
         this.eventService.emit("reload viewer list");
       }
     });
   }
 
   activateMoveState(){
-    this.itemSelectionService.setItemsBeingMoved(this.selectedItems);
-    this.itemSelectionService.deSelectAll();
+    this.filesState.setItemsBeingMoved(this.selectedItems);
+    this.filesState.deSelectAll();
     this.router.navigate(["filter", "home"]);
   }
 
@@ -281,7 +281,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.foldersService.batchMove(this.itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Moved "+this.itemsBeingMoved.length+" item(s) to "+this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]+".", 12000]);
-        this.itemSelectionService.setItemsBeingMoved([]);
+        this.filesState.setItemsBeingMoved([]);
         this.eventService.emit("reload viewer list");
       }
     });
@@ -289,7 +289,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   moveAbort(){
-    this.itemSelectionService.setItemsBeingMoved([]);
+    this.filesState.setItemsBeingMoved([]);
     this.eventService.emit("reload viewer list");
   }
 

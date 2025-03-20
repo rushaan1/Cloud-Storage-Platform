@@ -11,7 +11,7 @@
     </div>
 
     <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" class="file-options">
-        <i [ngClass]="{'ellipsis-visible':!this.selected}" #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
+        <i [ngClass]="{'ellipsis-visible':(!this.selected && !FileFolder.uncreated)}" #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
         <i (mouseenter)="hoveringOverDestroy=true" (mouseleave)="hoveringOverDestroy=false" #abortCreationCross (click)="destroy.emit(); filesState.setRenaming(false); filesState.setUncreatedFolderExists(false);" *ngIf="this.FileFolder.uncreated" class="fa-solid fa-xmark"></i>
     </div>
 

@@ -183,7 +183,9 @@ export class NavigationDrawerComponent implements OnInit {
   visibilityToggle(navDrawer: HTMLElement, visibility: string) {
     navDrawer.style.visibility = visibility;
     (document.getElementsByClassName("maindrawer-top")[0] as HTMLElement).style.visibility = visibility;
-    (document.getElementsByClassName("maindrawer-bottom")[0] as HTMLElement).style.visibility = visibility;
+    if ((document.getElementsByClassName("maindrawer-bottom")[0] as HTMLElement)){
+      (document.getElementsByClassName("maindrawer-bottom")[0] as HTMLElement).style.visibility = visibility;
+    }
   }
 
   drawerClick() {
@@ -217,6 +219,7 @@ export class NavigationDrawerComponent implements OnInit {
   }
 
   retainingSelection(typeOptions: any) {
+
     for (let i = 0; i < typeOptions.length; i++) {
       let tab = typeOptions[i] as HTMLElement;
 
