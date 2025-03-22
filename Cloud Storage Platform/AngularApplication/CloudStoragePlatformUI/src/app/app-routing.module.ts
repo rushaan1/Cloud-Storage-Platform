@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {ViewerComponent} from "./workspace/viewer/viewer.component";
+import {InfoComponent} from "./items/info/info.component";
 
 const routes: Routes = [
   {
@@ -17,6 +18,7 @@ const routes: Routes = [
   {path:'filter/favorites', component:ViewerComponent},
   {path:'filter/trash', component:ViewerComponent},
   {path:'searchFilter', component:ViewerComponent},
+  {path:'metadata/:id', component:InfoComponent},
   {path:'', component:ViewerComponent},
   { path: '**', redirectTo: 'folder', pathMatch: 'full' },
 ];

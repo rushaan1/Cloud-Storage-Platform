@@ -163,7 +163,7 @@ namespace CloudStoragePlatform.Core.Services
             Folder? finalMainFolder = await _foldersRepository.UpdateFolder(folder, true, true, false, false, false, false);
             await Utilities.UpdateChildPaths(_foldersRepository,_filesRepository,folder, previousFolderPath, newFolderPathOfFolder);
             Directory.Move(previousFolderPath, newFolderPathOfFolder);
-
+            await Utilities.UpdateMetadataMove(folder, previousFolderPath, _foldersRepository);
             return finalMainFolder!.ToFolderResponse();
         }
 
@@ -183,6 +183,7 @@ namespace CloudStoragePlatform.Core.Services
             folder.FolderName = folderRenameRequest.FolderNewName;
             folder.FolderPath = newp;
             await Utilities.UpdateChildPaths(_foldersRepository, _filesRepository, folder, oldp, newp);
+            await Utilities.UpdateMetadataRename(folder, _foldersRepository);
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             FileSystem.RenameDirectory(oldp, folderRenameRequest.FolderNewName);
             return updatedFolder!.ToFolderResponse();

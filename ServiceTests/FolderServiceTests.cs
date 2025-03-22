@@ -910,7 +910,7 @@ namespace ServiceTests
                 .ReturnsAsync(folder);
 
             //Act
-            MetadataResponse mr = await _foldersRetrievalService.GetMetadata(folder.FolderId);
+            FileOrFolderMetadataResponse mr = await _foldersRetrievalService.GetMetadata(folder.FolderId);
 
             //Assert
             mr.Should().NotBeNull();

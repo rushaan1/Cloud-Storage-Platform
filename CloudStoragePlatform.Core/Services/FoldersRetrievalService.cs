@@ -48,6 +48,8 @@ namespace CloudStoragePlatform.Core.Services
                 throw new ArgumentException();
             }
             List<Folder> childFolders = parentFolder!.SubFolders.ToList();
+
+            await Utilities.UpdateMetadataOpen(parentFolder, _foldersRepository);
             if (childFolders.Count <= 0)
             {
                 return new List<FolderResponse>();
@@ -110,15 +112,19 @@ namespace CloudStoragePlatform.Core.Services
             return folder.ToFolderResponse();
         }
 
-        public async Task<MetadataResponse> GetMetadata(Guid fid)
+        public async Task<FileOrFolderMetadataResponse> GetMetadata(Guid fid)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
             if (folder == null)
             {
                 throw new ArgumentException();
             }
-
-            return folder.Metadata.ToMetadataResponse();
+            FileOrFolderMetadataResponse response = folder!.Metadata!.ToMetadataResponse();
+            response.CreationDate = folder.CreationDate;
+            response.SubFilesCount = folder.Files.Count;
+            response.SubFoldersCount = folder.SubFolders.Count;
+            response.ParentFolderName = folder.ParentFolder!.FolderName;
+            return response;
         }
     }
 }

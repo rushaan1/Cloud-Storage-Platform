@@ -132,7 +132,7 @@ namespace CloudStoragePlatform.Infrastructure.Migrations
                         new
                         {
                             FolderId = new Guid("9e2abd0a-94ac-43e2-a212-9dc9f7590447"),
-                            CreationDate = new DateTime(2024, 12, 8, 9, 19, 52, 262, DateTimeKind.Local).AddTicks(9408),
+                            CreationDate = new DateTime(2025, 3, 20, 22, 20, 4, 883, DateTimeKind.Local).AddTicks(224),
                             FolderName = "home",
                             FolderPath = "C:\\CloudStoragePlatform\\home",
                             IsFavorite = false,
@@ -149,10 +149,10 @@ namespace CloudStoragePlatform.Infrastructure.Migrations
                     b.Property<DateTime?>("LastOpened")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("MoveCount")
+                    b.Property<int>("MoveCount")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OpenCount")
+                    b.Property<int>("OpenCount")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("PreviousMoveDate")
@@ -167,16 +167,16 @@ namespace CloudStoragePlatform.Infrastructure.Migrations
                     b.Property<DateTime?>("PreviousReplacementDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("RenameCount")
+                    b.Property<int>("RenameCount")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ReplaceCount")
+                    b.Property<int>("ReplaceCount")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ShareCount")
+                    b.Property<int>("ShareCount")
                         .HasColumnType("int");
 
-                    b.Property<long?>("Size")
+                    b.Property<long>("Size")
                         .HasColumnType("bigint");
 
                     b.HasKey("MetadataId");

@@ -6,12 +6,16 @@ import { WorkspaceModule } from '../workspace/workspace.module';
 import {ReactiveFormsModule} from "@angular/forms";
 import {ResponseInterceptor} from "../services/ApiServices/response.interceptor";
 import {HTTP_INTERCEPTORS} from "@angular/common/http";
+import { InfoComponent } from './info/info.component';
+import {BreadcrumbsComponent} from "./breadcrumbs/breadcrumbs.component";
 
 
 @NgModule({
   declarations: [
     FileLargeComponent,
-    FileListComponent
+    FileListComponent,
+    InfoComponent,
+    BreadcrumbsComponent
   ],
   providers: [
     {
@@ -26,7 +30,8 @@ import {HTTP_INTERCEPTORS} from "@angular/common/http";
     ],
   exports:[
     FileLargeComponent,
-    FileListComponent
+    FileListComponent,
+    BreadcrumbsComponent
   ]
 })
 export class ItemsModule { }

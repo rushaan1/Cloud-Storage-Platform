@@ -15,27 +15,27 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public virtual File? File { get; set; }
         public virtual Folder? Folder { get; set; }
         public DateTime? PreviousReplacementDate { get; set; }
-        public int? ReplaceCount { get; set; }
+        public int ReplaceCount { get; set; } = 0;
 
         public DateTime? PreviousRenameDate { get; set; }
-        public int? RenameCount { get; set; }
+        public int RenameCount { get; set; } = 0;
 
         public string? PreviousPath { get; set; }
         public DateTime? PreviousMoveDate { get; set; }
-        public int? MoveCount { get; set; }
+        public int MoveCount { get; set; } = 0;
 
         public DateTime? LastOpened { get; set; }
-        public int? OpenCount { get; set; }
+        public int OpenCount { get; set; } = 0;
 
-        public int? ShareCount { get; set; }
+        public int ShareCount { get; set; } = 0;
         /// <summary>
         /// in MegaBytes
         /// </summary>
-        public long? Size { get; set; }
+        public long Size { get; set; } = 0;
 
-        public MetadataResponse ToMetadataResponse() 
+        public FileOrFolderMetadataResponse ToMetadataResponse() 
         {
-            return new MetadataResponse()
+            return new FileOrFolderMetadataResponse()
             {
                 MetadataId = MetadataId,
                 PreviousReplacementDate = PreviousReplacementDate,

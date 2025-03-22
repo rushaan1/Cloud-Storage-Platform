@@ -81,5 +81,34 @@ namespace CloudStoragePlatform.Core
             }
             return sorted;
         }
+
+        public static async Task UpdateMetadataRename(Folder folder, IFoldersRepository foldersRepository) 
+        {
+            folder.Metadata!.RenameCount++;
+            //folder.Metadata!.PreviousPath = previousPath;
+            folder.Metadata.PreviousRenameDate = DateTime.Now;
+            await foldersRepository.UpdateFolder(folder, false, false, true, false, false, false);
+        }
+
+
+        public static async Task UpdateMetadataMove(Folder folder, string previousPath, IFoldersRepository foldersRepository)
+        {
+            folder.Metadata!.MoveCount++;
+            folder.Metadata!.PreviousPath = previousPath;
+            folder.Metadata.PreviousMoveDate = DateTime.Now;
+            await foldersRepository.UpdateFolder(folder, false, false, true, false, false, false);
+        }
+
+        public static async Task UpdateMetadataOpen(Folder folder, IFoldersRepository foldersRepository) 
+        {
+            if (folder.MetadataId == null) 
+            {
+                return;
+            }
+            folder!.Metadata!.LastOpened = DateTime.Now;
+            folder!.Metadata.OpenCount++;
+            await foldersRepository.UpdateFolder(folder, false, false, true, false, false, false);
+        }
+
     }
 }

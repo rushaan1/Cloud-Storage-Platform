@@ -4,6 +4,7 @@ import {File} from "../../models/File";
 import {Observable} from "rxjs";
 import {Utils} from "../../Utils";
 import {ResponseInterceptor} from "./response.interceptor";
+import {Metadata} from "../../models/Metadata";
 
 
 const BASE_URL = "https://localhost:7219/api/Folders";
@@ -149,5 +150,12 @@ export class FoldersService {
     let params = new HttpParams()
       .set('newFolderPath', newPath);
     return this.httpClient.patch(`${BASE_URL}/batchMove`, folderIds, {params:params});
+  }
+
+  public getMetadata(id:string){
+    Utils.handleStringInvalidError(id);
+    let params = new HttpParams()
+      .set('folderId', id);
+    return this.httpClient.get<Metadata>(`${BASE_URL}/getMetadata`, {params:params});
   }
 }

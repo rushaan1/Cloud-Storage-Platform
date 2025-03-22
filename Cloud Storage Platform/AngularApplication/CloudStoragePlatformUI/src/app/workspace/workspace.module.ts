@@ -9,7 +9,7 @@ import { ItemsModule } from '../items/items.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
-import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
+import { BreadcrumbsComponent } from '../items/breadcrumbs/breadcrumbs.component';
 
 
 @NgModule({
@@ -18,7 +18,6 @@ import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
     ViewerComponent,
     PanelComponent,
     NotificationCenterComponent,
-    BreadcrumbsComponent
   ],
     imports: [
         CommonModule,
@@ -27,10 +26,10 @@ import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
         ReactiveFormsModule,
         HttpClientModule
     ],
-  exports:[
-    NavigationDrawerComponent,
-    ViewerComponent,
-    PanelComponent
-  ]
+    exports: [
+        NavigationDrawerComponent,
+        ViewerComponent,
+        PanelComponent,
+    ]
 })
 export class WorkspaceModule { }

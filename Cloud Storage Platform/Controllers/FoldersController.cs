@@ -102,6 +102,14 @@ namespace Cloud_Storage_Platform.Controllers
             FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderPath(path);
             return (folderResponse!=null) ? folderResponse : NotFound();
         }
+
+        [HttpGet]
+        [Route("getMetadata")]
+        public async Task<ActionResult<FileOrFolderMetadataResponse>> GetMetadata(Guid folderId)
+        {
+            FileOrFolderMetadataResponse? folderDetailsResponse = await _foldersRetrievalService.GetMetadata(folderId);
+            return (folderDetailsResponse != null) ? folderDetailsResponse : NotFound();
+        }
         #endregion
 
 

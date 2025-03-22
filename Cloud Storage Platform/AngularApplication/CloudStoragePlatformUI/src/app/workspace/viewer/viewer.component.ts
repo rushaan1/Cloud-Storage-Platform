@@ -5,7 +5,7 @@ import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
 import {FoldersService} from "../../services/ApiServices/folders.service";
 import {Utils} from "../../Utils";
-import {BreadcrumbsComponent} from "../breadcrumbs/breadcrumbs.component";
+import {BreadcrumbsComponent} from "../../items/breadcrumbs/breadcrumbs.component";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {Subscription} from "rxjs";

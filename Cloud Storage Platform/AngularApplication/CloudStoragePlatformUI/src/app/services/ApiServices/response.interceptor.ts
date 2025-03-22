@@ -9,7 +9,7 @@ export class ResponseInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       map((event: HttpEvent<any>) => {
-        if (event instanceof HttpResponse && req.url.toLowerCase().includes('folders') && event.status == 200) {
+        if (event instanceof HttpResponse && req.url.toLowerCase().includes('folders') && !req.url.toLowerCase().includes("/getmetadata") && event.status == 200) {
           return event.clone({
             body: this.transformToFileModel(event.body, req.url)
           });
@@ -23,7 +23,7 @@ export class ResponseInterceptor implements HttpInterceptor {
     if (data instanceof Array) {
       let array:Array<any> = [];
       for (let i = 0; i < data.length; i++) {
-        if (data[i].isTrash.toString() == "true" && !url.includes("getAllTrashFolders")){
+        if (data[i].isTrash.toString() == "true" && !url.includes("/getAllTrashFolders")){
           continue;
         }
         array.push({

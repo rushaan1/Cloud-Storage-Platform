@@ -83,6 +83,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         this.eventService.emit("addNotif",["Input cannot be empty", 8000]);
       }
       this.searchDiv.nativeElement.classList.add("red-search-border");
+      return;
     }
     this.router.navigate(["searchFilter"], {queryParams:{q:this.searchFormControl.value}});
   }

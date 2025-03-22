@@ -7,7 +7,7 @@
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" class="file-option" id="share-file-option">Share</div>
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="activateMoveState($event); expandOrCollapseOptions();" class="file-option" id="move-file-option">Move to...</div>
         <div (click)="toggleFavorite($event); expandOrCollapseOptions();" class="file-option" id="favorite-file-option">Favorite</div>
-        <div class="file-option" id="info-file-option">Info</div>
+        <div (click)="router.navigate(['metadata', FileFolder.fileId])" class="file-option" id="info-file-option">Info</div>
     </div>
 
     <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" class="file-options">
