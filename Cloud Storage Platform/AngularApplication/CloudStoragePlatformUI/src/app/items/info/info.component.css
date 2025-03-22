@@ -1,0 +1,113 @@
+.tabs {
+  display: flex;
+  width: 100%;
+  position: sticky;
+  top: 120px;
+}
+
+.tab{
+  font-size: 20px;
+  font-family: Inter;
+  padding: 10px;
+  width: 33.33%;
+  text-align: center;
+  background-color: #e3e3e3;
+}
+
+.tab:not(.active):hover{
+  background-color: antiquewhite;
+  cursor: pointer;
+}
+
+.active{
+  background-color: bisque !important;
+}
+
+.info-content{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  transition: transform 0.5s ease-in-out;
+}
+
+.info-container{
+  flex: 0 0 100%;
+}
+
+.parent{
+  overflow-x: hidden;
+}
+
+.icon{
+  margin: 50px 50px 10px 50px;
+  height: 150px;
+  width: 150px;
+  display: inline-block;
+}
+.icon-container{
+  flex: 0 1 auto;
+}
+
+.top-view{
+  display: flex;
+}
+
+.nameTxtDiv{
+  display: inline-block;
+  margin-top: 100px;
+}
+
+.metadata-div{
+  margin: 10px 10px 10px 50px;
+}
+
+.btn-options{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.options-txt{
+  margin: 30px 10px 30px 50px;
+}
+
+.btn-options button{
+  font-size: 20px;
+  padding: 10px;
+  background-color: antiquewhite;
+}
+
+.btn-options button:hover{
+  cursor: pointer;
+  background-color: bisque;
+}
+
+.picture {
+  background: url('../item-icons/pic-icon.png');
+  background-size: cover;
+}
+
+.video {
+  background: url('../item-icons/video-icon.png');
+  background-size: cover;
+}
+
+.folder {
+  background: url('../item-icons/folder-icon.png');
+  background-size: cover;
+}
+
+.breadcrumbs-topmost-parent {
+  position: sticky;
+  max-width: 100%;
+  top:60px;
+  background-color: #F5F5F5;
+  display: block;
+  z-index: 11;
+}
+
+.parent{
+  font-size: 26px;
+}

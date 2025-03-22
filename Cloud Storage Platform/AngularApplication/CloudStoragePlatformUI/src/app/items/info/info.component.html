@@ -1,0 +1,42 @@
+<breadcrumbs class="breadcrumbs-topmost-parent" [crumbs]="[f.fileName]"></breadcrumbs>
+<div class="tabs">
+  <div (click)="setTranslate(0)" class="tab active">Basic Info</div>
+  <div (click)="setTranslate(-100)" class="tab">Sharing Info</div>
+  <div (click)="setTranslate(-200)" class="tab">Full Metadata</div>
+</div>
+<div class="parent">
+  <div class="top-view">
+    <div class="icon-container">
+      <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="icon"></div>
+    </div>
+    <div class="nameTxtDiv">
+      <span>Full Name:</span>
+      <br>
+      <span>{{f.fileName}}</span>
+    </div>
+  </div>
+  <div #infoContent class="info-content">
+    <div class="basic-info-content info-container">
+      <div class="metadata-div">Path: {{Utils.constructFilePathForApi(Utils.cleanPath(f.filePath))}}</div>
+      <div class="metadata-div">Parent Folder's Name: {{metadata.parentFolderName}}</div>
+      <div class="metadata-div">Creation Date: {{metadata.creationDate | date:'dd/MM/yyyy hh:mm a'}}</div>
+      <div class="metadata-div">{{favTxt}}</div>
+      <div class="metadata-div"> {{trashTxt}}</div>
+      <div class="metadata-div options-txt">Options:</div>
+      <div class="btn-options">
+        <button>Rename</button>
+        <button>Delete</button>
+        <button>Move to...</button>
+        <button>Favorite</button>
+        <button>Add to trash</button>
+      </div>
+    </div>
+    <div class="sharing-info-content info-container">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </div>
+    <div class="full-metadata-content info-container">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </div>
+  </div>
+</div>
+
