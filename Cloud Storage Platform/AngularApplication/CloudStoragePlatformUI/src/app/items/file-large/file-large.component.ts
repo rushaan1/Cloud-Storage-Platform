@@ -59,7 +59,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   anyFileIsRenaming = false;
   anyUncreatedFolderExists = false;
 
-  constructor(protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService) { }
+  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
@@ -113,6 +113,14 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.selected = false;
         this.hideCheckbox();
         this.selectFileCheckbox.nativeElement.checked = false;
+      }
+    });
+
+    this.route.queryParams.subscribe((params) => {
+      const renameFocus = params["renameFocus"];
+      if (renameFocus==this.FileFolder.fileId){
+        this.setupInput(false);
+        this.el.nativeElement.scrollIntoView({behavior: "smooth", block: "start"});
       }
     });
   }

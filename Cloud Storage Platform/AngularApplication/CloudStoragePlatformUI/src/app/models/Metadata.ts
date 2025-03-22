@@ -2,16 +2,16 @@ export class Metadata {
   parentFolderName: string;
   subFoldersCount: number;
   subFilesCount: number;
-  creationDate: Date | null;
+  creationDate: Date | null | string;
   metadataId: string;
-  previousReplacementDate: Date | null;
+  previousReplacementDate: Date | null | string;
   replaceCount: number;
-  previousRenameDate: Date | null;
+  previousRenameDate: Date | null | string;
   renameCount: number;
   previousPath: string | null;
-  previousMoveDate: Date | null;
+  previousMoveDate: Date | null | string;
   moveCount: number;
-  lastOpened: Date | null;
+  lastOpened: Date | null | string;
   openCount: number;
   shareCount: number;
   size: number;
@@ -33,29 +33,5 @@ export class Metadata {
     this.openCount = data.openCount ?? 0;
     this.shareCount = data.shareCount ?? 0;
     this.size = data.size ?? 0;
-  }
-
-  formatDate(date: Date | null, locale: string = 'en-GB'): string {
-    return date ? date.toLocaleString(locale, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Never";
-  }
-
-  getFormattedCreationDate(): string {
-    return this.formatDate(this.creationDate);
-  }
-
-  getFormattedLastOpened(): string {
-    return this.formatDate(this.lastOpened);
-  }
-
-  getFormattedPreviousMoveDate(): string {
-    return this.formatDate(this.previousMoveDate);
-  }
-
-  getFormattedPreviousRenameDate(): string {
-    return this.formatDate(this.previousRenameDate);
-  }
-
-  getFormattedPreviousReplacementDate(): string {
-    return this.formatDate(this.previousReplacementDate);
   }
 }

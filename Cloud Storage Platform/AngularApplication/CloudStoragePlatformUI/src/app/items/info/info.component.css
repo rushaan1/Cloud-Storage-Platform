@@ -3,6 +3,7 @@
   width: 100%;
   position: sticky;
   top: 120px;
+  z-index: 10;
 }
 
 .tab{
@@ -73,15 +74,32 @@
   margin: 30px 10px 30px 50px;
 }
 
-.btn-options button{
-  font-size: 20px;
-  padding: 10px;
-  background-color: antiquewhite;
+.btn{
+  font-size: 18px;
+  padding: 10px 16px 10px 16px;;
+  background-color: #3574F0;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.26);
 }
 
-.btn-options button:hover{
+.btn:hover{
   cursor: pointer;
-  background-color: bisque;
+  background-color: #5188ef;
+}
+
+.share-txt{
+  margin-top: 50px;
+}
+
+.share-btn{
+  margin-left: 350px !important;
+}
+
+.share-tab-margin{
+  margin-left: 300px;
+  margin-bottom: 20px;
 }
 
 .picture {
@@ -110,4 +128,12 @@
 
 .parent{
   font-size: 26px;
+}
+
+.disabled{
+  cursor: not-allowed !important;
+}
+
+.yes-btn{
+  margin-right: 10px;
 }
