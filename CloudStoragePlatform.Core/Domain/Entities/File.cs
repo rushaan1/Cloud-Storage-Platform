@@ -1,4 +1,5 @@
-﻿using CloudStoragePlatform.Core.Enums;
+﻿using CloudStoragePlatform.Core.DTO;
+using CloudStoragePlatform.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -21,5 +22,17 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         
         public Guid ParentFolderId { get; set; }
         public virtual Folder ParentFolder { get; set; }
+
+        public FileResponse ToFileResponse()
+        {
+            return new FileResponse()
+            {
+                FileId = FileId,
+                FileName = FileName,
+                FilePath = FilePath,
+                IsFavorite = IsFavorite,
+                IsTrash = IsTrash
+            };
+        }
     }
 }

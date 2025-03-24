@@ -40,6 +40,11 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return await _db.Files.FirstOrDefaultAsync(f => f.FilePath == path);
         }
 
+        public async Task<List<Core.Domain.Entities.File>> GetFilteredFiles(Func<Core.Domain.Entities.File, bool> predicate)
+        {
+            return _db.Files.Where(predicate).ToList();
+        }
+
 
         public async Task<Core.Domain.Entities.File?> UpdateFile(Core.Domain.Entities.File file, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing)
         {

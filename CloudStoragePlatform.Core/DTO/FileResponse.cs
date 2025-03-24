@@ -12,6 +12,7 @@ namespace CloudStoragePlatform.Core.DTO
         public Guid FileId { get; set; }
         public string FileName { get; set; }
         public string FilePath { get; set; }
-        public FileTypes FileType { get; set; }
+        public bool? IsFavorite { get; set; }
+        public bool? IsTrash { get; set; }
     }
 }

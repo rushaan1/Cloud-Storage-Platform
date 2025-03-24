@@ -52,5 +52,11 @@ namespace CloudStoragePlatform.Core.Domain.RepositoryContracts
         /// <param name="file">The file to delete.</param>
         /// <returns>True if the file was successfully deleted; otherwise, false.</returns>
         Task<bool> DeleteFile(Core.Domain.Entities.File file);
+        /// <summary>
+        /// Filters all the files to return files matching the predicate
+        /// </summary>
+        /// <param name="predicate">The predicate to run against each file.</param>
+        /// <returns>Filtered files.</returns>
+        Task<List<Core.Domain.Entities.File>> GetFilteredFiles(Func<Core.Domain.Entities.File, bool> predicate);
     }
 }

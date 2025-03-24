@@ -81,7 +81,38 @@ namespace CloudStoragePlatform.Core
             }
             return sorted;
         }
-
+        public static List<Domain.Entities.File> Sort(List<Domain.Entities.File> files, SortOrderOptions option)
+        {
+            List<Domain.Entities.File> sorted = new List<Domain.Entities.File>();
+            switch (option)
+            {
+                case SortOrderOptions.ALPHABETICAL_ASCENDING:
+                    sorted = files.OrderBy(f => f.FileName).ToList();
+                    break;
+                case SortOrderOptions.ALPHABETICAL_DESCENDING:
+                    sorted = files.OrderByDescending(f => f.FileName).ToList();
+                    break;
+                case SortOrderOptions.DATEADDED_ASCENDING:
+                    sorted = files.OrderBy(f => f.CreationDate).ToList();
+                    break;
+                case SortOrderOptions.DATEADDED_DESCENDING:
+                    sorted = files.OrderByDescending(f => f.CreationDate).ToList();
+                    break;
+                case SortOrderOptions.LASTOPENED_ASCENDING:
+                    sorted = files.OrderBy(f => f.Metadata?.LastOpened).ToList();
+                    break;
+                case SortOrderOptions.LASTOPENED_DESCENDING:
+                    sorted = files.OrderByDescending(f => f.Metadata?.LastOpened).ToList();
+                    break;
+                case SortOrderOptions.SIZE_ASCENDING:
+                    sorted = files.OrderBy(f => f.Metadata?.Size).ToList();
+                    break;
+                case SortOrderOptions.SIZE_DESCENDING:
+                    sorted = files.OrderByDescending(f => f.Metadata?.Size).ToList();
+                    break;
+            }
+            return sorted;
+        }
         public static async Task UpdateMetadataRename(Folder folder, IFoldersRepository foldersRepository) 
         {
             folder.Metadata!.RenameCount++;

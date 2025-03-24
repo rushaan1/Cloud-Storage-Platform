@@ -35,7 +35,7 @@ namespace CloudStoragePlatform.Web
 
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
-            builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
+            builder.Services.AddScoped<IFoldersRetrievalService, RetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFilesRepository, FilesRepository>();
             builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();

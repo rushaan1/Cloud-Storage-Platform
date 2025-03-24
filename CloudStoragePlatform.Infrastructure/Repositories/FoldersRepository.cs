@@ -48,11 +48,6 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return await Task.Run(()=>parent.SubFolders.Where(predicate).ToList());
         }
 
-        public async Task<List<Core.Domain.Entities.File>> GetFilteredSubFiles(Folder parent, Func<Core.Domain.Entities.File, bool> predicate)
-        {
-            return await Task.Run(()=>parent.Files.Where(predicate).ToList());
-        }
-
         public async Task<Folder?> GetFolderByFolderId(Guid id) 
         {
             return await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == id);
