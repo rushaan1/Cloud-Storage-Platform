@@ -9,7 +9,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
 {
     public interface IFilesModificationService
     {
-        Task<FileResponse> AddFile(FileAddRequest fileAddRequest);
+        Task<FileResponse> UploadFile(FileAddRequest fileAddRequest, Stream file);
         Task<FileResponse> RenameFile(FileRenameRequest fileRenameRequest);
 
 
@@ -25,5 +25,4 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         Task<FileResponse> AddOrRemoveTrash(Guid fileId);
         Task<bool> DeleteFile(Guid fileId);
     }
-}
 }

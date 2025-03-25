@@ -11,7 +11,7 @@ import { FilesStateService } from '../../services/StateManagementServices/files-
 import { EventService } from '../../services/event-service.service';
 import {File} from "../../models/File";
 import {timestamp} from "rxjs";
-import {FoldersService} from "../../services/ApiServices/folders.service";
+import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {Utils} from "../../Utils";
 import {Router} from "@angular/router";
@@ -47,7 +47,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public filesState:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
+  constructor(public filesState:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FilesAndFoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
 
   ngAfterViewInit(): void {
     this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement, this.moveNotif.nativeElement];

@@ -15,7 +15,7 @@ import { EventService } from '../../services/event-service.service';
 import { v4 as uuidv4 } from 'uuid';
 import {FormControl, Validators} from "@angular/forms";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
-import {FoldersService} from "../../services/ApiServices/folders.service";
+import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {File} from "../../models/File";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {Utils} from "../../Utils";
@@ -59,7 +59,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   anyFileIsRenaming = false;
   anyUncreatedFolderExists = false;
 
-  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute) { }
+  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
@@ -175,7 +175,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
           this.createFolder(this.fileNameInput.nativeElement.value);
         }
         else{
-          this.foldersService.renameFolder(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
+          this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
             next: (response:File) => {
               this.FileFolder.fileName = response.fileName;
               this.FileFolder.filePath = response.filePath;
@@ -343,7 +343,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   delete(event:MouseEvent){
     event.stopPropagation();
     this.eventService.emit("deleteConfirmNotif", "Are you sure you want to permanently delete "+this.name+"?", ()=>{
-      this.foldersService.deleteFolder(this.FileFolder.fileId).subscribe({
+      this.foldersService.delete(this.FileFolder.fileId).subscribe({
         next: (response:File) => {
           this.eventService.emit("addNotif", ["Successfully deleted "+this.name, 20000]);
           this.destroy.emit();

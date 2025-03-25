@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
 import {File} from "../../models/File";
 import {Metadata} from "../../models/Metadata";
-import {FoldersService} from "../../services/ApiServices/folders.service";
+import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {Utils} from "../../Utils";
 import {ActivatedRoute, Router} from "@angular/router";
 import {forkJoin} from "rxjs";
@@ -26,7 +26,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
   activeTab:number = 0;
   isDeleting = false;
 
-  constructor(protected foldersService:FoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService) {}
+  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService) {}
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id");
@@ -36,7 +36,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
       }
 
       forkJoin({
-        folder: this.foldersService.getFolderByFolderId(id),
+        folder: this.foldersService.getFileOrFolderById(id),
         metadata: this.foldersService.getMetadata(id),
       }).subscribe({
         next: ({ folder, metadata }) => {
@@ -81,7 +81,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
   }
 
   confirmDelete(){
-    this.foldersService.deleteFolder(this.f.fileId).subscribe({
+    this.foldersService.delete(this.f.fileId).subscribe({
       next: () => {
         this.router.navigate(["/"]);
       },

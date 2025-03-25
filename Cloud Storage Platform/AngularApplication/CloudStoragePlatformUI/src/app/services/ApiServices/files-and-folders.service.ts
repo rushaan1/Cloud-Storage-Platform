@@ -12,19 +12,20 @@ const BASE_URL = "https://localhost:7219/api/Folders";
 @Injectable({
   providedIn: 'root',
 })
-export class FoldersService {
+export class FilesAndFoldersService {
   constructor(private httpClient:HttpClient) { }
 
-  public getAllFoldersInHome():Observable<File[]>{
+  public getAllInHome(fetchFiles:boolean):Observable<File[]>{
     let params = new HttpParams();
     const sortVal = localStorage.getItem("sort")?.toString();
     if (sortVal){
       params = params.set('sortOrder', sortVal);
     }
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFoldersInHome`, {params: params});
+    params = params.set("fetchFiles", fetchFiles);
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllInHome`, {params: params});
   }
 
-  public getAllSubFoldersByParentFolderPath(folderPath:string):Observable<File[]>{
+  public getAllFilesAndSubFoldersByParentFolderPath(fetchFiles:boolean,folderPath:string):Observable<File[]>{
     Utils.handleStringInvalidError(folderPath);
     let params = new HttpParams()
       .set('path', folderPath);
@@ -32,24 +33,25 @@ export class FoldersService {
     if (sortVal){
       params = params.set('sortOrder', sortVal);
     }
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllSubFoldersByPath`, {params:params});
+    params = params.set("fetchFiles", fetchFiles);
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllChildrenByPath`, {params:params});
   }
 
-  public getFolderByFolderId(folderId:string):Observable<File>{
-    Utils.handleStringInvalidError(folderId);
-    let params = new HttpParams()
-      .set('folderId', folderId);
-    return this.httpClient.get<File>(`${BASE_URL}/getFolderById`, {params:params});
+  public getFileOrFolderById(id:string, file:boolean):Observable<File>{
+    Utils.handleStringInvalidError(id);
+    let params = new HttpParams();
+    params.append("id", id)
+    return this.httpClient.get<File>(`${this.getUrl(file)}/getById`, {params:params});
   }
 
-  public getFolderByFolderPath(path:string):Observable<File>{
+  public getFileOrFolderByPath(path:string, file:boolean):Observable<File>{
     Utils.handleStringInvalidError(path);
     let params = new HttpParams()
       .set('path', path);
-    return this.httpClient.get<File>(`${BASE_URL}/getFolderByPath`, {params:params});
+    return this.httpClient.get<File>(`${this.getUrl(file)}/getByPath`, {params:params});
   }
 
-  public getFilteredFolders(searchString:string):Observable<File[]>{
+  public getFilteredFolders(fetchFiles:boolean,searchString:string):Observable<File[]>{
     Utils.handleStringInvalidError(searchString);
     let params = new HttpParams()
       .set('searchString', searchString);
@@ -57,27 +59,36 @@ export class FoldersService {
     if (sortVal){
       params = params.set('sortOrder', sortVal);
     }
-    return this.httpClient.get<File[]>(`${BASE_URL}/getFilteredFolders`, {params:params});
+    params = params.set("fetchFiles", fetchFiles);
+    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFiltered`, {params:params});
   }
 
-  public getAllFavoriteFolders():Observable<File[]>{
+  public getAllFavoriteFolders(fetchFiles:boolean):Observable<File[]>{
     let params = new HttpParams();
     const sortVal = localStorage.getItem("sort")?.toString();
     if (sortVal){
       params = params.set('sortOrder', sortVal);
     }
+    params = params.set("fetchFiles", fetchFiles);
     return this.httpClient.get<File[]>(`${BASE_URL}/getAllFavoriteFolders`, {params:params});
   }
-  public getAllTrashFolders():Observable<File[]>{
+
+  public getAllTrashFolders(fetchFiles:boolean):Observable<File[]>{
     let params = new HttpParams();
     const sortVal = localStorage.getItem("sort")?.toString();
     if (sortVal){
       params = params.set('sortOrder', sortVal);
     }
+    params = params.set("fetchFiles", fetchFiles);
     return this.httpClient.get<File[]>(`${BASE_URL}/getAllTrashFolders`, {params:params});
   }
 
-
+  public getMetadata(id:string, file:boolean){
+    Utils.handleStringInvalidError(id);
+    let params = new HttpParams()
+      .set('id', id);
+    return this.httpClient.get<Metadata>(`${this.getUrl(file)}/getMetadata`, {params:params});
+  }
 
 
 
@@ -90,40 +101,40 @@ export class FoldersService {
   }
 
 
-  public renameFolder(folderId:string, folderNewName:string):Observable<File>{
+  public rename(folderId:string, folderNewName:string, file:boolean):Observable<File>{
     Utils.handleStringInvalidError(folderId);
     Utils.handleStringInvalidError(folderNewName);
-    return this.httpClient.patch<File>(`${BASE_URL}/rename`, {folderId:folderId, folderNewName:folderNewName});
+    return this.httpClient.patch<File>(`${this.getUrl(file)}/rename`, {folderId:folderId, folderNewName:folderNewName});
   }
 
-  public moveFolder(folderId:string, newFolderPath:string):Observable<File>{
+  public move(folderId:string, newFolderPath:string, file:boolean):Observable<File>{
     Utils.handleStringInvalidError(folderId);
     Utils.handleStringInvalidError(newFolderPath);
     let params = new HttpParams()
-      .set('folderId', folderId)
+      .set('id', folderId)
       .set('newFolderPath', newFolderPath);
-    return this.httpClient.patch<File>(`${BASE_URL}/move`,null, {params:params});
+    return this.httpClient.patch<File>(`${this.getUrl(file)}/move`,null, {params:params});
   }
 
-  public deleteFolder(folderId:string):Observable<File>{
+  public delete(folderId:string, file:boolean):Observable<File>{
     Utils.handleStringInvalidError(folderId);
     let params = new HttpParams()
-      .set('folderId', folderId)
-    return this.httpClient.delete<File>(`${BASE_URL}/delete`, {params:params});
+      .set('id', folderId)
+    return this.httpClient.delete<File>(`${this.getUrl(file)}/delete`, {params:params});
   }
 
-  public addOrRemoveFromFavorite(folderId:string):Observable<File>{
+  public addOrRemoveFromFavorite(folderId:string, file:boolean):Observable<File>{
     Utils.handleStringInvalidError(folderId);
     let params = new HttpParams()
-      .set('folderId', folderId)
-    return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromFavorite`, null, {params:params});
+      .set('id', folderId)
+    return this.httpClient.patch<File>(`${this.getUrl(file)}/addOrRemoveFromFavorite`, null, {params:params});
   }
 
-  public addOrRemoveFromTrash(folderId:string):Observable<File>{
+  public addOrRemoveFromTrash(folderId:string, file:boolean):Observable<File>{
     Utils.handleStringInvalidError(folderId);
     let params = new HttpParams()
-      .set('folderId', folderId)
-    return this.httpClient.patch<File>(`${BASE_URL}/addOrRemoveFromTrash`, null, {params:params});
+      .set('id', folderId)
+    return this.httpClient.patch<File>(`${this.getUrl(file)}/addOrRemoveFromTrash`, null, {params:params});
   }
 
   public batchAddOrRemoveFromTrash(folderIds:string[]):Observable<object>{
@@ -152,10 +163,12 @@ export class FoldersService {
     return this.httpClient.patch(`${BASE_URL}/batchMove`, folderIds, {params:params});
   }
 
-  public getMetadata(id:string){
-    Utils.handleStringInvalidError(id);
-    let params = new HttpParams()
-      .set('folderId', id);
-    return this.httpClient.get<Metadata>(`${BASE_URL}/getMetadata`, {params:params});
+  private getUrl(folder:boolean):string{
+    if (folder){
+      return BASE_URL;
+    }
+    else{
+      return BASE_URL.replace("Folders","File");
+    }
   }
 }

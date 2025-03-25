@@ -1,4 +1,5 @@
-﻿using CloudStoragePlatform.Core.Domain.Entities;
+﻿using AutoFixture;
+using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.Enums;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using File = CloudStoragePlatform.Core.Domain.Entities.File;
 
 namespace CloudStoragePlatform.Core
 {
@@ -121,6 +123,14 @@ namespace CloudStoragePlatform.Core
             await foldersRepository.UpdateFolder(folder, false, false, true, false, false, false);
         }
 
+        public static async Task UpdateMetadataRename(File file, IFilesRepository filesRepository)
+        {
+            file.Metadata!.RenameCount++;
+            //folder.Metadata!.PreviousPath = previousPath;
+            file.Metadata.PreviousRenameDate = DateTime.Now;
+            await filesRepository.UpdateFile(file, false, false, true, false);
+        }
+
 
         public static async Task UpdateMetadataMove(Folder folder, string previousPath, IFoldersRepository foldersRepository)
         {
@@ -128,6 +138,14 @@ namespace CloudStoragePlatform.Core
             folder.Metadata!.PreviousPath = previousPath;
             folder.Metadata.PreviousMoveDate = DateTime.Now;
             await foldersRepository.UpdateFolder(folder, false, false, true, false, false, false);
+        }
+
+        public static async Task UpdateMetadataMove(File file, string previousPath, IFilesRepository filesRepository)
+        {
+            file.Metadata!.MoveCount++;
+            file.Metadata!.PreviousPath = previousPath;
+            file.Metadata.PreviousMoveDate = DateTime.Now;
+            await filesRepository.UpdateFile(file, false, false, true, false);
         }
 
         public static async Task UpdateMetadataOpen(Folder folder, IFoldersRepository foldersRepository) 
@@ -141,5 +159,36 @@ namespace CloudStoragePlatform.Core
             await foldersRepository.UpdateFolder(folder, false, false, true, false, false, false);
         }
 
+
+        public static async Task UpdateMetadataOpen(File file, IFilesRepository filesRepository)
+        {
+            if (file.MetadataId == null)
+            {
+                return;
+            }
+            file!.Metadata!.LastOpened = DateTime.Now;
+            file!.Metadata.OpenCount++;
+            await filesRepository.UpdateFile(file, false, false, true, false);
+        }
+
+        public static void AttachMetadataForTesting(IFixture _fixture, Folder? folder, File? file) 
+        {
+            if (file != null)
+            {
+                Metadata m = _fixture.Build<Metadata>()
+                                .With(m => m.File, file)
+                                .With(m => m.Folder, (Folder)null)
+                                .Create();
+                file.Metadata = m;
+            }
+            else 
+            {
+                Metadata m = _fixture.Build<Metadata>()
+                                .With(m => m.File, (File)null)
+                                .With(m => m.Folder, folder)
+                                .Create();
+                folder.Metadata = m;
+            }
+        }
     }
 }

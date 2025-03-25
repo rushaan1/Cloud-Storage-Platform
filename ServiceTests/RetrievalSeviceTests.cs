@@ -6,6 +6,7 @@ using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,11 @@ namespace ServiceTests
             _output = output;
             _foldersRepositoryMock = new Mock<IFoldersRepository>();
             _filesRepositoryMock = new Mock<IFilesRepository>();
-            _retrievalService = new RetrievalService(_foldersRepositoryMock.Object, new Mock<Microsoft.Extensions.Configuration.IConfiguration>().Object, _filesRepositoryMock.Object);
+            Mock<IConfiguration> configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(c => c["InitialPathForStorage"])
+                .Returns("CloudStoragePlatformUnitTests");
+            _retrievalService = new RetrievalService(_foldersRepositoryMock.Object, configurationMock.Object, _filesRepositoryMock.Object);
+            
         }
 
         #region GetAllInHome

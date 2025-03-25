@@ -33,11 +33,14 @@ namespace CloudStoragePlatform.Web
                     });
             });
 
+            builder.Services.AddScoped<IRetrievalService, RetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
-            builder.Services.AddScoped<IFoldersRetrievalService, RetrievalService>();
+            builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFilesRepository, FilesRepository>();
+            builder.Services.AddScoped<IFilesRetrievalService, FileRetrievalService>();
+            builder.Services.AddScoped<IFilesModificationService, FileModificationService>();
             builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
             builder.Services.AddScoped<IRecentsRepository, RecentsRepository>();
             builder.Services.AddScoped<ISharingRepository, SharingRepository>();

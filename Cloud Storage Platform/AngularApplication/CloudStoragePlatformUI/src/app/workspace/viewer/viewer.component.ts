@@ -3,7 +3,7 @@ import { FilesStateService } from '../../services/StateManagementServices/files-
 import { EventService } from '../../services/event-service.service';
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {File} from "../../models/File";
-import {FoldersService} from "../../services/ApiServices/folders.service";
+import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../../items/breadcrumbs/breadcrumbs.component";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
@@ -30,7 +30,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   crumbs : string[] = [];
   emptyTxt = "No folders to show";
 
-  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FilesAndFoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
 
   ngOnInit(): void {
     this.filesState.setUncreatedFolderExists(false);
@@ -132,7 +132,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
         const constructedPathForApi = Utils.constructFilePathForApi(appUrl);
 
         if (Utils.validString(constructedPathForApi)){
-          this.foldersService.getAllSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
+          this.foldersService.getAllFilesAndSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
             next: response => {
               this.folders = response;
               this.filterOutFoldersBeingMoved();
@@ -158,7 +158,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadHomeFolder() {
     // API
-    this.foldersService.getAllFoldersInHome().subscribe({
+    this.foldersService.getAllInHome().subscribe({
       next: (response) => {
         this.folders = response;
         this.filterOutFoldersBeingMoved();

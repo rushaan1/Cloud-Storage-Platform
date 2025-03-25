@@ -21,39 +21,37 @@ namespace CloudStoragePlatform.Core.Services
             _configuration = configuration;
         }
 
-        public Task<List<FileResponse>> GetAllFavoriteFiles(SortOrderOptions sortOptions)
+        public async Task<FileResponse?> GetFileByFileId(Guid id)
         {
-            throw new NotImplementedException();
+            var file = await _filesRepository.GetFileByFileId(id);
+            if (file == null)
+            {
+                return null;
+            }
+            return file.ToFileResponse();
         }
 
-        public Task<List<FileResponse>> GetAllFilesInHome(SortOrderOptions sortOptions)
+        public async Task<FileResponse?> GetFileByFilePath(string path)
         {
-            throw new NotImplementedException();
+            var file = await _filesRepository.GetFileByFilePath(path);
+            if (file == null)
+            {
+                return null;
+            }
+            return file.ToFileResponse();
         }
 
-        public Task<List<FileResponse>> GetAllTrashFiles(SortOrderOptions sortOptions)
+        public async Task<FileOrFolderMetadataResponse> GetMetadata(Guid fileId)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<FileResponse?> GetFileByFileId(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FileResponse?> GetFileByFilePath(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<FileResponse>> GetFilteredFiles(string searchString, SortOrderOptions sortOptions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FileOrFolderMetadataResponse> GetMetadata(Guid fileId)
-        {
-            throw new NotImplementedException();
+            var file = await _filesRepository.GetFileByFileId(fileId);
+            if (file == null)
+            {
+                throw new ArgumentException();
+            }
+            var response = file!.Metadata!.ToMetadataResponse();
+            response.CreationDate = file.CreationDate;
+            response.ParentFolderName = file.ParentFolder.FolderName;
+            return response;
         }
     }
 }

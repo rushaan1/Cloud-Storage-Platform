@@ -17,6 +17,7 @@ using Xunit;
 using System.Text.Json;
 using NPOI.HPSF;
 using Xunit.Abstractions;
+using CloudStoragePlatform.Core;
 namespace ServiceTests
 {
     public class FolderServiceTests
@@ -166,6 +167,7 @@ namespace ServiceTests
 
             FolderRenameRequest renameRequest = _fixture.Create<FolderRenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
             Folder folder = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
+            Utilities.AttachMetadataForTesting(_fixture, folder, null);
             Folder updated = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
             updated.FolderName = renameRequest.FolderNewName;
             updated.FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.FolderNewName);
@@ -359,7 +361,7 @@ namespace ServiceTests
             string folderPath = Path.Combine(initialPath, folderName);
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
             Directory.CreateDirectory(folderPath);
-
+            Utilities.AttachMetadataForTesting(_fixture, folder, null);
             string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
             string newPathForFOLDER = Path.Combine(destinationDirectoryPath, folderName);
 
@@ -595,21 +597,13 @@ namespace ServiceTests
 
             Directory.CreateDirectory(folderPath);
             using (System.IO.File.Create(Path.Combine(folderPath, _fixture.Create<string>() + ".txt"))) {}
+            //Act
+            bool deleted = await _foldersModificationService.DeleteFolder(guid);
 
-                try
-                {
-                    //Act
-                    bool deleted = await _foldersModificationService.DeleteFolder(guid);
-
-                    //Assert
-                    deleted.Should().BeTrue();
-                    Directory.EnumerateDirectories(initialPath).Should().BeEmpty();
-                    Directory.EnumerateFiles(initialPath).Should().BeEmpty();
-                }
-                catch (Exception)
-                {
-                    Directory.Delete(folderPath, true);
-                }
+            //Assert
+            deleted.Should().BeTrue();
+            Directory.EnumerateDirectories(initialPath).Should().BeEmpty();
+            Directory.EnumerateFiles(initialPath).Should().BeEmpty();
         }
         #endregion
         #endregion
@@ -722,7 +716,7 @@ namespace ServiceTests
             {
                 MetadataId = _fixture.Create<Guid>(),
             };
-            Folder folder = new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abx", FolderPath = Path.Combine(initialPath, "Abx"), Metadata = metadata, MetadataId = metadata.MetadataId };
+            Folder folder = new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abx", FolderPath = Path.Combine(initialPath, "Abx"), ParentFolder=new Folder() { FolderName=_fixture.Create<string>() }, Metadata = metadata, MetadataId = metadata.MetadataId };
             metadata.Folder = folder;
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);

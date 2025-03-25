@@ -21,9 +21,9 @@ export class ResponseInterceptor implements HttpInterceptor {
   }
 
   private transformToFileModel(data: any, url:string): File|File[]|Metadata {
-    if (data instanceof Array) {
-      let array:Array<any> = [];
-      for (let i = 0; i < data.length; i++) {
+    let array:Array<any> = [];
+    if ((data.folders instanceof Array)||(data.folders instanceof Array)){
+      for (let i = 0; i < data.folders.length; i++) {
         if (data[i].isTrash.toString() == "true" && !url.includes("/getAllTrashFolders")){
           continue;
         }
@@ -36,8 +36,22 @@ export class ResponseInterceptor implements HttpInterceptor {
           uncreated:false
         });
       }
+      for (let i = 0; i < data.files.length; i++) {
+        if (data[i].isTrash.toString() == "true" && !url.includes("/getAllTrashFolders")){
+          continue;
+        }
+        array.push({
+          fileId:data[i].fileId,
+          filePath:data[i].filePath,
+          fileName:data[i].fileName,
+          isFavorite:data[i].isFavorite,
+          isTrash:data[i].isTrash,
+          uncreated:false
+        });
+      }
       return array;
     }
+
     else if (url.includes("/getMetadata")){
       const formatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
       if(!data.creationDate){
@@ -76,6 +90,16 @@ export class ResponseInterceptor implements HttpInterceptor {
       return data;
     }
     else{
+      if (url.toLowerCase().includes("api/file")){
+        return {
+          fileId:data.fileId,
+          filePath:data.filePath,
+          fileName:data.fileName,
+          isFavorite:data.isFavorite,
+          isTrash:data.isTrash,
+          uncreated: false
+        }
+      }
       return {
         fileId:data.folderId,
         filePath:data.folderPath,

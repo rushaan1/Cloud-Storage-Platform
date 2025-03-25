@@ -11,104 +11,107 @@ using Microsoft.Data.SqlClient;
 
 namespace Cloud_Storage_Platform.Controllers
 {
-    [TypeFilter(typeof(EnsureGuidIsNotEmptyFilter), Arguments = new object[] { new string[] { "parentFolderId", "folderId" } } )]
+    [TypeFilter(typeof(EnsureGuidIsNotEmptyFilter), Arguments = new object[] { new string[] { "parentFolderId", "folderId", "id" } } )]
     [Route("api/[controller]")]
     [ApiController]
     public class FoldersController : ControllerBase
     {
         private readonly IFoldersModificationService _foldersModificationService;
+        private readonly IRetrievalService _retrievalService;
         private readonly IFoldersRetrievalService _foldersRetrievalService;
         private readonly IConfiguration _configuration;
         
-        public FoldersController(IFoldersModificationService foldersModificationService, IFoldersRetrievalService foldersRetrievalService, IConfiguration configuration) 
+        public FoldersController(IFoldersModificationService foldersModificationService, IRetrievalService retrievalService, IFoldersRetrievalService foldersRetrievalService, IConfiguration configuration) 
         {
             _foldersModificationService = foldersModificationService;
             _foldersRetrievalService = foldersRetrievalService;
             _configuration = configuration;
+            _retrievalService = retrievalService;
         }
 
         #region Retrievals
         [HttpGet]
-        [Route("getAllFoldersInHome")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllFoldersInHomeFolder(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
+        [Route("getById")]
+        public async Task<ActionResult<FolderResponse>> GetFolderById(Guid id)
         {
-            List<FolderResponse> folders = await _foldersRetrievalService.GetAllFoldersInHomeFolder(sortOrder);
-            if (folders.Count == 0) 
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderId(id);
+            return (folderResponse != null) ? folderResponse : NotFound();
+        }
+
+        [HttpGet]
+        [Route("getByPath")]
+        public async Task<ActionResult<FolderResponse>> GetFolderByPath([ModelBinder(typeof(AppendToPath))] string path)
+        {
+            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderPath(path);
+            return (folderResponse != null) ? folderResponse : NotFound();
+        }
+
+        [HttpGet]
+        [Route("getMetadata")]
+        public async Task<ActionResult<FileOrFolderMetadataResponse>> GetMetadata(Guid id)
+        {
+            FileOrFolderMetadataResponse? folderDetailsResponse = await _foldersRetrievalService.GetMetadata(id);
+            return (folderDetailsResponse != null) ? folderDetailsResponse : NotFound();
+        }
+
+
+
+        [HttpGet]
+        [Route("getAllInHome")]
+        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllFoldersInHomeFolder(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
+        {
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllInHome(sortOrder, fetchFiles);
+            if (res.folders.Count == 0 && res.files.Count == 0) 
             {
                 return NotFound();
             }
-            return folders;
+            return res;
         }
 
         [HttpGet]
-        [Route("getAllSubFoldersById")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
+        [Route("getAllChildrenById")]
+        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllSubFolders(bool fetchFiles, Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
         {
-            List<FolderResponse> folders = await _foldersRetrievalService.GetAllSubFolders(parentFolderId, sortOrder);
-            return folders;
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parentFolderId, sortOrder, fetchFiles);
+            return res;
         }
 
         [HttpGet]
-        [Route("getAllSubFoldersByPath")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllSubFolders([ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        [Route("getAllChildrenByPath")]
+        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllSubFolders(bool fetchFiles, [ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             FolderResponse? parent = await _foldersRetrievalService.GetFolderByFolderPath(path);
             if (parent == null) 
             {
                 return NotFound();
             }
-            List<FolderResponse> folders = await _foldersRetrievalService.GetAllSubFolders(parent.FolderId, sortOrder);
-            return folders;
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parent.FolderId, sortOrder, fetchFiles);
+            return res;
         }
 
         [HttpGet]
-        [Route("getFilteredFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        [Route("getAllFiltered")]
+        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             string searchStringTrimmed = searchString.Trim();
-            List<FolderResponse> folders = await _foldersRetrievalService.GetFilteredFolders(searchStringTrimmed, sortOrder);
-            return folders;
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFilteredChildren(searchStringTrimmed, sortOrder, fetchFiles);
+            return res;
         }
 
         [HttpGet]
-        [Route("getAllFavoriteFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllFavoriteFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        [Route("getAllFavorites")]
+        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllFavoriteFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
-            List<FolderResponse> folders = await _foldersRetrievalService.GetAllFavoriteFolders(sortOrder);
-            return folders;
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFavorites(sortOrder, fetchFiles);
+            return res;
         }
 
         [HttpGet]
-        [Route("getAllTrashFolders")]
-        public async Task<ActionResult<List<FolderResponse>>> GetAllTrashFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        [Route("getAllTrashes")]
+        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllTrashFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
-            List<FolderResponse> folders = await _foldersRetrievalService.GetAllTrashFolders(sortOrder);
-            return folders;
-        }
-
-
-        [HttpGet]
-        [Route("getFolderById")]
-        public async Task<ActionResult<FolderResponse>> GetFolderById(Guid folderId) 
-        {
-            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderId(folderId);
-            return (folderResponse!=null) ? folderResponse : NotFound();
-        }
-
-        [HttpGet]
-        [Route("getFolderByPath")]
-        public async Task<ActionResult<FolderResponse>> GetFolderByPath([ModelBinder(typeof(AppendToPath))] string path)
-        {
-            FolderResponse? folderResponse = await _foldersRetrievalService.GetFolderByFolderPath(path);
-            return (folderResponse!=null) ? folderResponse : NotFound();
-        }
-
-        [HttpGet]
-        [Route("getMetadata")]
-        public async Task<ActionResult<FileOrFolderMetadataResponse>> GetMetadata(Guid folderId)
-        {
-            FileOrFolderMetadataResponse? folderDetailsResponse = await _foldersRetrievalService.GetMetadata(folderId);
-            return (folderDetailsResponse != null) ? folderDetailsResponse : NotFound();
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllTrashes(sortOrder, fetchFiles);
+            return res;
         }
         #endregion
 

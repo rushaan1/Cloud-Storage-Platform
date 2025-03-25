@@ -38,13 +38,6 @@ namespace CloudStoragePlatform.Core.Domain.RepositoryContracts
         /// <returns>A list of subfolders that match the filter.</returns>
         Task<List<Folder>> GetFilteredSubFolders(Folder parent, Func<Folder, bool> predicate);
 
-        /// <summary>
-        /// Retrieves files within a specified parent folder based on a filter predicate.
-        /// </summary>
-        /// <param name="parent">The parent folder.</param>
-        /// <param name="predicate">The filter condition.</param>
-        /// <returns>A list of files that match the filter.</returns>
-        Task<List<Entities.File>> GetFilteredSubFiles(Folder parent, Func<Entities.File, bool> predicate);
 
         /// <summary>
         /// Retrieves a folder by its Guid.
