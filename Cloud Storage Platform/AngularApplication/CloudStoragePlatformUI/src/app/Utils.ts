@@ -40,4 +40,7 @@ export class Utils {
     return constructedPath;
   }
 
+  public static isFolder(path:string):boolean{
+    return !path.includes(".");
+  }
 }

@@ -132,7 +132,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
         const constructedPathForApi = Utils.constructFilePathForApi(appUrl);
 
         if (Utils.validString(constructedPathForApi)){
-          this.foldersService.getAllFilesAndSubFoldersByParentFolderPath(constructedPathForApi).subscribe({
+          this.foldersService.getAllFilesAndSubFoldersByParentFolderPath(this.filesState.getItemsBeingMoved().length==0, constructedPathForApi).subscribe({
             next: response => {
               this.folders = response;
               this.filterOutFoldersBeingMoved();
@@ -158,7 +158,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadHomeFolder() {
     // API
-    this.foldersService.getAllInHome().subscribe({
+    this.foldersService.getAllInHome(this.filesState.getItemsBeingMoved().length==0).subscribe({
       next: (response) => {
         this.folders = response;
         this.filterOutFoldersBeingMoved();
@@ -174,7 +174,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadFavoriteFolders() {
     // API
-    this.foldersService.getAllFavoriteFolders().subscribe({
+    this.foldersService.getAllFavoriteFolders(this.filesState.getItemsBeingMoved().length==0).subscribe({
       next: (response) => {
         this.folders = response;
         this.filterOutFoldersBeingMoved();
@@ -191,7 +191,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadTrashFolders() {
     // API
-    this.foldersService.getAllTrashFolders().subscribe({
+    this.foldersService.getAllTrashFolders(this.filesState.getItemsBeingMoved().length==0).subscribe({
       next: (response) => {
         this.folders = response;
         this.filterOutFoldersBeingMoved();
@@ -244,7 +244,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   handleSearchOperation(){
     if (Utils.validString(this.searchQuery)){
       this.loaderService.loadingStart();
-      this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
+      this.foldersService.getFilteredFolders(this.filesState.getItemsBeingMoved().length==0,this.searchQuery!).subscribe({
         next: res => {
           this.folders = res;
           this.filterOutFoldersBeingMoved();
@@ -267,4 +267,6 @@ export class ViewerComponent implements OnInit, OnDestroy{
       this.emptyFolderTxtActive = false;
     }
   }
+
+  protected readonly Utils = Utils;
 }

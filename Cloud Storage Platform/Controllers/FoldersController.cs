@@ -58,27 +58,27 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllInHome")]
-        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllFoldersInHomeFolder(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
+        public async Task<ActionResult<BulkResponse>> GetAllFoldersInHomeFolder(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
         {
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllInHome(sortOrder, fetchFiles);
             if (res.folders.Count == 0 && res.files.Count == 0) 
             {
                 return NotFound();
             }
-            return res;
+            return new BulkResponse { folders = res.folders, files = res.files};
         }
 
         [HttpGet]
         [Route("getAllChildrenById")]
-        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllSubFolders(bool fetchFiles, Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
+        public async Task<ActionResult<BulkResponse>> GetAllSubFolders(bool fetchFiles, Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING) 
         {
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parentFolderId, sortOrder, fetchFiles);
-            return res;
+            return new BulkResponse { folders = res.folders, files = res.files};
         }
 
         [HttpGet]
         [Route("getAllChildrenByPath")]
-        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllSubFolders(bool fetchFiles, [ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllSubFolders(bool fetchFiles, [ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             FolderResponse? parent = await _foldersRetrievalService.GetFolderByFolderPath(path);
             if (parent == null) 
@@ -86,32 +86,32 @@ namespace Cloud_Storage_Platform.Controllers
                 return NotFound();
             }
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parent.FolderId, sortOrder, fetchFiles);
-            return res;
+            return new BulkResponse { folders = res.folders, files = res.files};
         }
 
         [HttpGet]
         [Route("getAllFiltered")]
-        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             string searchStringTrimmed = searchString.Trim();
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFilteredChildren(searchStringTrimmed, sortOrder, fetchFiles);
-            return res;
+            return new BulkResponse { folders = res.folders, files = res.files};
         }
 
         [HttpGet]
         [Route("getAllFavorites")]
-        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllFavoriteFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllFavoriteFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFavorites(sortOrder, fetchFiles);
-            return res;
+            return new BulkResponse { folders = res.folders, files = res.files};
         }
 
         [HttpGet]
         [Route("getAllTrashes")]
-        public async Task<ActionResult<(List<FolderResponse> folders, List<FileResponse> files)>> GetAllTrashFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllTrashFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllTrashes(sortOrder, fetchFiles);
-            return res;
+            return new BulkResponse { folders = res.folders, files = res.files};
         }
         #endregion
 
@@ -136,41 +136,41 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpPatch]
         [Route("move")]
-        public async Task<ActionResult<FolderResponse>> MoveFolder(Guid folderId, [ModelBinder(typeof(AppendToPath))] string newFolderPath) 
+        public async Task<ActionResult<FolderResponse>> MoveFolder(Guid id, [ModelBinder(typeof(AppendToPath))] string newPath) 
         {
-            FolderResponse folderResponse = await _foldersModificationService.MoveFolder(folderId, newFolderPath);
+            FolderResponse folderResponse = await _foldersModificationService.MoveFolder(id, newPath);
             return folderResponse;
         }
 
         [HttpPatch]
         [Route("addOrRemoveFromFavorite")]
-        public async Task<ActionResult<FolderResponse>> AddOrRemoveFromFavorite(Guid folderId)
+        public async Task<ActionResult<FolderResponse>> AddOrRemoveFromFavorite(Guid id)
         {
-            FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveFavorite(folderId);
+            FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveFavorite(id);
             return folderResponse;
         }
 
         [HttpPatch]
         [Route("addOrRemoveFromTrash")]
-        public async Task<ActionResult<FolderResponse>> AddOrRemoveFromTrash(Guid folderId)
+        public async Task<ActionResult<FolderResponse>> AddOrRemoveFromTrash(Guid id)
         {
-            FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveTrash(folderId);
+            FolderResponse folderResponse = await _foldersModificationService.AddOrRemoveTrash(id);
             return folderResponse;
         }
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<ActionResult<bool>> DeleteFolder(Guid folderId)
+        public async Task<ActionResult<bool>> DeleteFolder(Guid id)
         {
-            bool isDeleted = await _foldersModificationService.DeleteFolder(folderId);
+            bool isDeleted = await _foldersModificationService.DeleteFolder(id);
             return isDeleted;
         }
 
         [HttpPatch]
         [Route("batchAddOrRemoveFromTrash")]
-        public async Task<ActionResult> BatchAddOrRemoveFromTrash(List<Guid> folderIds) 
+        public async Task<ActionResult> BatchAddOrRemoveFromTrash(List<Guid> ids) 
         {
-            foreach (Guid id in folderIds) 
+            foreach (Guid id in ids) 
             {
                 await _foldersModificationService.AddOrRemoveTrash(id);
             }
@@ -179,24 +179,24 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpDelete]
         [Route("batchDelete")]
-        public async Task<ActionResult> BatchDelete([FromQuery] List<Guid> folderIds) 
+        public async Task<ActionResult> BatchDelete([FromQuery] List<Guid> ids) 
         {
             int deleted = 0;
-            foreach (Guid id in folderIds)
+            foreach (Guid id in ids)
             {
                 if (await _foldersModificationService.DeleteFolder(id))
                 {
                     deleted++;
                 }
             }
-            return (deleted == folderIds.Count) ? NoContent() : StatusCode(500);
+            return (deleted == ids.Count) ? NoContent() : StatusCode(500);
         }
 
         [HttpPatch]
         [Route("batchMove")]
-        public async Task<ActionResult> BatchMove(List<Guid> folderIds, [ModelBinder(typeof(AppendToPath))] string newFolderPath) 
+        public async Task<ActionResult> BatchMove(List<Guid> ids, [ModelBinder(typeof(AppendToPath))] string newFolderPath) 
         {
-            foreach (Guid id in folderIds) 
+            foreach (Guid id in ids) 
             {
                 await _foldersModificationService.MoveFolder(id, newFolderPath);
             }

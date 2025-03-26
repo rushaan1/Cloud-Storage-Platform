@@ -175,7 +175,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
           this.createFolder(this.fileNameInput.nativeElement.value);
         }
         else{
-          this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value).subscribe({
+          this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value,Utils.isFolder(this.FileFolder.filePath)).subscribe({
             next: (response:File) => {
               this.FileFolder.fileName = response.fileName;
               this.FileFolder.filePath = response.filePath;
@@ -316,7 +316,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   toggleFavorite(event:MouseEvent){
     event.stopPropagation();
-    this.foldersService.addOrRemoveFromFavorite(this.FileFolder.fileId).subscribe({
+    this.foldersService.addOrRemoveFromFavorite(this.FileFolder.fileId, Utils.isFolder(this.FileFolder.filePath)).subscribe({
       next: (response:File) => {
         this.FileFolder.isFavorite = response.isFavorite;
       },
@@ -328,7 +328,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   trash(event:MouseEvent){
     event.stopPropagation();
-    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId).subscribe({
+    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,Utils.isFolder(this.FileFolder.filePath)).subscribe({
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
@@ -343,7 +343,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   delete(event:MouseEvent){
     event.stopPropagation();
     this.eventService.emit("deleteConfirmNotif", "Are you sure you want to permanently delete "+this.name+"?", ()=>{
-      this.foldersService.delete(this.FileFolder.fileId).subscribe({
+      this.foldersService.delete(this.FileFolder.fileId,Utils.isFolder(this.FileFolder.filePath)).subscribe({
         next: (response:File) => {
           this.eventService.emit("addNotif", ["Successfully deleted "+this.name, 20000]);
           this.destroy.emit();
@@ -357,7 +357,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   restore(event:MouseEvent) {
     event.stopPropagation();
-    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId).subscribe({
+    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,Utils.isFolder(this.FileFolder.filePath)).subscribe({
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
@@ -377,7 +377,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   move(){
     const itemsBeingMoved = this.filesState.getItemsBeingMoved();
-    this.foldersService.batchMove(itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath))).subscribe({
+    this.foldersService.batchMoveFolders(itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath))).subscribe({
       next:()=>{
         setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+itemsBeingMoved.length+" item(s) to "+this.name+".", 12000]);},800);
         this.filesState.setItemsBeingMoved([]);
@@ -385,4 +385,6 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  protected readonly Utils = Utils;
 }

@@ -24,28 +24,28 @@ export class ResponseInterceptor implements HttpInterceptor {
     let array:Array<any> = [];
     if ((data.folders instanceof Array)||(data.folders instanceof Array)){
       for (let i = 0; i < data.folders.length; i++) {
-        if (data[i].isTrash.toString() == "true" && !url.includes("/getAllTrashFolders")){
+        if (data.folders[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
           continue;
         }
         array.push({
-          fileId:data[i].folderId,
-          filePath:data[i].folderPath,
-          fileName:data[i].folderName,
-          isFavorite:data[i].isFavorite,
-          isTrash:data[i].isTrash,
+          fileId:data.folders[i].folderId,
+          filePath:data.folders[i].folderPath,
+          fileName:data.folders[i].folderName,
+          isFavorite:data.folders[i].isFavorite,
+          isTrash:data.folders[i].isTrash,
           uncreated:false
         });
       }
       for (let i = 0; i < data.files.length; i++) {
-        if (data[i].isTrash.toString() == "true" && !url.includes("/getAllTrashFolders")){
+        if (data.files[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
           continue;
         }
         array.push({
-          fileId:data[i].fileId,
-          filePath:data[i].filePath,
-          fileName:data[i].fileName,
-          isFavorite:data[i].isFavorite,
-          isTrash:data[i].isTrash,
+          fileId:data.files[i].fileId,
+          filePath:data.files[i].filePath,
+          fileName:data.files[i].fileName,
+          isFavorite:data.files[i].isFavorite,
+          isTrash:data.files[i].isTrash,
           uncreated:false
         });
       }

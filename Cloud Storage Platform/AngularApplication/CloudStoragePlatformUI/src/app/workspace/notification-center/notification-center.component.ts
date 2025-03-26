@@ -236,7 +236,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   moveToTrash(){
-    this.foldersService.batchAddOrRemoveFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
+    this.foldersService.batchAddOrRemoveFoldersFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Moved to trash "+this.itemsSelected+" items.", 12000]);
         this.filesState.deSelectAll();
@@ -246,7 +246,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   restore(){
-    this.foldersService.batchAddOrRemoveFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
+    this.foldersService.batchAddOrRemoveFoldersFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Restored "+this.itemsSelected+" items.", 12000]);
         this.filesState.deSelectAll();
@@ -256,7 +256,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   delete(){
-    this.foldersService.batchDelete(this.selectedItems.map((f)=>f.fileId)).subscribe({
+    this.foldersService.batchDeleteFolders(this.selectedItems.map((f)=>f.fileId)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Deleted permanently "+this.itemsSelected+" items.", 12000]);
         this.filesState.deSelectAll();
@@ -283,7 +283,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       }
     }
 
-    this.foldersService.batchMove(this.itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)).subscribe({
+    this.foldersService.batchMoveFolders(this.itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)).subscribe({
       next:()=>{
         this.eventService.emit("addNotif", ["Moved "+this.itemsBeingMoved.length+" item(s) to "+this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]+".", 12000]);
         this.filesState.setItemsBeingMoved([]);

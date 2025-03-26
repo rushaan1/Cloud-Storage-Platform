@@ -18,7 +18,8 @@ const routes: Routes = [
   {path:'filter/favorites', component:ViewerComponent},
   {path:'filter/trash', component:ViewerComponent},
   {path:'searchFilter', component:ViewerComponent},
-  {path:'metadata/:id', component:InfoComponent},
+  {path:'foldermetadata/:id', component:InfoComponent},
+  {path:'filemetadata/:id', component:InfoComponent},
   {path:'', component:ViewerComponent},
   { path: '**', redirectTo: 'folder', pathMatch: 'full' },
 ];

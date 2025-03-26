@@ -7,7 +7,7 @@
   <div *ngIf="!emptyFolderTxtActive && crumbs[0]=='Search Results'" class="topTxt resultsTxt">Search Results for {{searchQuery}}</div>
   <div *ngIf="emptyFolderTxtActive" class="topTxt">{{emptyTxt}}</div>
   <div class="files-and-folders">
-    <file-large-item *ngFor="let folder of folders; index as i" [ngClass]="{'file-move-state-width-override':filesState.getItemsBeingMoved().length>0}" [FileFolder]="folder" [type]="'folder'"
+    <file-large-item *ngFor="let folder of folders; index as i" [ngClass]="{'file-move-state-width-override':filesState.getItemsBeingMoved().length>0}" [FileFolder]="folder" [type]="Utils.isFolder(folder.filePath) ? 'folder' : folder.filePath.split('.')[folder.filePath.split('.').length-1]"
                      class="file-large-item-from-viewer" (destroy)="this.folders.splice(i,1)"></file-large-item>
     <!--TODO Copy paste and tune above for files-->
     <div *ngIf="!anyFolderUncreated && crumbs[0]=='home' && filesState.getItemsBeingMoved().length==0" (click)="this.createNewFolder()" class="newFolder">

@@ -13,9 +13,9 @@
         </div>
       </div>
 
-      <input type="file">
+      <input #uploadInputHidden (change)="onFileSelected($event)" type="file" hidden>
 
-      <button class="upload">
+      <button (click)="upload();" class="upload">
         <i class="fa-solid fa-arrow-up"></i>
         Upload
       </button>

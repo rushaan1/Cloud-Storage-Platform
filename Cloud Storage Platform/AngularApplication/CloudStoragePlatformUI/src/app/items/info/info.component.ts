@@ -25,6 +25,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
   trashBtnTxt:string = "Add to Trash";
   activeTab:number = 0;
   isDeleting = false;
+  isFolder = false;
 
   constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService) {}
   ngOnInit(): void {
@@ -34,10 +35,12 @@ export class InfoComponent implements OnInit, AfterViewInit{
         console.error("Error: Folder ID is missing.");
         return;
       }
+      const appUrl = this.router.url.split("?")[0].split("/");
+      this.isFolder = appUrl[appUrl.length-2]=="foldermetadata";
 
       forkJoin({
-        folder: this.foldersService.getFileOrFolderById(id),
-        metadata: this.foldersService.getMetadata(id),
+        folder: this.foldersService.getFileOrFolderById(id, this.isFolder),
+        metadata: this.foldersService.getMetadata(id, this.isFolder),
       }).subscribe({
         next: ({ folder, metadata }) => {
           this.f = folder;
@@ -81,7 +84,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
   }
 
   confirmDelete(){
-    this.foldersService.delete(this.f.fileId).subscribe({
+    this.foldersService.delete(this.f.fileId, this.isFolder).subscribe({
       next: () => {
         this.router.navigate(["/"]);
       },
@@ -102,7 +105,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
     }
     this.favBtn.nativeElement.disabled = true;
     this.favBtn.nativeElement.classList.add("disabled");
-    this.foldersService.addOrRemoveFromFavorite(this.f.fileId).subscribe({
+    this.foldersService.addOrRemoveFromFavorite(this.f.fileId, this.isFolder).subscribe({
       next: (response:File) => {
         this.f.isFavorite = response.isFavorite;
         this.updateFavAndTrashTxts();
@@ -121,7 +124,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
     }
     this.trashBtn.nativeElement.disabled = true;
     this.trashBtn.nativeElement.classList.add("disabled");
-    this.foldersService.addOrRemoveFromTrash(this.f.fileId).subscribe({
+    this.foldersService.addOrRemoveFromTrash(this.f.fileId, this.isFolder).subscribe({
       next: (response:File) => {
         this.f.isTrash = response.isTrash;
         this.updateFavAndTrashTxts();

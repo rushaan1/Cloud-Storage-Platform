@@ -7,7 +7,7 @@
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" class="file-option" id="share-file-option">Share</div>
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="activateMoveState($event); expandOrCollapseOptions();" class="file-option" id="move-file-option">Move to...</div>
         <div (click)="toggleFavorite($event); expandOrCollapseOptions();" class="file-option" id="favorite-file-option">Favorite</div>
-        <div (click)="router.navigate(['metadata', FileFolder.fileId])" class="file-option" id="info-file-option">Info</div>
+        <div (click)="router.navigate(Utils.isFolder(FileFolder.filePath) ? ['foldermetadata',FileFolder.fileId]:['filemetadata',FileFolder.fileId])" class="file-option" id="info-file-option">Info</div>
     </div>
 
     <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" class="file-options">
@@ -19,7 +19,7 @@
     <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : this.filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
     <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
-    <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="file-item-icon"></div>
+    <div [ngClass]="{'picture':type=='png','video':type=='mp4','folder':type=='folder'}" class="file-item-icon"></div>
 
 
     <div class="file-name-text">

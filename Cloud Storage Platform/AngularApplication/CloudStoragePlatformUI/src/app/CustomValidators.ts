@@ -17,5 +17,5 @@ export function invalidCharacter(control:AbstractControl):ValidationErrors|null{
 }
 
 export function invalidFileNameChars():Set<string>{
-  return new Set(['<', '>', ':', '"', '/', '\\', '|', '?', '*']);
+  return new Set(['<','.', '>', ':', '"', '/', '\\', '|', '?', '*']);
 }

@@ -4,6 +4,8 @@ import {EventService} from "../../services/event-service.service";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
 import {ActivatedRoute, Router} from "@angular/router";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
+import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
+import {Utils} from "../../Utils";
 
 @Component({
   selector: 'panel',
@@ -19,6 +21,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   @ViewChild('sortSelection') sortSelection!: ElementRef<HTMLSelectElement>;
   @ViewChild("sorting") sortingTxt!: ElementRef<HTMLSpanElement>;
   @ViewChild('sortParent') sortParent!: ElementRef<HTMLDivElement>;
+  @ViewChild('uploadInputHidden') uploadInputHidden!: ElementRef<HTMLInputElement>;
 
   mouseHoveringOverPfp = false;
   onlyHiText = false;
@@ -28,7 +31,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
   crumbs:string[] = [];
-  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute){}
+  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
@@ -138,4 +141,24 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     this.eventService.emit("reload viewer list");
   }
 
+  upload(){
+    this.uploadInputHidden.nativeElement.click();
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const formData = new FormData();
+      const selectedFile = input.files[0];
+      formData.append("file", selectedFile);
+      this.filesService.uploadFile(selectedFile.name, Utils.constructFilePathForApi([...this.crumbs, selectedFile.name]), formData).subscribe({
+        next: data => {
+
+        },
+        complete: () => {
+          input.value = '';
+        }
+      });
+    }
+  }
 }
