@@ -15,6 +15,10 @@ namespace CloudStoragePlatform.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.Limits.MaxRequestBodySize = long.MaxValue;
+            });
             string defaultDirectory = builder.Configuration.GetValue<string>("InitialPathForStorage");
             if (!Directory.Exists(defaultDirectory)) 
             {
