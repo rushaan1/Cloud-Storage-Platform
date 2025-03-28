@@ -34,10 +34,6 @@ namespace CloudStoragePlatform.Core.Services
                 return (new List<FolderResponse>(), new List<FileResponse>());
             }
             List<Folder> foldersInHome = homeFolder!.SubFolders.ToList();
-            if (foldersInHome.Count <= 0)
-            {
-                return (new List<FolderResponse>(), new List<FileResponse>());
-            }
 
             if (retrieveFiles)
             {
@@ -59,10 +55,6 @@ namespace CloudStoragePlatform.Core.Services
             List<Folder> childFolders = parentFolder!.SubFolders.ToList();
 
             await Utilities.UpdateMetadataOpen(parentFolder, _foldersRepository);
-            if (childFolders.Count <= 0)
-            {
-                return (new List<FolderResponse>(), new List<FileResponse>());
-            }
             if (retrieveFiles)
             {
                 return GetResponse(childFolders, parentFolder!.Files.ToList(), sortOptions);
@@ -77,10 +69,6 @@ namespace CloudStoragePlatform.Core.Services
         {
             List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.FolderName.Contains(searchString));
             
-            if (folders.Count <= 0)
-            {
-                return (new List<FolderResponse>(), new List<FileResponse>());
-            }
             if (retrieveFiles)
             {
                 List<File> files = await _filesRepository.GetFilteredFiles(f => f.FileName.Contains(searchString));
@@ -95,10 +83,7 @@ namespace CloudStoragePlatform.Core.Services
         public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllFavorites(SortOrderOptions sortOptions, bool retrieveFiles)
         {
             List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.IsFavorite);
-            if (folders.Count <= 0)
-            {
-                return (new List<FolderResponse>(), new List<FileResponse>());
-            }
+
             if (retrieveFiles)
             {
                 List<File> files = await _filesRepository.GetFilteredFiles(f => f.IsFavorite);
@@ -113,11 +98,7 @@ namespace CloudStoragePlatform.Core.Services
         public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllTrashes(SortOrderOptions sortOptions, bool retrieveFiles)
         {
             List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.IsTrash);
-            
-            if (folders.Count <= 0)
-            {
-                return (new List<FolderResponse>(), new List<FileResponse>());
-            }
+           
 
             if (retrieveFiles)
             {

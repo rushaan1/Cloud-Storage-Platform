@@ -64,24 +64,61 @@ namespace Cloud_Storage_Platform.Controllers
         [HttpPost]
         [Route("upload")]
         [DisableFormValueModelBinding]
-        public async Task<ActionResult<FileResponse>> UploadFile([FromQuery] FileAddRequest fileAddRequest)
+        public async Task<ActionResult<List<FileResponse>>> UploadFiles()
         {
-            fileAddRequest.FilePath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(fileAddRequest.FilePath);
-
             var boundary = GetBoundary(MediaTypeHeaderValue.Parse(Request.ContentType));
             var multipartReader = new MultipartReader(boundary, Request.Body);
             var section = await multipartReader.ReadNextSectionAsync();
+
+            var fileRequests = new List<FileAddRequest>(); // Store multiple FileAddRequest objects
+
+            FileAddRequest? currentFileRequest = null;
+            int uploadIndex = 0;
+            var responses = new List<FileResponse>();
+
             while (section is not null)
             {
-                var fileSection = section.AsFileSection();
-                if (fileSection is not null && fileSection.FileStream is not null)
+                var contentDisposition = section.ContentDisposition;
+
+                if (ContentDispositionHeaderValue.TryParse(contentDisposition, out var disposition))
                 {
-                    await _filesModificationService.UploadFile(fileAddRequest, fileSection.FileStream);
+                    if (disposition.IsFormDisposition()) // This is a form field
+                    {
+                        using (var reader = new StreamReader(section.Body))
+                        {
+                            var value = await reader.ReadToEndAsync();
+
+                            // If a new FileAddRequest needs to be created (new file metadata incoming)
+                            if (disposition.Name == "fileName")
+                            {
+                                currentFileRequest = new FileAddRequest
+                                {
+                                    FileName = Uri.UnescapeDataString(value)
+                                };
+                                fileRequests.Add(currentFileRequest); // Add to list
+                            }
+                            else if (disposition.Name == "filePath" && currentFileRequest is not null)
+                            {
+                                currentFileRequest.FilePath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(value);
+                            }
+                        }
+                    }
+                    else if (disposition.IsFileDisposition() && currentFileRequest is not null) // This is the actual file
+                    {
+                        var fileSection = section.AsFileSection();
+                        if (fileSection is not null && fileSection.FileStream is not null) 
+                        {
+                            responses.Add(await _filesModificationService.UploadFile(fileRequests.ElementAt(uploadIndex), fileSection.FileStream));
+                        }
+                        uploadIndex++;
+                    }
                 }
+
                 section = await multipartReader.ReadNextSectionAsync();
             }
-            return new FileResponse();
+            return responses;
         }
+
 
         [HttpPatch]
         [Route("rename")]

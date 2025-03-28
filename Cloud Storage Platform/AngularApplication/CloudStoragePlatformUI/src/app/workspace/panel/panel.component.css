@@ -58,6 +58,10 @@
   border-color: red !important;
 }
 
+.upload-container {
+  font-family: Arial;
+}
+
 .upload {
   height: 39.8px;
   width: fit-content;
@@ -71,6 +75,43 @@
   border-color: transparent;
   border-radius: 24px;
   padding: 12px 20px 12px 15px;
+}
+
+
+.upload-options{
+  display: flex;
+  position: absolute;
+  width: fit-content;
+  flex-direction: column;
+  background-color: lightgray;
+  top: 50px;
+  margin-top: 3px;
+  height: 0px;
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+}
+
+.upload-options-active{
+  height: 80px;
+}
+
+.upload-option{
+  padding: 5px 8px 5px 8px;
+  height: 50%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-option:hover{
+  background-color: gray;
+  cursor: pointer;
+  user-select: none;
+}
+
+.uo-1{
+  border-bottom: 1px solid black;
 }
 
 .upload:hover {
@@ -208,4 +249,3 @@ span {
   color: unset;
   cursor: pointer;
 }
-

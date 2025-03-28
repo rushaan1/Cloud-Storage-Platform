@@ -1,5 +1,6 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
+using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;

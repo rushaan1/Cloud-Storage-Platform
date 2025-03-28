@@ -13,12 +13,19 @@
         </div>
       </div>
 
-      <input #uploadInputHidden (change)="onFileSelected($event)" type="file" hidden>
+      <input #uploadInputHidden (change)="onFileSelected($event)" type="file" multiple hidden>
 
-      <button (click)="upload();" class="upload">
-        <i class="fa-solid fa-arrow-up"></i>
-        Upload
-      </button>
+      <div (mouseenter)="uploadOptionsVisible=true" (mouseleave)="uploadOptionsVisible=false" class="upload-container">
+        <button class="upload">
+          <i class="fa-solid fa-arrow-up"></i>
+          Upload
+        </button>
+        <div [ngClass]="{'upload-options-active':uploadOptionsVisible}" class="upload-options">
+          <div (click)="uploadFolder();" class="upload-option uo-1">Upload Folder</div>
+          <div (click)="uploadFile();" class="upload-option">Upload Files</div>
+        </div>
+      </div>
+
 
       <div #sortParent class="sort-parent-div">
         <select #sortSelection (change)="sortingChanged($event)" id="sortBy">

@@ -25,6 +25,7 @@ namespace CloudStoragePlatform.Core.Services
         }
         public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
         {
+            
             string parentFolderPath = Utilities.ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
             Folder? folder = null;
             if (Directory.Exists(parentFolderPath))

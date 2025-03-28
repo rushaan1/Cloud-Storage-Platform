@@ -6,6 +6,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {Utils} from "../../Utils";
+import {HttpEvent, HttpEventType} from "@angular/common/http";
 
 @Component({
   selector: 'panel',
@@ -27,6 +28,8 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   onlyHiText = false;
   searchCrossVisibleDueToFocus = false;
   searchCrossVisibleDueToHover = false;
+  uploadOptionsVisible = false;
+  uploadProgress = 0;
 
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
@@ -141,24 +144,121 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     this.eventService.emit("reload viewer list");
   }
 
-  upload(){
+  uploadFolder(){
+    this.uploadInputHidden.nativeElement.webkitdirectory = true;
     this.uploadInputHidden.nativeElement.click();
   }
 
+  uploadFile(){
+    this.uploadInputHidden.nativeElement.webkitdirectory = false;
+    this.uploadInputHidden.nativeElement.click();
+  }
+
+  // appendFoldersToBeCreated(folders:string[], currentDirCheck:string[]){
+  //   let pathToCheck = Utils.constructFilePathForApi([...this.crumbs, ...currentDirCheck];
+  //   if (!folders.includes(pathToCheck)){
+  //     folders.push(pathToCheck);
+  //   }
+  //   this.appendFoldersToBeCreated(folders, [...currentDirCheck,currentDirCheck[currentDirCheck.length-1]]);
+  // }
+
+
+
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const formData = new FormData();
-      const selectedFile = input.files[0];
-      formData.append("file", selectedFile);
-      this.filesService.uploadFile(selectedFile.name, Utils.constructFilePathForApi([...this.crumbs, selectedFile.name]), formData).subscribe({
-        next: data => {
+    const files = input.files;
+    if (this.uploadInputHidden.nativeElement.webkitdirectory){
+      let pathOfFoldersToBeCreated:string[] = [];
+      let pathOfTraversedFiles:string[] = [];
+      let folderCreationPathsForApiCalls:string[] = [];
 
-        },
-        complete: () => {
-          input.value = '';
-        }
-      });
+      if (files && files.length>0){
+        Array.from(files).forEach(file => {
+          if (file.webkitRelativePath){
+            pathOfTraversedFiles.push(file.webkitRelativePath);
+          }
+        });
+        pathOfFoldersToBeCreated = pathOfTraversedFiles.sort((a,b)=>{
+          return a.split('/').length - b.split('/').length;
+        });
+        Array.from(pathOfFoldersToBeCreated).forEach((path, i) => {
+          let separated = pathOfFoldersToBeCreated[i].split('/');
+          separated.pop();
+          for (let j = 0; j<separated.length; j++) {
+            const creationPath = Utils.constructFilePathForApi([...this.crumbs, ...separated.slice(0,j+1)]);
+            if (!folderCreationPathsForApiCalls.includes(creationPath)){
+              folderCreationPathsForApiCalls.push(creationPath);
+            }
+          }
+          pathOfFoldersToBeCreated[i] = separated.join('/');
+        });
+        this.filesService.batchAddFolders(folderCreationPathsForApiCalls).subscribe({
+          next:(f)=>{
+            const formData = new FormData();
+            Array.from(files).forEach(file => {
+              formData.append("fileName", file.name);
+              formData.append("filePath", Utils.constructFilePathForApi([...this.crumbs, file.webkitRelativePath.replaceAll("/","\\")]));
+            });
+            Array.from(files).forEach(file => {
+              formData.append("file",file);
+            });
+            this.reportProgress();
+            this.filesService.uploadFile(formData).subscribe({
+              next: (event) => {
+                this.handleProgress(event);
+              }
+            });
+          }
+        });
+      }
+      console.log(folderCreationPathsForApiCalls);
     }
+
+    else{
+      if (files && files.length>0){
+        const formData = new FormData();
+        Array.from(files).forEach(file => {
+          formData.append("fileName", file.name);
+          formData.append("filePath", Utils.constructFilePathForApi([...this.crumbs, file.name]));
+        });
+
+        Array.from(files).forEach(file => {
+          formData.append("file",file);
+        });
+        this.reportProgress();
+        this.filesService.uploadFile(formData).subscribe({
+          next: (event) => {
+            this.handleProgress(event);
+          }
+        });
+      }
+    }
+  }
+
+  handleProgress(event:any){
+    switch (event.type) {
+      case HttpEventType.UploadProgress:
+        if (event.total) {
+          this.uploadProgress = Math.round((100 * event.loaded) / event.total);
+        }
+        break;
+      case HttpEventType.Response:
+        console.log('Upload complete!', event.body);
+        this.eventService.emit("reload viewer list");
+        this.uploadProgress = -1;
+        // this.uploadInputHidden.nativeElement.value = '';
+        break;
+    }
+  }
+
+  reportProgress() {
+    const interval = setInterval(() => {
+      console.log(this.uploadProgress);
+
+      if (this.uploadProgress === -1) {
+        clearInterval(interval);
+        this.uploadProgress = 0;
+      }
+    }, 500);
   }
 }

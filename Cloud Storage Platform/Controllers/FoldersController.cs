@@ -1,5 +1,6 @@
 ﻿using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
+using CloudStoragePlatform.Core;
 using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
@@ -173,6 +174,23 @@ namespace Cloud_Storage_Platform.Controllers
             foreach (Guid id in ids) 
             {
                 await _foldersModificationService.AddOrRemoveTrash(id);
+            }
+            return NoContent();
+        }
+
+        [HttpPost]
+        [Route("batchFoldersAdd")]
+        public async Task<ActionResult> BatchAddFolders(List<string> paths)
+        {
+            foreach (string path in paths)
+            {
+                string fullpath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(path);
+                string[] splittedPath = fullpath.Split("\\");
+                await _foldersModificationService.AddFolder(new FolderAddRequest()
+                {
+                    FolderName = splittedPath[splittedPath.Length - 1],
+                    FolderPath = fullpath
+                });
             }
             return NoContent();
         }

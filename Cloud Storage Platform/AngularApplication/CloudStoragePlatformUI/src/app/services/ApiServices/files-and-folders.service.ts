@@ -40,7 +40,7 @@ export class FilesAndFoldersService {
   public getFileOrFolderById(id:string, isFolder:boolean):Observable<File>{
     Utils.handleStringInvalidError(id);
     let params = new HttpParams();
-    params.append("id", id)
+    params = params.set("id", id)
     return this.httpClient.get<File>(`${this.getUrl(isFolder)}/getById`, {params:params});
   }
 
@@ -100,13 +100,13 @@ export class FilesAndFoldersService {
     return this.httpClient.post<File>(`${BASE_URL}/add`, {folderName:folderName, folderPath:folderPath});
   }
 
-  public uploadFile(fileName:string, filePath:string, formData:FormData){
-    Utils.handleStringInvalidError(fileName);
-    Utils.handleStringInvalidError(filePath);
-    const params = new HttpParams()
-      .set("fileName",fileName)
-      .set("filePath", filePath);
-    return this.httpClient.post<File>(`${this.getUrl(false)}/upload`,formData, {params:params});
+  public batchAddFolders(paths:string[]){
+    //batchFoldersAdd
+    return this.httpClient.post(`${BASE_URL}/batchFoldersAdd`, paths);
+  }
+
+  public uploadFile(formData:FormData){
+    return this.httpClient.post<File[]>(`${this.getUrl(false)}/upload`,formData, {reportProgress:true, observe:'events'});
   }
 
 

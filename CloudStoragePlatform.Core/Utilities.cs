@@ -190,5 +190,92 @@ namespace CloudStoragePlatform.Core
                 folder.Metadata = m;
             }
         }
+
+        public static async Task<string> ProcessFileOrFolderName(string name, IFoldersRepository? foldersRepo = null, IFilesRepository? filesRepo = null)
+        {
+            int index = 0;
+            string baseName = name;
+            string newName = baseName;
+            bool exists = true;
+
+            if (name.Length >= 80)
+            {
+                string preservedExtension = "";
+                if (filesRepo != null)
+                {
+                    preservedExtension = name.Split(".")[name.Split(".").Length - 1];
+                }
+                baseName = name.Substring(0, 72);
+                if (preservedExtension != "")
+                {
+                    baseName = baseName + $".{preservedExtension}";
+                }
+                newName = baseName;
+                while (exists)
+                {
+                    if (foldersRepo != null)
+                    {
+                        exists = await foldersRepo.GetFolderByFolderPath(newName) != null;
+                    }
+                    else if (filesRepo != null)
+                    {
+                        exists = await filesRepo.GetFileByFilePath(newName) != null;
+                    }
+                    if (exists)
+                    {
+                        index++;
+                        string suffix = $"({index})";
+                        newName = baseName + suffix;
+                    }
+                }
+
+                name = newName;
+                baseName = newName;
+
+            }
+            exists = true;
+            if (name.Contains("."))
+            {
+                if (filesRepo != null)
+                {
+                    if (filesRepo != null)
+                    {
+                        string preservedExtension = "";
+                        string[] splitted = baseName.Split(".");
+                        preservedExtension = splitted[splitted.Length - 1];
+                        splitted[splitted.Length - 1] = "";
+                        splitted[splitted.Length - 1] = preservedExtension;
+                        foreach (string item in splitted)
+                        {
+                            baseName = item + "-";
+                        }
+                    }
+                    else
+                    {
+                        baseName = baseName.Replace(".", "-");
+                    }
+                }
+                newName = baseName;
+                while (exists)
+                {
+                    if (foldersRepo != null)
+                    {
+                        exists = await foldersRepo.GetFolderByFolderPath(newName) != null;
+                    }
+                    else if (filesRepo != null)
+                    {
+                        exists = await filesRepo.GetFileByFilePath(newName) != null;
+                    }
+                    if (exists)
+                    {
+                        index++;
+                        string suffix = $"({index})";
+                        newName = baseName + suffix;
+                    }
+                }
+                name = newName;
+            }
+            return name;
+        }
     }
 }
