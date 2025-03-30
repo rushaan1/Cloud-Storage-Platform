@@ -193,6 +193,14 @@ namespace CloudStoragePlatform.Core
 
         public static async Task<string> ProcessFileOrFolderName(string name, IFoldersRepository? foldersRepo = null, IFilesRepository? filesRepo = null)
         {
+            if (foldersRepo == null && filesRepo == null)
+            {
+                throw new ArgumentException("Both file and folder repositories cannot be given as argument.");
+            }
+            else if (foldersRepo != null && filesRepo != null) 
+            {
+                throw new ArgumentException("Either file or folder repository need to be given as argument.");
+            }
             int index = 0;
             string baseName = name;
             string newName = baseName;
@@ -206,10 +214,6 @@ namespace CloudStoragePlatform.Core
                     preservedExtension = name.Split(".")[name.Split(".").Length - 1];
                 }
                 baseName = name.Substring(0, 72);
-                if (preservedExtension != "")
-                {
-                    baseName = baseName + $".{preservedExtension}";
-                }
                 newName = baseName;
                 while (exists)
                 {
@@ -228,27 +232,39 @@ namespace CloudStoragePlatform.Core
                         newName = baseName + suffix;
                     }
                 }
-
+                if (preservedExtension != "")
+                {
+                    baseName = baseName + $".{preservedExtension}";
+                }
                 name = newName;
                 baseName = newName;
 
             }
             exists = true;
-            if (name.Contains("."))
+            if ((name.Split(".").Length>2 && filesRepo!=null) || (filesRepo==null && name.Contains(".")))
             {
+                string preservedExtension = "";
                 if (filesRepo != null)
                 {
                     if (filesRepo != null)
                     {
-                        string preservedExtension = "";
                         string[] splitted = baseName.Split(".");
                         preservedExtension = splitted[splitted.Length - 1];
-                        splitted[splitted.Length - 1] = "";
-                        splitted[splitted.Length - 1] = preservedExtension;
-                        foreach (string item in splitted)
+                        splitted = splitted.Take(splitted.Length - 1).ToArray();
+                        StringBuilder finalName = new StringBuilder();
+                        for (int i = 0; i < splitted.Length; i++) 
                         {
-                            baseName = item + "-";
+                            finalName.Append($"{splitted[i]}");
+                            if (i != splitted.Length - 1) 
+                            {
+                                finalName.Append("-");
+                            }
                         }
+                        if (String.IsNullOrEmpty(finalName.ToString().Trim())) 
+                        {
+                            finalName.Append('-');
+                        }
+                        baseName = finalName.ToString();
                     }
                     else
                     {
@@ -268,10 +284,19 @@ namespace CloudStoragePlatform.Core
                     }
                     if (exists)
                     {
+                        if (index != 0) 
+                        {
+                            baseName = ReplaceLastOccurance(baseName, $"({index})", "");
+                            index = 0;
+                        }
                         index++;
                         string suffix = $"({index})";
                         newName = baseName + suffix;
                     }
+                }
+                if (preservedExtension != "")
+                {
+                    baseName = baseName + $".{preservedExtension}";
                 }
                 name = newName;
             }
