@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { File } from '../../models/File';
+import {Injectable} from '@angular/core';
+import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {File} from '../../models/File';
 import {Metadata} from "../../models/Metadata";
+import {FileType} from "../../models/FileType";
 
 @Injectable()
 export class ResponseInterceptor implements HttpInterceptor {
@@ -33,6 +34,7 @@ export class ResponseInterceptor implements HttpInterceptor {
           fileName:data.folders[i].folderName,
           isFavorite:data.folders[i].isFavorite,
           isTrash:data.folders[i].isTrash,
+          fileType: FileType.Folder,
           uncreated:false
         });
       }
@@ -46,7 +48,8 @@ export class ResponseInterceptor implements HttpInterceptor {
           fileName:data.files[i].fileName,
           isFavorite:data.files[i].isFavorite,
           isTrash:data.files[i].isTrash,
-          uncreated:false
+          uncreated:false,
+          fileType: data.files[i].fileType as FileType
         });
       }
       return array;
@@ -97,7 +100,8 @@ export class ResponseInterceptor implements HttpInterceptor {
           fileName:data.fileName,
           isFavorite:data.isFavorite,
           isTrash:data.isTrash,
-          uncreated: false
+          uncreated: false,
+          fileType: data.fileType as FileType
         }
       }
       return {
@@ -106,7 +110,8 @@ export class ResponseInterceptor implements HttpInterceptor {
         fileName:data.folderName,
         isFavorite:data.isFavorite,
         isTrash:data.isTrash,
-        uncreated: false
+        uncreated: false,
+        fileType: FileType.Folder
       }
     }
   }

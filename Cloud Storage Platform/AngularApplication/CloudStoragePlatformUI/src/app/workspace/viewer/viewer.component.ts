@@ -1,7 +1,7 @@
-import {AfterViewChecked, AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
-import { EventService } from '../../services/event-service.service';
-import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {FilesStateService} from '../../services/StateManagementServices/files-state.service';
+import {EventService} from '../../services/event-service.service';
+import {ActivatedRoute, Router} from "@angular/router";
 import {File} from "../../models/File";
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {Utils} from "../../Utils";
@@ -9,6 +9,7 @@ import {BreadcrumbsComponent} from "../../items/breadcrumbs/breadcrumbs.componen
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {Subscription} from "rxjs";
+import {FileType} from "../../models/FileType";
 
 @Component({
   selector: 'viewer',
@@ -18,7 +19,6 @@ import {Subscription} from "rxjs";
 export class ViewerComponent implements OnInit, OnDestroy{
   @ViewChild(BreadcrumbsComponent) breadcrumbsComponent!: BreadcrumbsComponent;
   appUrl: string[] = [];
-  folders: File[] = [];
   files: File[] = [];
   subscriptions: Subscription[] = [];
   emptyFolderTxtActive = false;
@@ -91,7 +91,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   }
 
   filterOutFoldersBeingMoved(){
-    this.folders = this.folders.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
+    this.files = this.files.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
   }
 
   ngOnDestroy() {
@@ -134,7 +134,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
         if (Utils.validString(constructedPathForApi)){
           this.foldersService.getAllFilesAndSubFoldersByParentFolderPath(this.filesState.getItemsBeingMoved().length==0, constructedPathForApi).subscribe({
             next: response => {
-              this.folders = response;
+              this.files = response;
               this.filterOutFoldersBeingMoved();
               if (appUrl[appUrl.length-1]=='home'){
                 this.eventService.emit("home folder set active");
@@ -160,7 +160,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     // API
     this.foldersService.getAllInHome(this.filesState.getItemsBeingMoved().length==0).subscribe({
       next: (response) => {
-        this.folders = response;
+        this.files = response;
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
@@ -176,7 +176,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     // API
     this.foldersService.getAllFavoriteFolders(this.filesState.getItemsBeingMoved().length==0).subscribe({
       next: (response) => {
-        this.folders = response;
+        this.files = response;
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
@@ -193,7 +193,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     // API
     this.foldersService.getAllTrashFolders(this.filesState.getItemsBeingMoved().length==0).subscribe({
       next: (response) => {
-        this.folders = response;
+        this.files = response;
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
@@ -211,7 +211,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       return;
     }
     this.filesState.setUncreatedFolderExists(true);
-    const folderWithNewFolderNameExists:boolean = this.folders.filter(f=>f.fileName == "New Folder").length > 0;
+    const folderWithNewFolderNameExists:boolean = this.files.filter(f=>f.fileName == "New Folder").length > 0;
     let uniqueNewFolderNameFound = false;
     let folderNameToBeUsed = "New Folder";
     let newFolderIndex = 1;
@@ -219,7 +219,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     while (!uniqueNewFolderNameFound) {
       if (folderWithNewFolderNameExists) {
         let nextFolderName = "New Folder (" + newFolderIndex + ")";
-        if (this.folders.filter(f => f.fileName == nextFolderName).length == 0) {
+        if (this.files.filter(f => f.fileName == nextFolderName).length == 0) {
           uniqueNewFolderNameFound = true;
           folderNameToBeUsed = nextFolderName;
         } else {
@@ -236,9 +236,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
       filePath: Utils.constructFilePathForApi(this.crumbs)+"\\",
       isFavorite: false,
       isTrash: false,
-      uncreated: true
+      uncreated: true,
+      fileType: FileType.Folder
     };
-    this.folders.push(folder);
+    this.files.push(folder);
   }
 
   handleSearchOperation(){
@@ -246,7 +247,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       this.loaderService.loadingStart();
       this.foldersService.getFilteredFolders(this.filesState.getItemsBeingMoved().length==0,this.searchQuery!).subscribe({
         next: res => {
-          this.folders = res;
+          this.files = res;
           this.filterOutFoldersBeingMoved();
         },
         error: err => {},
@@ -259,7 +260,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   }
 
   handleEmptyTxt(txt:string=this.emptyTxt){
-    if (this.folders.length == 0) {
+    if (this.files.length == 0) {
       this.emptyFolderTxtActive = true;
       this.emptyTxt = txt;
     }

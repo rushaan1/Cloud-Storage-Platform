@@ -7,7 +7,7 @@
 <div class="parent">
   <div class="top-view">
     <div class="icon-container">
-      <div [ngClass]="{'picture':type=='picture','video':type=='video','folder':type=='folder'}" class="icon"></div>
+      <div ngClass="{{FileType[f.fileType]}}" class="file-item-icon"></div>
     </div>
     <div class="nameTxtDiv">
       <span>Full Name:</span>

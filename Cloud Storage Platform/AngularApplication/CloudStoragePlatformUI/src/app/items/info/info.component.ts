@@ -6,6 +6,7 @@ import {Utils} from "../../Utils";
 import {ActivatedRoute, Router} from "@angular/router";
 import {forkJoin} from "rxjs";
 import {FilesStateService} from "../../services/StateManagementServices/files-state.service";
+import {FileType} from "../../models/FileType";
 
 @Component({
   selector: 'info',
@@ -17,7 +18,6 @@ export class InfoComponent implements OnInit, AfterViewInit{
   @ViewChild("fav") favBtn!: ElementRef<HTMLButtonElement>;
   @ViewChild("trash") trashBtn!: ElementRef<HTMLButtonElement>;
   f!:File;
-  type:string="folder";
   metadata!:Metadata;
   favTxt!:string;
   trashTxt!:string;
@@ -143,4 +143,5 @@ export class InfoComponent implements OnInit, AfterViewInit{
   }
 
   protected readonly Utils = Utils;
+  protected readonly FileType = FileType;
 }

@@ -40,7 +40,12 @@ export class Utils {
     return constructedPath;
   }
 
-  public static isFolder(path:string):boolean{
-    return !path.includes(".");
+  public static resize(str:string, n:number):string {
+    if (str.length >= n) {
+      return str.substring(0, n) + "...";
+    }
+    else{
+      return str;
+    }
   }
 }

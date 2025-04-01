@@ -18,7 +18,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         
         public string FilePath { get; set; }
                 
-        public FileTypes FileType { get; set; }
+        public FileType FileType { get; set; }
         
         public Guid ParentFolderId { get; set; }
         public virtual Folder ParentFolder { get; set; }
@@ -31,7 +31,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
                 FileName = FileName,
                 FilePath = FilePath,
                 IsFavorite = IsFavorite,
-                IsTrash = IsTrash
+                IsTrash = IsTrash, 
+                FileType = FileType
             };
         }
     }

@@ -10,16 +10,17 @@ import {
   Output,
   ViewChild
 } from '@angular/core';
-import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
-import { EventService } from '../../services/event-service.service';
-import { v4 as uuidv4 } from 'uuid';
+import {FilesStateService} from '../../services/StateManagementServices/files-state.service';
+import {EventService} from '../../services/event-service.service';
+import {v4 as uuidv4} from 'uuid';
 import {FormControl, Validators} from "@angular/forms";
-import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
+import {invalidCharacter} from "../../CustomValidators";
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {File} from "../../models/File";
-import {ActivatedRoute, Router, RouterLink} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Utils} from "../../Utils";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
+import {FileType} from "../../models/FileType";
 
 @Component({
   selector: 'file-large-item',
@@ -32,7 +33,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   *            File term is sometimes used to refer to Folder, especially in Frontend code (questionable practice)
   *            IF APPLICABLE: Difference between / and // handled by service
   * */
-  @Input() type: string = "";
+  @Input() type!: FileType;
   @Input() FileFolder!:File;
   @Output() destroy = new EventEmitter();
   hoveringOverDestroy = false;
@@ -65,7 +66,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     this.uniqueComponentIdentifierUUID = uuidv4();
     this.originalName = this.FileFolder.fileName;
     this.name = this.originalName;
-    this.nameResizing();
+    this.name = Utils.resize(this.name, 32);
 
     this.eventService.listen("file options expanded", (uuid:string)=>{
       if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsVisible == true)
@@ -135,12 +136,6 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     }
   }
 
-  nameResizing() {
-    if (this.name.length >= 32) {
-      this.name = this.name.substring(0, 32) + "...";
-    }
-  }
-
   expandOrCollapseOptions(event?:Event) {
     event?.stopPropagation();
     const menu = this.fileOptionsMenu.nativeElement;
@@ -175,14 +170,14 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
           this.createFolder(this.fileNameInput.nativeElement.value);
         }
         else{
-          this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value,Utils.isFolder(this.FileFolder.filePath)).subscribe({
+          this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value, this.type==FileType.Folder).subscribe({
             next: (response:File) => {
               this.FileFolder.fileName = response.fileName;
               this.FileFolder.filePath = response.filePath;
               this.name = response.fileName;
               this.eventService.emit("addNotif", ["Successfully renamed "+this.originalName+" to "+response.fileName, 15000]);
               this.originalName = response.fileName;
-              this.nameResizing();
+              this.name = Utils.resize(this.name, 32);
               renameCompleted = true;
             },
             error: err => {
@@ -279,7 +274,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.FileFolder.uncreated = false;
         this.originalName = response.fileName;
         this.name = response.fileName;
-        this.nameResizing();
+        this.name = Utils.resize(this.name, 32);
         this.filesState.setUncreatedFolderExists(false);
         folderCreationCompleted = true;
 
@@ -316,7 +311,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   toggleFavorite(event:MouseEvent){
     event.stopPropagation();
-    this.foldersService.addOrRemoveFromFavorite(this.FileFolder.fileId, Utils.isFolder(this.FileFolder.filePath)).subscribe({
+    this.foldersService.addOrRemoveFromFavorite(this.FileFolder.fileId, this.type==FileType.Folder).subscribe({
       next: (response:File) => {
         this.FileFolder.isFavorite = response.isFavorite;
       },
@@ -328,7 +323,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   trash(event:MouseEvent){
     event.stopPropagation();
-    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,Utils.isFolder(this.FileFolder.filePath)).subscribe({
+    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,this.type==FileType.Folder).subscribe({
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
@@ -343,7 +338,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   delete(event:MouseEvent){
     event.stopPropagation();
     this.eventService.emit("deleteConfirmNotif", "Are you sure you want to permanently delete "+this.name+"?", ()=>{
-      this.foldersService.delete(this.FileFolder.fileId,Utils.isFolder(this.FileFolder.filePath)).subscribe({
+      this.foldersService.delete(this.FileFolder.fileId,this.type==FileType.Folder).subscribe({
         next: (response:File) => {
           this.eventService.emit("addNotif", ["Successfully deleted "+this.name, 20000]);
           this.destroy.emit();
@@ -357,7 +352,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   restore(event:MouseEvent) {
     event.stopPropagation();
-    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,Utils.isFolder(this.FileFolder.filePath)).subscribe({
+    this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,this.type==FileType.Folder).subscribe({
       next: (response:File) => {
         this.FileFolder.isTrash = response.isTrash;
         this.destroy.emit();
@@ -387,4 +382,5 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   }
 
   protected readonly Utils = Utils;
+  protected readonly FileType = FileType;
 }

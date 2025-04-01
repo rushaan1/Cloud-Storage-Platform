@@ -1,6 +1,7 @@
 import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
 import {EventService} from "../../services/event-service.service";
 import {Router} from "@angular/router";
+import {Utils} from "../../Utils";
 
 @Component({
   selector: 'breadcrumbs',
@@ -37,4 +38,6 @@ export class BreadcrumbsComponent implements OnInit {
       }
     }, 100);
   }
+
+  protected readonly Utils = Utils;
 }
