@@ -9,7 +9,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
 {
     public interface IFoldersModificationService
     {
-        Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest);
+        Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest, bool skipSSE=false);
         Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest);
 
 
@@ -20,9 +20,9 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         /// <param name="folderId"></param>
         /// <param name="newFolderPath">MUST ONLY INCLUDE THE DESTINATION FOLDER PATH WITHOUT THE FOLDER TO BE MOVED'S PATH</param>
         /// <returns></returns>
-        Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath);
+        Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath, bool skipSSE = false);
         Task<FolderResponse> AddOrRemoveFavorite(Guid folderId);
-        Task<FolderResponse> AddOrRemoveTrash(Guid folderId);
-        Task<bool> DeleteFolder(Guid folderId);
+        Task<FolderResponse> AddOrRemoveTrash(Guid folderId, bool skipSSE = false);
+        Task<bool> DeleteFolder(Guid folderId, bool skipSSE = false);
     }
 }

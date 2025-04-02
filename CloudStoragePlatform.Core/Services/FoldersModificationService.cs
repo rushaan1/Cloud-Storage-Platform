@@ -17,13 +17,15 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
+        private readonly SSE sse;
         public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository) 
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
+            sse = new SSE();
             // inject user identifying stuff in constructor and in repository's constructor
         }
-        public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
+        public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest, bool skipSSE = false)
         {
             
             string parentFolderPath = Utilities.ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
@@ -66,7 +68,12 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
-            return folder.ToFolderResponse();
+            FolderResponse response = folder.ToFolderResponse();
+            if (!skipSSE)
+            {
+                await sse.SendEventAsync("add", response);
+            }
+            return response;
         }
 
         public async Task<FolderResponse> AddOrRemoveFavorite(Guid fid)
@@ -85,10 +92,11 @@ namespace CloudStoragePlatform.Core.Services
                 folder.IsFavorite = true;
             }
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            await sse.SendEventAsync("favorite_updated", new {id=fid, val=folder.IsFavorite});
             return updatedFolder!.ToFolderResponse();
         }
 
-        public async Task<FolderResponse> AddOrRemoveTrash(Guid fid)
+        public async Task<FolderResponse> AddOrRemoveTrash(Guid fid, bool skipSSE = false)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
             if (folder == null)
@@ -104,10 +112,16 @@ namespace CloudStoragePlatform.Core.Services
                 folder.IsTrash = true;
             }
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            if (!skipSSE) 
+            {
+                await sse.SendEventAsync("trash_updated", new { id = fid, val = folder.IsTrash });
+            }
+            
             return updatedFolder!.ToFolderResponse();
         }
 
-        public async Task<bool> DeleteFolder(Guid fid)
+        public async Task<bool> DeleteFolder(Guid fid, bool skipSSE = false)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
             if (folder == null) 
@@ -115,11 +129,15 @@ namespace CloudStoragePlatform.Core.Services
                 throw new ArgumentException();
             }
             Directory.Delete(folder.FolderPath, true);
+            if (!skipSSE)
+            {
+                await sse.SendEventAsync("deleted", new { id = fid });
+            }
             return await _foldersRepository.DeleteFolder(folder);
         }
 
         // just confirming that including folder to moved's name in newFolderPath will NOT proof code from moving folder to its subfolder
-        public async Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath)
+        public async Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath, bool skipSSE = false)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(folderId);
             if (folder == null)
@@ -165,7 +183,17 @@ namespace CloudStoragePlatform.Core.Services
             await Utilities.UpdateChildPaths(_foldersRepository,_filesRepository,folder, previousFolderPath, newFolderPathOfFolder);
             Directory.Move(previousFolderPath, newFolderPathOfFolder);
             await Utilities.UpdateMetadataMove(folder, previousFolderPath, _foldersRepository);
-            return finalMainFolder!.ToFolderResponse();
+            var response = finalMainFolder!.ToFolderResponse();
+            if (!skipSSE)
+            {
+                await sse.SendEventAsync("moved", new
+                {
+                    movedTo = newFolderPathOfFolder,
+                    id = folderId,
+                    res = response
+                });
+            }
+            return response;
         }
 
         public async Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest)
@@ -187,6 +215,7 @@ namespace CloudStoragePlatform.Core.Services
             await Utilities.UpdateMetadataRename(folder, _foldersRepository);
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             FileSystem.RenameDirectory(oldp, folderRenameRequest.FolderNewName);
+            await sse.SendEventAsync("rename", new { id = folderRenameRequest.FolderId, val = folder.FolderName });
             return updatedFolder!.ToFolderResponse();
         }
     }

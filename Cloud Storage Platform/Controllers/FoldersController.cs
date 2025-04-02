@@ -21,6 +21,7 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IRetrievalService _retrievalService;
         private readonly IFoldersRetrievalService _foldersRetrievalService;
         private readonly IConfiguration _configuration;
+        private readonly SSE sse;
         
         public FoldersController(IFoldersModificationService foldersModificationService, IRetrievalService retrievalService, IFoldersRetrievalService foldersRetrievalService, IConfiguration configuration) 
         {
@@ -28,6 +29,7 @@ namespace Cloud_Storage_Platform.Controllers
             _foldersRetrievalService = foldersRetrievalService;
             _configuration = configuration;
             _retrievalService = retrievalService;
+            sse = new SSE();
         }
 
         #region Retrievals
@@ -171,10 +173,13 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("batchAddOrRemoveFromTrash")]
         public async Task<ActionResult> BatchAddOrRemoveFromTrash(List<Guid> ids) 
         {
+            List<bool?> vals = new();
             foreach (Guid id in ids) 
             {
-                await _foldersModificationService.AddOrRemoveTrash(id);
+                var response = await _foldersModificationService.AddOrRemoveTrash(id, true);
+                vals.Add(response.IsTrash);
             }
+            await sse.SendEventAsync("batch_trash_updated", new { ids, vals });
             return NoContent();
         }
 
@@ -182,16 +187,18 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("batchFoldersAdd")]
         public async Task<ActionResult> BatchAddFolders(List<string> paths)
         {
+            List<FolderResponse> responses = new();
             foreach (string path in paths)
             {
                 string fullpath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(path);
                 string[] splittedPath = fullpath.Split("\\");
-                await _foldersModificationService.AddFolder(new FolderAddRequest()
+                responses.Add(await _foldersModificationService.AddFolder(new FolderAddRequest()
                 {
                     FolderName = splittedPath[splittedPath.Length - 1],
                     FolderPath = fullpath
-                });
+                }, true));
             }
+            await sse.SendEventAsync("batch_added", new { responses });
             return NoContent();
         }
 
@@ -202,11 +209,12 @@ namespace Cloud_Storage_Platform.Controllers
             int deleted = 0;
             foreach (Guid id in ids)
             {
-                if (await _foldersModificationService.DeleteFolder(id))
+                if (await _foldersModificationService.DeleteFolder(id, true))
                 {
                     deleted++;
                 }
             }
+            await sse.SendEventAsync("batch_deleted", new { ids });
             return (deleted == ids.Count) ? NoContent() : StatusCode(500);
         }
 
@@ -214,12 +222,40 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("batchMove")]
         public async Task<ActionResult> BatchMove(List<Guid> ids, [ModelBinder(typeof(AppendToPath))] string newFolderPath) 
         {
+            var movedList = new List<object>();
             foreach (Guid id in ids) 
             {
-                await _foldersModificationService.MoveFolder(id, newFolderPath);
+                var response = await _foldersModificationService.MoveFolder(id, newFolderPath, true);
+                movedList.Add(new
+                {
+                    movedTo = response.FolderPath,
+                    id = response.FolderId,
+                    res = response
+                });
             }
+            await sse.SendEventAsync("batch_moved", movedList);
             return NoContent();
         }
+
+        [HttpGet("sse")]
+        public async Task ServerSentEvents()
+        {
+            Response.Headers.Add("Content-Type", "text/event-stream");
+            Response.Headers.Add("Cache-Control", "no-cache");
+            Response.Headers.Add("Connection", "keep-alive");
+
+            sse.AddClient(Response);
+
+            try
+            {
+                await Task.Delay(-1);
+            }
+            finally
+            {
+                sse.RemoveClient(Response);
+            }
+        }
+
         #endregion
 
         // TODO: Handling folder uploads with files and sub-folders.
