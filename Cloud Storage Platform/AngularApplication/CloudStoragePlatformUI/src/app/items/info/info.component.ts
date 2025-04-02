@@ -7,6 +7,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {forkJoin} from "rxjs";
 import {FilesStateService} from "../../services/StateManagementServices/files-state.service";
 import {FileType} from "../../models/FileType";
+import {EventService} from "../../services/event-service.service";
 
 @Component({
   selector: 'info',
@@ -27,7 +28,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
   isDeleting = false;
   isFolder = false;
 
-  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService) {}
+  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService, protected  eventService:EventService) {}
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id");
@@ -95,6 +96,10 @@ export class InfoComponent implements OnInit, AfterViewInit{
   activateMoveState(event:MouseEvent){
     event.stopPropagation();
     this.filesState.setItemsBeingMoved([this.f]);
+    if (this.router.url.includes("filter/home")){
+      this.eventService.emit("reload viewer list");
+      return;
+    }
     this.router.navigate(["filter","home"]);
   }
 

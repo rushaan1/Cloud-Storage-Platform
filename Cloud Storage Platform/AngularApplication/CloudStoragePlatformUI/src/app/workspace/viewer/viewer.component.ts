@@ -29,6 +29,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   anyFolderUncreated = false;
   crumbs : string[] = [];
   emptyTxt = "No folders to show";
+  private sse!:EventSource;
 
   constructor(private router: Router, private route: ActivatedRoute, private foldersService:FilesAndFoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
 
@@ -88,6 +89,54 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.subscriptions.push(this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
     }));
+    this.sse = new EventSource('https://localhost:7219/api/Folders/sse');
+    this.sse.onmessage = (event) =>{
+      const res = JSON.parse(event.data);
+      switch (res.eventType){
+        case "add":
+          this.files.push(Utils.processFileModel(res.data));
+          break;
+        case "favorite_updated" :
+          this.files.forEach((f,i)=>{
+            if (f.fileId==res.data.id as string){
+              this.files[i].isFavorite = res.data.val as boolean;
+            }
+          });
+          break;
+        case "trash_updated":
+          this.files.forEach((f,i)=>{
+            if (f.fileId==res.data.id as string) {
+              this.files = this.files.filter(file => { return f.fileId != file.fileId });
+            }
+          });
+          break;
+        case "deleted":
+          this.files.forEach((f,i)=>{
+            if (f.fileId==res.data.id as string) {
+              this.files = this.files.filter(file => { return f.fileId != file.fileId });
+            }
+          });
+          break;
+        case "rename":
+          this.files.forEach((f,i)=>{
+            if (f.fileId==res.data.id as string) {
+              this.files[i].fileName = res.data.val as string;
+            }
+          });
+          break;
+        case "moved":
+          this.files.forEach((f,i)=>{
+            if (res.data.id==f.fileId){
+              if (!decodeURIComponent(this.router.url).includes(Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(res.data.movedTo as string))))){
+                this.files = this.files.filter(file => { return f.fileId != file.fileId });
+              }
+            }
+            else if (decodeURIComponent(this.router.url).includes(Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(res.data.movedTo as string))))){
+              this.files.push(res.data.res);
+            }
+          })
+      }
+    }
   }
 
   filterOutFoldersBeingMoved(){

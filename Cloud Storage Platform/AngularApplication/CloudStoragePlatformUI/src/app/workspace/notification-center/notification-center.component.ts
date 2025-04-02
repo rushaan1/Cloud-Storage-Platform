@@ -268,7 +268,11 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   activateMoveState(){
     this.filesState.setItemsBeingMoved(this.selectedItems);
     this.filesState.deSelectAll();
-    this.router.navigate(["filter", "home"]);
+    if (this.router.url.includes("filter/home")){
+      this.eventService.emit("reload viewer list");
+      return;
+    }
+    this.router.navigate(["filter","home"]);
   }
 
   move(){

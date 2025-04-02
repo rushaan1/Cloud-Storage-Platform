@@ -266,25 +266,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     // filePath for creation set by viewer
     this.foldersService.addFolder(name, this.FileFolder.filePath+name).subscribe({
       next: (response:File) => {
-        this.FileFolder.fileId = response.fileId;
-        this.FileFolder.fileName = response.fileName;
-        this.FileFolder.filePath = response.filePath;
-        this.FileFolder.isFavorite = response.isFavorite;
-        this.FileFolder.isTrash = response.isTrash;
-        this.FileFolder.uncreated = false;
-        this.originalName = response.fileName;
-        this.name = response.fileName;
-        this.name = Utils.resize(this.name, 32);
-        this.filesState.setUncreatedFolderExists(false);
-        folderCreationCompleted = true;
-
-        this.cdRef.detectChanges();
-        if (this.appIsInSelectionState) {
-          this.showCheckbox();
-        }
-        else if (this.hoveringOver){
-          this.showCheckbox();
-        }
+        this.destroy.emit();
       },
       error: err => {
         // TODO ErrorNotif for this
@@ -367,6 +349,10 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   activateMoveState(event:MouseEvent){
     event.stopPropagation();
     this.filesState.setItemsBeingMoved([this.FileFolder]);
+    if (this.router.url.includes("filter/home")){
+      this.eventService.emit("reload viewer list");
+      return;
+    }
     this.router.navigate(["filter","home"]);
   }
 

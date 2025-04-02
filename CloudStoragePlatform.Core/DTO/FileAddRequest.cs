@@ -17,6 +17,6 @@ namespace CloudStoragePlatform.Core.DTO
         [Required]
         public long FileSize { get; set; }
         [Required]
-        public FileTypes FileType { get; set; }
+        public FileType FileType { get; set; }
     }
 }

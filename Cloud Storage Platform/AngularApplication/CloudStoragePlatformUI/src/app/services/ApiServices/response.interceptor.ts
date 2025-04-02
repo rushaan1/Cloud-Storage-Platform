@@ -5,6 +5,7 @@ import {map} from 'rxjs/operators';
 import {File} from '../../models/File';
 import {Metadata} from "../../models/Metadata";
 import {FileType} from "../../models/FileType";
+import {Utils} from "../../Utils";
 
 @Injectable()
 export class ResponseInterceptor implements HttpInterceptor {
@@ -28,29 +29,13 @@ export class ResponseInterceptor implements HttpInterceptor {
         if (data.folders[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
           continue;
         }
-        array.push({
-          fileId:data.folders[i].folderId,
-          filePath:data.folders[i].folderPath,
-          fileName:data.folders[i].folderName,
-          isFavorite:data.folders[i].isFavorite,
-          isTrash:data.folders[i].isTrash,
-          fileType: FileType.Folder,
-          uncreated:false
-        });
+        array.push(Utils.processFileModel(data.folders[i]));
       }
       for (let i = 0; i < data.files.length; i++) {
         if (data.files[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
           continue;
         }
-        array.push({
-          fileId:data.files[i].fileId,
-          filePath:data.files[i].filePath,
-          fileName:data.files[i].fileName,
-          isFavorite:data.files[i].isFavorite,
-          isTrash:data.files[i].isTrash,
-          uncreated:false,
-          fileType: data.files[i].fileType as FileType
-        });
+        array.push(Utils.processFileModel(data.files[i]));
       }
       return array;
     }
@@ -94,25 +79,9 @@ export class ResponseInterceptor implements HttpInterceptor {
     }
     else{
       if (url.toLowerCase().includes("api/file")){
-        return {
-          fileId:data.fileId,
-          filePath:data.filePath,
-          fileName:data.fileName,
-          isFavorite:data.isFavorite,
-          isTrash:data.isTrash,
-          uncreated: false,
-          fileType: data.fileType as FileType
-        }
+        return Utils.processFileModel(data);
       }
-      return {
-        fileId:data.folderId,
-        filePath:data.folderPath,
-        fileName:data.folderName,
-        isFavorite:data.isFavorite,
-        isTrash:data.isTrash,
-        uncreated: false,
-        fileType: FileType.Folder
-      }
+      return Utils.processFileModel(data);
     }
   }
 }

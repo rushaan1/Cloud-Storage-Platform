@@ -1,4 +1,6 @@
 import {ArgumentInvalidException} from "./ArgumentInvalidException";
+import {FileType} from "./models/FileType";
+import {File} from "./models/File";
 
 export class Utils {
   private constructor() {}
@@ -46,6 +48,31 @@ export class Utils {
     }
     else{
       return str;
+    }
+  }
+
+  public static processFileModel(data:any):File{
+    if (data.fileType !== undefined && data.fileType !==null){
+      return {
+        fileId:data.fileId,
+        filePath:data.filePath,
+        fileName:data.fileName,
+        isFavorite:data.isFavorite,
+        isTrash:data.isTrash,
+        fileType: data.fileType as FileType,
+        uncreated:false
+      }
+    }
+    else {
+      return {
+        fileId: data.folderId,
+        filePath: data.folderPath,
+        fileName: data.folderName,
+        isFavorite: data.isFavorite,
+        isTrash: data.isTrash,
+        fileType: FileType.Folder,
+        uncreated: false
+      }
     }
   }
 }

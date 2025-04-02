@@ -3,7 +3,6 @@ import {HTTP_INTERCEPTORS, HttpClient, HttpParams} from "@angular/common/http";
 import {File} from "../../models/File";
 import {Observable} from "rxjs";
 import {Utils} from "../../Utils";
-import {ResponseInterceptor} from "./response.interceptor";
 import {Metadata} from "../../models/Metadata";
 
 

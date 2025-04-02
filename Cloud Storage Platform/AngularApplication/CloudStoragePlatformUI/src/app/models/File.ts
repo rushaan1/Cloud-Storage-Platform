@@ -19,16 +19,5 @@ export class File {
     this.fileId = fileId;
     this.fileType = fileType;
     this.uncreated = uncreated;
-
-    // if (isFolder){
-    //   this.folderId = fileId;
-    //   this.folderName = fileName;
-    //   this.folderPath = filePath;
-    // }
-    // else{
-    //   this.folderId = "";
-    //   this.folderName = "";
-    //   this.folderPath = "";
-    // }
   }
 }
