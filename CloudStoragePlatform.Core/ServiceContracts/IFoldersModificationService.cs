@@ -10,7 +10,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
     public interface IFoldersModificationService
     {
         Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest, bool skipSSE=false);
-        Task<FolderResponse> RenameFolder(FolderRenameRequest folderRenameRequest);
+        Task<FolderResponse> RenameFolder(RenameRequest folderRenameRequest);
 
 
 

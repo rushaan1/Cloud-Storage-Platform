@@ -4,212 +4,184 @@ import {File} from "../../models/File";
 import {Observable} from "rxjs";
 import {Utils} from "../../Utils";
 import {Metadata} from "../../models/Metadata";
+import {Meta} from "@angular/platform-browser";
 
 
-const BASE_URL = "https://localhost:7219/api/Folders";
+const RETRIEVAL_BASE_URL = "https://localhost:7219/api/Retrievals";
+const MODIFICATION_BASE_URL = "https://localhost:7219/api/Modifications";
 
 @Injectable({
   providedIn: 'root',
 })
 export class FilesAndFoldersService {
-  constructor(private httpClient:HttpClient) { }
+  constructor(private httpClient: HttpClient) {}
 
-  public getAllInHome(fetchFiles:boolean):Observable<File[]>{
+  // RETRIEVAL endpoints
+
+  public getAllInHome(fetchFiles: boolean): Observable<File[]> {
     let params = new HttpParams();
     const sortVal = localStorage.getItem("sort")?.toString();
-    if (sortVal){
-      params = params.set('sortOrder', sortVal);
+    if (sortVal) {
+      params = params.set("sortOrder", sortVal);
     }
     params = params.set("fetchFiles", fetchFiles);
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllInHome`, {params: params});
+    return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllInHome`, { params });
   }
 
-  public getAllFilesAndSubFoldersByParentFolderPath(fetchFiles:boolean,folderPath:string):Observable<File[]>{
+  public getAllFilesAndSubFoldersByParentFolderPath(fetchFiles: boolean, folderPath: string): Observable<File[]> {
     Utils.handleStringInvalidError(folderPath);
-    let params = new HttpParams()
-      .set('path', folderPath);
+    let params = new HttpParams().set("path", folderPath);
     const sortVal = localStorage.getItem("sort")?.toString();
-    if (sortVal){
-      params = params.set('sortOrder', sortVal);
+    if (sortVal) {
+      params = params.set("sortOrder", sortVal);
     }
     params = params.set("fetchFiles", fetchFiles);
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllChildrenByPath`, {params:params});
+    return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllChildrenByPath`, { params });
   }
 
-  public getFileOrFolderById(id:string, isFolder:boolean):Observable<File>{
+  public getFileOrFolderById(id: string, isFolder: boolean): Observable<File> {
     Utils.handleStringInvalidError(id);
-    let params = new HttpParams();
-    params = params.set("id", id)
-    return this.httpClient.get<File>(`${this.getUrl(isFolder)}/getById`, {params:params});
+    let params = new HttpParams().set("id", id);
+    const url = isFolder
+      ? `${RETRIEVAL_BASE_URL}/getFolderById`
+      : `${RETRIEVAL_BASE_URL}/getFileById`;
+    return this.httpClient.get<File>(url, { params });
   }
 
-  public getFileOrFolderByPath(path:string, isFolder:boolean):Observable<File>{
+  public getFileOrFolderByPath(path: string, isFolder: boolean): Observable<any> {
     Utils.handleStringInvalidError(path);
-    let params = new HttpParams()
-      .set('path', path);
-    return this.httpClient.get<File>(`${this.getUrl(isFolder)}/getByPath`, {params:params});
+    let params = new HttpParams().set("path", path);
+    const url = isFolder
+      ? `${RETRIEVAL_BASE_URL}/getFolderByPath`
+      : `${RETRIEVAL_BASE_URL}/getFileByPath`;
+    return this.httpClient.get<any>(url, { params });
   }
 
-  public getFilteredFolders(fetchFiles:boolean,searchString:string):Observable<File[]>{
+  public getFilteredFolders(fetchFiles: boolean, searchString: string): Observable<File[]> {
     Utils.handleStringInvalidError(searchString);
-    let params = new HttpParams()
-      .set('searchString', searchString);
+    let params = new HttpParams().set("searchString", searchString);
     const sortVal = localStorage.getItem("sort")?.toString();
-    if (sortVal){
-      params = params.set('sortOrder', sortVal);
+    if (sortVal) {
+      params = params.set("sortOrder", sortVal);
     }
     params = params.set("fetchFiles", fetchFiles);
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFiltered`, {params:params});
+    return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllFiltered`, { params });
   }
 
-  public getAllFavoriteFolders(fetchFiles:boolean):Observable<File[]>{
+  public getAllFavoriteFolders(fetchFiles: boolean): Observable<File[]> {
     let params = new HttpParams();
     const sortVal = localStorage.getItem("sort")?.toString();
-    if (sortVal){
-      params = params.set('sortOrder', sortVal);
+    if (sortVal) {
+      params = params.set("sortOrder", sortVal);
     }
     params = params.set("fetchFiles", fetchFiles);
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllFavorites`, {params:params});
+    return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllFavorites`, { params });
   }
 
-  public getAllTrashFolders(fetchFiles:boolean):Observable<File[]>{
+  public getAllTrashFolders(fetchFiles: boolean): Observable<File[]> {
     let params = new HttpParams();
     const sortVal = localStorage.getItem("sort")?.toString();
-    if (sortVal){
-      params = params.set('sortOrder', sortVal);
+    if (sortVal) {
+      params = params.set("sortOrder", sortVal);
     }
     params = params.set("fetchFiles", fetchFiles);
-    return this.httpClient.get<File[]>(`${BASE_URL}/getAllTrashes`, {params:params});
+    return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllTrashes`, { params });
   }
 
-  public getMetadata(id:string, isFolder:boolean){
+  public getMetadata(id: string, isFolder: boolean): Observable<Metadata> {
     Utils.handleStringInvalidError(id);
-    let params = new HttpParams()
-      .set('id', id);
-    return this.httpClient.get<Metadata>(`${this.getUrl(isFolder)}/getMetadata`, {params:params});
+    let params = new HttpParams().set("id", id).set("isFolder", isFolder);
+    return this.httpClient.get<Metadata>(`${RETRIEVAL_BASE_URL}/getMetadata`, { params });
   }
 
+  // MODIFICATION endpoints
 
-
-
-
-  public addFolder(folderName:string, folderPath:string):Observable<File>{
+  public addFolder(folderName: string, folderPath: string): Observable<any> {
     Utils.handleStringInvalidError(folderName);
     Utils.handleStringInvalidError(folderPath);
-    return this.httpClient.post<File>(`${BASE_URL}/add`, {folderName:folderName, folderPath:folderPath});
+    const payload = { folderName, folderPath };
+    return this.httpClient.post(`${MODIFICATION_BASE_URL}/add`, payload);
   }
 
-  public batchAddFolders(paths:string[]){
-    //batchFoldersAdd
-    return this.httpClient.post(`${BASE_URL}/batchFoldersAdd`, paths);
+  public batchAddFolders(paths: string[]): Observable<any> {
+    return this.httpClient.post(`${MODIFICATION_BASE_URL}/batchFoldersAdd`, paths);
   }
 
-  public uploadFile(formData:FormData){
-    return this.httpClient.post<File[]>(`${this.getUrl(false)}/upload`,formData, {reportProgress:true, observe:'events'});
+  public uploadFile(formData: FormData): Observable<any> {
+    return this.httpClient.post(`${MODIFICATION_BASE_URL}/upload`, formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
   }
 
-
-  public rename(folderId:string, folderNewName:string, isFolder:boolean):Observable<File>{
+  public rename(folderId: string, folderNewName: string, isFolder: boolean): Observable<any> {
     Utils.handleStringInvalidError(folderId);
     Utils.handleStringInvalidError(folderNewName);
-    let reqBody:any;
-    if (isFolder){
-      reqBody = {folderId:folderId, folderNewName:folderNewName}
-    }
-    else{
-      reqBody = {fileId:folderId, fileNewName:folderNewName}
-    }
-    return this.httpClient.patch<File>(`${this.getUrl(isFolder)}/rename`, reqBody);
+    // Create a unified RenameRequest payload
+    const renameReq = { id: folderId, newName: folderNewName };
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/rename?isFolder=${isFolder}`, renameReq);
   }
 
-  public move(folderId:string, newFolderPath:string, isFolder:boolean):Observable<File>{
+
+  public delete(folderId: string, isFolder: boolean): Observable<any> {
     Utils.handleStringInvalidError(folderId);
-    Utils.handleStringInvalidError(newFolderPath);
-    let params = new HttpParams()
-      .set('id', folderId)
-      .set('newPath', newFolderPath);
-    return this.httpClient.patch<File>(`${this.getUrl(isFolder)}/move`,null, {params:params});
+    // Using batchDelete endpoint with one id in the query parameter
+    let params = new HttpParams().append("ids", folderId).set("isFolder", isFolder);
+    return this.httpClient.delete(`${MODIFICATION_BASE_URL}/batchDelete`, { params });
   }
 
-  public delete(folderId:string, isFolder:boolean):Observable<File>{
+  public addOrRemoveFromFavorite(folderId: string, isFolder: boolean): Observable<any> {
     Utils.handleStringInvalidError(folderId);
-    let params = new HttpParams()
-      .set('id', folderId)
-    return this.httpClient.delete<File>(`${this.getUrl(isFolder)}/delete`, {params:params});
+    let params = new HttpParams().set("id", folderId).set("isFolder", isFolder);
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/addOrRemoveFromFavorite`, null, { params });
   }
 
-  public addOrRemoveFromFavorite(folderId:string, isFolder:boolean):Observable<File>{
+  public addOrRemoveFromTrash(folderId: string, isFolder: boolean): Observable<any> {
     Utils.handleStringInvalidError(folderId);
-    let params = new HttpParams()
-      .set('id', folderId)
-    return this.httpClient.patch<File>(`${this.getUrl(isFolder)}/addOrRemoveFromFavorite`, null, {params:params});
+    // For single item, wrap the id in an array
+    let params = new HttpParams().set("isFolder", isFolder);
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/batchAddOrRemoveFromTrash`, [folderId], { params });
   }
 
-  public addOrRemoveFromTrash(folderId:string, isFolder:boolean):Observable<File>{
-    Utils.handleStringInvalidError(folderId);
-    let params = new HttpParams()
-      .set('id', folderId)
-    return this.httpClient.patch<File>(`${this.getUrl(isFolder)}/addOrRemoveFromTrash`, null, {params:params});
+  public batchAddOrRemoveFoldersFromTrash(folderIds: string[]): Observable<any> {
+    folderIds.forEach(id => Utils.handleStringInvalidError(id));
+    let params = new HttpParams().set("isFolder", true);
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/batchAddOrRemoveFromTrash`, folderIds, { params });
   }
 
-  public batchAddOrRemoveFoldersFromTrash(folderIds:string[]):Observable<object>{
-    for (let id of folderIds){
-      Utils.handleStringInvalidError(id);
-    }
-    return this.httpClient.patch(`${BASE_URL}/batchAddOrRemoveFromTrash`, folderIds);
-  }
-
-  public batchDeleteFolders(folderIds:string[]):Observable<object>{
-    for (let id of folderIds){
-      Utils.handleStringInvalidError(id);
-    }
+  public batchDeleteFolders(folderIds: string[]): Observable<any> {
+    folderIds.forEach(id => Utils.handleStringInvalidError(id));
     let params = new HttpParams();
-    folderIds.forEach(id => {params = params.append('ids', id)});
-    return this.httpClient.delete(`${BASE_URL}/batchDelete`, {params:params});
+    folderIds.forEach(id => params = params.append("ids", id));
+    params = params.set("isFolder", true);
+    return this.httpClient.delete(`${MODIFICATION_BASE_URL}/batchDelete`, { params });
   }
 
-  public batchMoveFolders(ids:string[], newPath:string):Observable<object>{
+  public batchMoveFolders(ids: string[], newPath: string): Observable<any> {
     Utils.handleStringInvalidError(newPath);
-    for (let id of ids){
-      Utils.handleStringInvalidError(id);
-    }
-    let params = new HttpParams()
-      .set('newFolderPath', newPath);
-    return this.httpClient.patch(`${BASE_URL}/batchMove`, ids, {params:params});
+    ids.forEach(id => Utils.handleStringInvalidError(id));
+    let params = new HttpParams().set("newFolderPath", newPath).set("isFolder", true);
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/batchMove`, ids, { params });
   }
 
-  public batchAddOrRemoveFilesFromTrash(ids:string[]):Observable<object>{
-    for (let id of ids){
-      Utils.handleStringInvalidError(id);
-    }
-    return this.httpClient.patch(`${this.getUrl(false)}/batchAddOrRemoveFromTrash`, ids);
+  public batchAddOrRemoveFilesFromTrash(ids: string[]): Observable<any> {
+    ids.forEach(id => Utils.handleStringInvalidError(id));
+    let params = new HttpParams().set("isFolder", false);
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/batchAddOrRemoveFromTrash`, ids, { params });
   }
 
-  public batchDeleteFiles(ids:string[]):Observable<object>{
-    for (let id of ids){
-      Utils.handleStringInvalidError(id);
-    }
+  public batchDeleteFiles(ids: string[]): Observable<any> {
+    ids.forEach(id => Utils.handleStringInvalidError(id));
     let params = new HttpParams();
-    ids.forEach(id => {params = params.append('ids', id)});
-    return this.httpClient.delete(`${this.getUrl(false)}/batchDelete`, {params:params});
+    ids.forEach(id => params = params.append("ids", id));
+    params = params.set("isFolder", false);
+    return this.httpClient.delete(`${MODIFICATION_BASE_URL}/batchDelete`, { params });
   }
 
-  public batchMoveFiles(ids:string[], newPath:string):Observable<object>{
+  public batchMoveFiles(ids: string[], newPath: string): Observable<any> {
     Utils.handleStringInvalidError(newPath);
-    for (let id of ids){
-      Utils.handleStringInvalidError(id);
-    }
-    let params = new HttpParams()
-      .set('newFolderPath', newPath);
-    return this.httpClient.patch(`${this.getUrl(false)}/batchMove`, ids, {params:params});
-  }
-
-  private getUrl(folder:boolean):string{
-    if (folder){
-      return BASE_URL;
-    }
-    else{
-      return BASE_URL.replace("Folders","File");
-    }
+    ids.forEach(id => Utils.handleStringInvalidError(id));
+    let params = new HttpParams().set("newFolderPath", newPath).set("isFolder", false);
+    return this.httpClient.patch(`${MODIFICATION_BASE_URL}/batchMove`, ids, { params });
   }
 }

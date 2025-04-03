@@ -19,12 +19,12 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
-        private readonly SSE sse;
-        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository)
+        private readonly SSE _sse;
+        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse)
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
-            sse = new SSE();
+            _sse = sse;
             // inject user identifying stuff in constructor and in repository's constructor
         }
 
@@ -98,7 +98,7 @@ namespace CloudStoragePlatform.Core.Services
             var response = file.ToFileResponse();
             if (skipSSE) 
             {
-                await sse.SendEventAsync("add", response);
+                await _sse.SendEventAsync("add", response);
             }
             return response;
         }
@@ -114,7 +114,7 @@ namespace CloudStoragePlatform.Core.Services
             file.IsFavorite = !file.IsFavorite;
 
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
-            await sse.SendEventAsync("favorite_updated", new { id = fileId, val = file.IsFavorite });
+            await _sse.SendEventAsync("favorite_updated", new { id = fileId, val = file.IsFavorite });
             return updatedFile!.ToFileResponse();
         }
 
@@ -131,7 +131,7 @@ namespace CloudStoragePlatform.Core.Services
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
             if (!skipSSE)
             {
-                await sse.SendEventAsync("trash_updated", new { id = fileId, val = file.IsTrash });
+                await _sse.SendEventAsync("trash_updated", new { id = fileId, val = file.IsTrash });
             }
             return updatedFile!.ToFileResponse();
         }
@@ -146,7 +146,7 @@ namespace CloudStoragePlatform.Core.Services
             System.IO.File.Delete(file.FilePath);
             if (!skipSSE)
             {
-                await sse.SendEventAsync("deleted", new { id = fileId });
+                await _sse.SendEventAsync("deleted", new { id = fileId });
             }
             return await _filesRepository.DeleteFile(file);
         }
@@ -184,7 +184,7 @@ namespace CloudStoragePlatform.Core.Services
             var response = finalMainFile!.ToFileResponse();
             if (!skipSSE)
             {
-                await sse.SendEventAsync("moved", new
+                await _sse.SendEventAsync("moved", new
                 {
                     movedTo = newFilePathOfFile,
                     id = fileId,
@@ -194,7 +194,7 @@ namespace CloudStoragePlatform.Core.Services
             return response;
         }
 
-        public async Task<FileResponse> RenameFile(FileRenameRequest fileRenameRequest)
+        public async Task<FileResponse> RenameFile(RenameRequest fileRenameRequest)
         {
             var file = await _filesRepository.GetFileByFileId(fileRenameRequest.FileId);
             if (file == null)
@@ -209,13 +209,13 @@ namespace CloudStoragePlatform.Core.Services
             }
 
             string oldFilePath = file.FilePath;
-            file.FileName = fileRenameRequest.FileNewName;
+            file.FileName = fileRenameRequest.newName;
             file.FilePath = newFilePath;
 
             await Utilities.UpdateMetadataRename(file, _filesRepository);
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
             System.IO.File.Move(oldFilePath, newFilePath);
-            await sse.SendEventAsync("rename", new { id = fileRenameRequest.FileId, val = file.FileName});
+            await _sse.SendEventAsync("rename", new { id = fileRenameRequest.id, val = file.FileName});
             return updatedFile!.ToFileResponse();
         }
     }

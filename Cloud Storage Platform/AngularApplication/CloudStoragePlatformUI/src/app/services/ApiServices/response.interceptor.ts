@@ -24,7 +24,7 @@ export class ResponseInterceptor implements HttpInterceptor {
 
   private transformToFileModel(data: any, url:string): File|File[]|Metadata {
     let array:Array<any> = [];
-    if ((data.folders instanceof Array)||(data.folders instanceof Array)){
+    if ((data.folders instanceof Array)||(data.files instanceof Array)){
       for (let i = 0; i < data.folders.length; i++) {
         if (data.folders[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
           continue;
@@ -78,7 +78,7 @@ export class ResponseInterceptor implements HttpInterceptor {
       return data;
     }
     else{
-      if (url.toLowerCase().includes("api/file")){
+      if (url.toLowerCase().includes("getFile")){
         return Utils.processFileModel(data);
       }
       return Utils.processFileModel(data);

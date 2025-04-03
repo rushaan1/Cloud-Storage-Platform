@@ -51,28 +51,27 @@ export class Utils {
     }
   }
 
-  public static processFileModel(data:any):File{
-    if (data.fileType !== undefined && data.fileType !==null){
-      return {
-        fileId:data.fileId,
-        filePath:data.filePath,
-        fileName:data.fileName,
-        isFavorite:data.isFavorite,
-        isTrash:data.isTrash,
-        fileType: data.fileType as FileType,
-        uncreated:false
-      }
-    }
-    else {
-      return {
-        fileId: data.folderId,
-        filePath: data.folderPath,
-        fileName: data.folderName,
-        isFavorite: data.isFavorite,
-        isTrash: data.isTrash,
-        fileType: FileType.Folder,
-        uncreated: false
-      }
+  public static processFileModel(data: any): File {
+    if (data.fileType !== undefined && data.fileType !== null) {
+      return new File(
+        data.fileId,
+        data.fileName,
+        data.filePath,
+        data.isFavorite,
+        data.isTrash,
+        data.fileType as FileType,
+        false
+      );
+    } else {
+      return new File(
+        data.folderId,
+        data.folderName,
+        data.folderPath,
+        data.isFavorite,
+        data.isTrash,
+        FileType.Folder,
+        false // uncreated
+      );
     }
   }
 }

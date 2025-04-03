@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FilesStateService} from '../../services/StateManagementServices/files-state.service';
 import {EventService} from '../../services/event-service.service';
 import {ActivatedRoute, Router} from "@angular/router";
@@ -31,7 +31,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   emptyTxt = "No folders to show";
   private sse!:EventSource;
 
-  constructor(private router: Router, private route: ActivatedRoute, private foldersService:FilesAndFoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
+  constructor(private cdRef:ChangeDetectorRef, private router: Router, private route: ActivatedRoute, private foldersService:FilesAndFoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
 
   ngOnInit(): void {
     this.filesState.setUncreatedFolderExists(false);
@@ -91,51 +91,60 @@ export class ViewerComponent implements OnInit, OnDestroy{
     }));
     this.sse = new EventSource('https://localhost:7219/api/Folders/sse');
     this.sse.onmessage = (event) =>{
-      const res = JSON.parse(event.data);
-      switch (res.eventType){
+      const data = JSON.parse(event.data);
+      console.log(data);
+      switch (data.eventType){
         case "add":
-          this.files.push(Utils.processFileModel(res.data));
+          const file = Utils.processFileModel(data.content);
+          this.files.push(file);
           break;
         case "favorite_updated" :
           this.files.forEach((f,i)=>{
-            if (f.fileId==res.data.id as string){
-              this.files[i].isFavorite = res.data.val as boolean;
+            if (f.fileId==data.content.id as string){
+              this.files[i].isFavorite = data.content.val as boolean;
             }
           });
           break;
         case "trash_updated":
           this.files.forEach((f,i)=>{
-            if (f.fileId==res.data.id as string) {
+            if (f.fileId==data.content.id as string) {
               this.files = this.files.filter(file => { return f.fileId != file.fileId });
             }
           });
           break;
         case "deleted":
           this.files.forEach((f,i)=>{
-            if (f.fileId==res.data.id as string) {
+            if (f.fileId==data.content.id as string) {
               this.files = this.files.filter(file => { return f.fileId != file.fileId });
             }
           });
           break;
         case "rename":
           this.files.forEach((f,i)=>{
-            if (f.fileId==res.data.id as string) {
-              this.files[i].fileName = res.data.val as string;
+            if (f.fileId==data.content.id as string) {
+              const file:File = {...f};
+              file.fileName = data.content.val as string;
+              const fullPath = file.filePath.split("\\");
+              fullPath[fullPath.length-1] = data.content.val as string;
+              file.filePath = fullPath.join("\\");
+              this.files.splice(i, 1, file);
+              this.filesState.setRenaming(false);
             }
           });
           break;
         case "moved":
           this.files.forEach((f,i)=>{
-            if (res.data.id==f.fileId){
-              if (!decodeURIComponent(this.router.url).includes(Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(res.data.movedTo as string))))){
+            if (data.content.id==f.fileId){
+              if (!decodeURIComponent(data.data.movedTo as string).includes(decodeURIComponent(this.router.url))){
                 this.files = this.files.filter(file => { return f.fileId != file.fileId });
               }
             }
-            else if (decodeURIComponent(this.router.url).includes(Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(res.data.movedTo as string))))){
-              this.files.push(res.data.res);
+            else if (decodeURIComponent(data.data.movedTo as string).includes(decodeURIComponent(this.router.url))){
+              this.files.push(data.content.res);
             }
           })
       }
+      this.cdRef.detectChanges();
     }
   }
 
@@ -145,6 +154,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.sse.close();
   }
 
   handleFolderLoaders(){

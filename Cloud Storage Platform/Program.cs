@@ -1,5 +1,6 @@
 using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
+using CloudStoragePlatform.Core;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
@@ -7,6 +8,7 @@ using CloudStoragePlatform.Infrastructure.DbContext;
 using CloudStoragePlatform.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace CloudStoragePlatform.Web
 {
@@ -50,6 +52,7 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddScoped<ISharingRepository, SharingRepository>();
             builder.Services.AddScoped<IModelBinder, AppendToPath>();
             builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
+            builder.Services.AddSingleton<SSE, SSE>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -73,6 +76,15 @@ namespace CloudStoragePlatform.Web
             app.UseCors("AllowAngularLocalhost");
             app.UseAuthorization();
             app.MapControllers();
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/api/Folders/sse"))
+                {
+                    context.Request.Protocol = "HTTP/2";
+                }
+                await next();
+            });
+
             app.Run();
 
             /*

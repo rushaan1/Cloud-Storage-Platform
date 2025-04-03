@@ -172,12 +172,8 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         else{
           this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value, this.type==FileType.Folder).subscribe({
             next: (response:File) => {
-              this.FileFolder.fileName = response.fileName;
-              this.FileFolder.filePath = response.filePath;
-              this.name = response.fileName;
               this.eventService.emit("addNotif", ["Successfully renamed "+this.originalName+" to "+response.fileName, 15000]);
               this.originalName = response.fileName;
-              this.name = Utils.resize(this.name, 32);
               renameCompleted = true;
             },
             error: err => {
@@ -266,6 +262,8 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     // filePath for creation set by viewer
     this.foldersService.addFolder(name, this.FileFolder.filePath+name).subscribe({
       next: (response:File) => {
+        this.filesState.setUncreatedFolderExists(false);
+        folderCreationCompleted = true;
         this.destroy.emit();
       },
       error: err => {
@@ -295,7 +293,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     event.stopPropagation();
     this.foldersService.addOrRemoveFromFavorite(this.FileFolder.fileId, this.type==FileType.Folder).subscribe({
       next: (response:File) => {
-        this.FileFolder.isFavorite = response.isFavorite;
+        // this.FileFolder.isFavorite = response.isFavorite;
       },
       error: err => {
         // TODO ErrorNotif for this
@@ -307,8 +305,8 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     event.stopPropagation();
     this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,this.type==FileType.Folder).subscribe({
       next: (response:File) => {
-        this.FileFolder.isTrash = response.isTrash;
-        this.destroy.emit();
+        // this.FileFolder.isTrash = response.isTrash;
+        // this.destroy.emit();
         this.eventService.emit("addNotif", ["Successfully moved "+this.name+" in trash", 20000]);
       },
       error: err => {

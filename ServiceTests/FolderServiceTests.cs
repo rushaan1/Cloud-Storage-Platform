@@ -111,7 +111,7 @@ namespace ServiceTests
         [Fact]
         public async Task RenameFolder_FolderDoesNotExists() 
         {
-            FolderRenameRequest renameRequest = _fixture.Create<FolderRenameRequest>();
+            RenameRequest renameRequest = _fixture.Create<RenameRequest>();
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync((Folder)null!);
@@ -135,9 +135,9 @@ namespace ServiceTests
             string folderToBeRenamedsName = _fixture.Create<string>();
             string folderToBeRenamedsPath = Path.Combine(initialPath, folderToBeRenamedsName);
 
-            FolderRenameRequest renameRequest = _fixture.Build<FolderRenameRequest>().With(frr=>frr.FolderNewName, newFolderName).Create(); 
+            RenameRequest renameRequest = _fixture.Build<RenameRequest>().With(frr=>frr.newName, newFolderName).Create(); 
 
-            Folder folderToBeRenamed = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderToBeRenamedsName, FolderPath = folderToBeRenamedsPath };
+            Folder folderToBeRenamed = new Folder() { FolderId = renameRequest.id, FolderName = folderToBeRenamedsName, FolderPath = folderToBeRenamedsPath };
 
             Directory.CreateDirectory(pathOfExistingFolderWithNewFolderName);
 
@@ -165,12 +165,12 @@ namespace ServiceTests
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
 
-            FolderRenameRequest renameRequest = _fixture.Create<FolderRenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
-            Folder folder = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
+            RenameRequest renameRequest = _fixture.Create<RenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
+            Folder folder = new Folder() { FolderId = renameRequest.id, FolderName = folderName, FolderPath = folderPath };
             Utilities.AttachMetadataForTesting(_fixture, folder, null);
-            Folder updated = new Folder() { FolderId = renameRequest.FolderId, FolderName = folderName, FolderPath = folderPath };
-            updated.FolderName = renameRequest.FolderNewName;
-            updated.FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.FolderNewName);
+            Folder updated = new Folder() { FolderId = renameRequest.id, FolderName = folderName, FolderPath = folderPath };
+            updated.FolderName = renameRequest.newName;
+            updated.FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.newName);
             Directory.CreateDirectory(folderPath);
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
@@ -188,9 +188,9 @@ namespace ServiceTests
             FolderResponse response = await _foldersModificationService.RenameFolder(renameRequest);
 
             //Assert
-            bool folderExists = Directory.Exists(Path.Combine(initialPath, renameRequest.FolderNewName));
-            response.FolderId.Should().Be(renameRequest.FolderId);
-            response.FolderName.Should().Be(renameRequest.FolderNewName);
+            bool folderExists = Directory.Exists(Path.Combine(initialPath, renameRequest.newName));
+            response.FolderId.Should().Be(renameRequest.id);
+            response.FolderName.Should().Be(renameRequest.newName);
             response.FolderPath.Should().Be(updated.FolderPath);
             folderExists.Should().BeTrue();
             Directory.Delete(response.FolderPath!);
