@@ -12,7 +12,7 @@ export class ResponseInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       map((event: HttpEvent<any>) => {
-        if (event instanceof HttpResponse && req.url.toLowerCase().includes('folders') && event.status == 200) {
+        if (event instanceof HttpResponse && (req.url.toLowerCase().includes('retrievals')||req.url.toLowerCase().includes('modifications')) && event.status == 200) {
           return event.clone({
             body: this.transformToFileModel(event.body, req.url)
           });
@@ -78,9 +78,6 @@ export class ResponseInterceptor implements HttpInterceptor {
       return data;
     }
     else{
-      if (url.toLowerCase().includes("getFile")){
-        return Utils.processFileModel(data);
-      }
       return Utils.processFileModel(data);
     }
   }

@@ -321,7 +321,6 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       this.foldersService.delete(this.FileFolder.fileId,this.type==FileType.Folder).subscribe({
         next: (response:File) => {
           this.eventService.emit("addNotif", ["Successfully deleted "+this.name, 20000]);
-          this.destroy.emit();
         },
         error: err => {
           // TODO ErrorNotif for this
@@ -334,8 +333,6 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     event.stopPropagation();
     this.foldersService.addOrRemoveFromTrash(this.FileFolder.fileId,this.type==FileType.Folder).subscribe({
       next: (response:File) => {
-        this.FileFolder.isTrash = response.isTrash;
-        this.destroy.emit();
         this.eventService.emit("addNotif", ["Successfully restored " + this.name, 20000]);
       },
       error: err => {

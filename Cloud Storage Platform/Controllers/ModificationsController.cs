@@ -34,7 +34,7 @@ namespace Cloud_Storage_Platform.Controllers
             folderAddRequest.FolderPath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(folderAddRequest.FolderPath);
             FolderResponse folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
             var res = new List<FolderResponse>() { folderResponse };
-            await _sse.SendEventAsync("add", new { res });
+            await _sse.SendEventAsync("added", new { res });
             return folderResponse;
         }
 
@@ -57,7 +57,7 @@ namespace Cloud_Storage_Platform.Controllers
 
             FileAddRequest? currentFileRequest = null;
             int uploadIndex = 0;
-            var responses = new List<FileResponse>();
+            var res = new List<FileResponse>();
 
             while (section is not null)
             {
@@ -91,7 +91,7 @@ namespace Cloud_Storage_Platform.Controllers
                         var fileSection = section.AsFileSection();
                         if (fileSection is not null && fileSection.FileStream is not null)
                         {
-                            responses.Add(await _filesModificationService.UploadFile(fileRequests.ElementAt(uploadIndex), fileSection.FileStream));
+                            res.Add(await _filesModificationService.UploadFile(fileRequests.ElementAt(uploadIndex), fileSection.FileStream));
                         }
                         uploadIndex++;
                     }
@@ -99,7 +99,8 @@ namespace Cloud_Storage_Platform.Controllers
 
                 section = await multipartReader.ReadNextSectionAsync();
             }
-            return responses;
+            await _sse.SendEventAsync("added", new { res });
+            return res;
         }
 
         [HttpPatch]
@@ -117,7 +118,7 @@ namespace Cloud_Storage_Platform.Controllers
                 var response = await _filesModificationService.RenameFile(renameReq);
                 newName = response.FileName;
             }
-            await _sse.SendEventAsync("rename", new { id = renameReq.id, val = newName });
+            await _sse.SendEventAsync("renamed", new { id = renameReq.id, val = newName });
             return NoContent();
         }
 
@@ -128,12 +129,12 @@ namespace Cloud_Storage_Platform.Controllers
             if (isFolder)
             {
                 var folderResponse = await _foldersModificationService.AddOrRemoveFavorite(id);
-                await _sse.SendEventAsync("favorite_updated", new { id = folderResponse.FolderId, val = folderResponse.IsFavorite });
+                await _sse.SendEventAsync("favorite_updated", new { id = folderResponse.FolderId, res = folderResponse });
             }
             else
             {
                 var fileResponse = await _filesModificationService.AddOrRemoveFavorite(id);
-                await _sse.SendEventAsync("favorite_updated", new { id = fileResponse.FileId, val = fileResponse.IsFavorite });
+                await _sse.SendEventAsync("favorite_updated", new { id = fileResponse.FileId, res = fileResponse });
             }
             return NoContent();
         }
@@ -142,21 +143,22 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("batchAddOrRemoveFromTrash")]
         public async Task<ActionResult> BatchAddOrRemoveFromTrash(List<Guid> ids, bool isFolder)
         {
-            List<bool?> vals = new();
+            List<FolderResponse> updatedFolders = new();
+            List<FileResponse> updatedFiles = new();
             foreach (Guid id in ids)
             {
                 if (isFolder)
                 {
                     var response = await _foldersModificationService.AddOrRemoveTrash(id, true);
-                    vals.Add(response.IsTrash);
+                    updatedFolders.Add(response);
                 }
                 else
                 {
                     var response = await _filesModificationService.AddOrRemoveTrash(id, true);
-                    vals.Add(response.IsTrash);
+                    updatedFiles.Add(response);
                 }
             }
-            await _sse.SendEventAsync("batch_trash_updated", new { ids, vals });
+            await _sse.SendEventAsync("trash_updated", new { updatedFolders, updatedFiles });
             return NoContent();
         }
 
@@ -175,7 +177,7 @@ namespace Cloud_Storage_Platform.Controllers
                     FolderPath = fullpath
                 }, true));
             }
-            await _sse.SendEventAsync("batch_added", new { responses });
+            await _sse.SendEventAsync("added", new { responses });
             return NoContent();
         }
 
@@ -201,7 +203,7 @@ namespace Cloud_Storage_Platform.Controllers
                     }
                 }
             }
-            await _sse.SendEventAsync("batch_deleted", new { ids });
+            await _sse.SendEventAsync("deleted", new { ids });
             return (deleted == ids.Count) ? NoContent() : StatusCode(500);
         }
 
@@ -217,7 +219,7 @@ namespace Cloud_Storage_Platform.Controllers
                     var response = await _foldersModificationService.MoveFolder(id, newFolderPath, true);
                     movedList.Add(new
                     {
-                        movedTo = response.FolderPath,
+                        movedTo = Utilities.ReplaceLastOccurance(response.FolderPath!, "\\"+response.FolderName, ""),
                         id = response.FolderId,
                         res = response
                     });
@@ -227,13 +229,13 @@ namespace Cloud_Storage_Platform.Controllers
                     var response = await _filesModificationService.MoveFile(id, newFolderPath, true);
                     movedList.Add(new
                     {
-                        movedTo = response.FilePath,
+                        movedTo = Utilities.ReplaceLastOccurance(response.FilePath!, "\\" + response.FileName, ""),
                         id = response.FileId,
                         res = response
                     });
                 }
             }
-            await _sse.SendEventAsync("batch_moved", movedList);
+            await _sse.SendEventAsync("moved", movedList);
             return NoContent();
         }
 

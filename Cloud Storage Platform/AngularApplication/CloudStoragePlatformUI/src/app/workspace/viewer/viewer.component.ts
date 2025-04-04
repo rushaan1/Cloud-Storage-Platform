@@ -89,37 +89,72 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.subscriptions.push(this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
     }));
-    this.sse = new EventSource('https://localhost:7219/api/Folders/sse');
+    this.sse = new EventSource('https://localhost:7219/api/Modifications/sse');
     this.sse.onmessage = (event) =>{
       const data = JSON.parse(event.data);
       console.log(data);
+
+      const path:string = decodeURIComponent(Utils.constructFilePathForApi(this.crumbs));
       switch (data.eventType){
-        case "add":
-          const file = Utils.processFileModel(data.content);
-          this.files.push(file);
+        case "added":
+          if (this.crumbs[0]!="home"){
+            return;
+          }
+          for (let i = 0; i<data.content.res.length; i++){
+            const processedFile = Utils.processFileModel(data.content.res[i]);
+            if (this.extractCleanParentPath(processedFile.filePath)==path){
+              this.files.push(processedFile);
+            }
+          }
           break;
         case "favorite_updated" :
+          let updated = false;
           this.files.forEach((f,i)=>{
             if (f.fileId==data.content.id as string){
-              this.files[i].isFavorite = data.content.val as boolean;
+              this.files[i].isFavorite = data.content.res.isFavorite as boolean;
+              updated = true
             }
           });
+          if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
+            const processedFile = Utils.processFileModel(data.content.res);
+            this.files.push(processedFile);
+            return;
+          }
           break;
         case "trash_updated":
-          this.files.forEach((f,i)=>{
-            if (f.fileId==data.content.id as string) {
-              this.files = this.files.filter(file => { return f.fileId != file.fileId });
+          const items:File[] = [];
+          for (let i = 0; i<data.content.updatedFolders.length; i++){
+            const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
+            items.push(processedFile);
+          }
+          for (let i = 0; i<data.content.updatedFiles.length; i++){
+            const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
+            items.push(processedFile);
+          }
+          for (let i = 0; i<items.length; i++){
+            if (!this.containsId(items[i].fileId)){
+              if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
+                this.files.push(items[i]);
+              }
+              else if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
+                this.files.push(items[i]);
+              }
             }
-          });
+            else{
+              this.files = this.files.filter((f)=>{
+                return f.fileId != items[i].fileId;
+              });
+            }
+          }
           break;
         case "deleted":
-          this.files.forEach((f,i)=>{
-            if (f.fileId==data.content.id as string) {
-              this.files = this.files.filter(file => { return f.fileId != file.fileId });
-            }
-          });
+          for (let i = 0; i<data.content.ids.length; i++){
+            this.files = this.files.filter(file => {
+              return file.fileId != data.content.ids[i];
+            });
+          }
           break;
-        case "rename":
+        case "renamed":
           this.files.forEach((f,i)=>{
             if (f.fileId==data.content.id as string) {
               const file:File = {...f};
@@ -133,16 +168,16 @@ export class ViewerComponent implements OnInit, OnDestroy{
           });
           break;
         case "moved":
-          this.files.forEach((f,i)=>{
-            if (data.content.id==f.fileId){
-              if (!decodeURIComponent(data.data.movedTo as string).includes(decodeURIComponent(this.router.url))){
-                this.files = this.files.filter(file => { return f.fileId != file.fileId });
+          for (let i = 0; i<data.content.length; i++){
+            if (this.containsId(data.content[i].id)){
+              if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                this.files = this.files.filter(file => { return data.content[i].id != file.fileId });
               }
             }
-            else if (decodeURIComponent(data.data.movedTo as string).includes(decodeURIComponent(this.router.url))){
-              this.files.push(data.content.res);
+            else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+              this.files.push(data.content[i].res);
             }
-          })
+          }
       }
       this.cdRef.detectChanges();
     }
@@ -155,6 +190,17 @@ export class ViewerComponent implements OnInit, OnDestroy{
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.sse.close();
+  }
+
+  containsId(id:string){
+    return this.files.map(f=>f.fileId).includes(id);
+  }
+
+  extractCleanParentPath(path:string){
+    let splitted = path.split("\\");
+    splitted.pop();
+    path = splitted.join("\\");
+    return Utils.constructFilePathForApi(Utils.cleanPath(path));
   }
 
   handleFolderLoaders(){

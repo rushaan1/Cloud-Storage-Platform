@@ -196,13 +196,13 @@ namespace CloudStoragePlatform.Core.Services
 
         public async Task<FileResponse> RenameFile(RenameRequest fileRenameRequest)
         {
-            var file = await _filesRepository.GetFileByFileId(fileRenameRequest.FileId);
+            var file = await _filesRepository.GetFileByFileId(fileRenameRequest.id);
             if (file == null)
             {
                 throw new ArgumentException();
             }
 
-            string newFilePath = Path.Combine(Path.GetDirectoryName(file.FilePath)!, fileRenameRequest.FileNewName);
+            string newFilePath = Path.Combine(Path.GetDirectoryName(file.FilePath)!, fileRenameRequest.newName);
             if (System.IO.File.Exists(newFilePath))
             {
                 throw new DuplicateFileException();
