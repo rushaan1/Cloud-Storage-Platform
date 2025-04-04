@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {ChangeDetectorRef, Injectable} from '@angular/core';
 import {BehaviorSubject} from "rxjs";
 import {File} from "../../models/File";
 
@@ -6,6 +6,8 @@ import {File} from "../../models/File";
   providedIn: 'root'
 })
 export class FilesStateService {
+
+  constructor() { }
 
   private itemsBeingMoved = new BehaviorSubject<File[]>([]);
   itemsBeingMoved$ = this.itemsBeingMoved.asObservable();
@@ -50,6 +52,4 @@ export class FilesStateService {
   getItemsBeingMoved():File[]{
     return this.itemsBeingMoved.value;
   }
-
-  constructor() { }
 }

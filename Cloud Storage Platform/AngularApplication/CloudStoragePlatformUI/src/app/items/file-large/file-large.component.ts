@@ -53,12 +53,14 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   originalName = "";
   fileOptionsVisible = false;
   renaming = false;
+  renameReqSent = false;
   selected = false;
   appIsInSelectionState = false;
   hoveringOver: boolean = false;
   crumbs: string[] = [];
   anyFileIsRenaming = false;
   anyUncreatedFolderExists = false;
+  preservedExtensionForRename = "";
 
   constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute) { }
 
@@ -160,7 +162,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   renameEnter(event?:Event) {
     event?.stopPropagation();
-    if (this.renaming==false){
+    if (this.renaming==false || this.renameReqSent){
       return;
     }
     if (this.fileNameInput?.nativeElement) {
@@ -170,10 +172,11 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
           this.createFolder(this.fileNameInput.nativeElement.value);
         }
         else{
-          this.foldersService.rename(this.FileFolder.fileId, this.fileNameInput.nativeElement.value, this.type==FileType.Folder).subscribe({
-            next: (response:File) => {
-              this.eventService.emit("addNotif", ["Successfully renamed "+this.originalName+" to "+response.fileName, 15000]);
-              this.originalName = response.fileName;
+          const newName = this.fileNameInput.nativeElement.value+this.preservedExtensionForRename;
+          this.foldersService.rename(this.FileFolder.fileId, newName, this.type==FileType.Folder).subscribe({
+            next: () => {
+              this.eventService.emit("addNotif", ["Successfully renamed "+this.originalName+" to "+newName, 15000]);
+              this.originalName = newName;
               renameCompleted = true;
             },
             error: err => {
@@ -187,6 +190,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
             }
           });
         }
+        this.renameReqSent = true;
       }
       else if (this.renameFormControl.invalid){
         if (this.renameFormControl.hasError("invalidCharacter")){
@@ -214,6 +218,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     }
 
     this.renaming = true;
+    this.renameReqSent = false;
 
     if (collapseOptions){
       this.expandOrCollapseOptions();
@@ -224,14 +229,21 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       this.fileNameInput.nativeElement.focus();
       this.fileNameInput.nativeElement.classList.remove("file-name-text-input-red");
       this.fileNameInput.nativeElement.value = this.originalName;
-      this.fileNameInput.nativeElement.select();
       this.renameFormControl.setValue(this.originalName);
+      if (this.type!=FileType.Folder){
+        let split = this.originalName.split(".");
+        this.preservedExtensionForRename = "."+split.pop();
+        this.fileNameInput.nativeElement.value = split.join(".");
+        this.renameFormControl.setValue(this.fileNameInput.nativeElement.value);
+      }
+      this.fileNameInput.nativeElement.select();
     }
     this.filesState.setRenaming(true)
   }
 
   finishRenaming(){
     this.renaming = false;
+    this.preservedExtensionForRename = "";
     this.filesState.setRenaming(false);
     if (this.renamingFileOptionDiv?.nativeElement){
       this.renamingFileOptionDiv.nativeElement.innerText = "Rename";

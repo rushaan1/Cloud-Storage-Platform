@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FilesStateService} from '../../services/StateManagementServices/files-state.service';
 import {EventService} from '../../services/event-service.service';
 import {ActivatedRoute, Router} from "@angular/router";
@@ -31,7 +31,16 @@ export class ViewerComponent implements OnInit, OnDestroy{
   emptyTxt = "No folders to show";
   private sse!:EventSource;
 
-  constructor(private cdRef:ChangeDetectorRef, private router: Router, private route: ActivatedRoute, private foldersService:FilesAndFoldersService, private eventService:EventService, private loaderService:LoadingService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {}
+  constructor(
+    private cdRef:ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute,
+    private foldersService:FilesAndFoldersService,
+    private eventService:EventService,
+    private loaderService:LoadingService,
+    private breadcrumbService:BreadcrumbService,
+    protected filesState:FilesStateService,
+    private ngZone: NgZone) {}
 
   ngOnInit(): void {
     this.filesState.setUncreatedFolderExists(false);
@@ -91,95 +100,97 @@ export class ViewerComponent implements OnInit, OnDestroy{
     }));
     this.sse = new EventSource('https://localhost:7219/api/Modifications/sse');
     this.sse.onmessage = (event) =>{
-      const data = JSON.parse(event.data);
-      console.log(data);
+      this.ngZone.run(()=>{
+        const data = JSON.parse(event.data);
+        console.log(data);
 
-      const path:string = decodeURIComponent(Utils.constructFilePathForApi(this.crumbs));
-      switch (data.eventType){
-        case "added":
-          if (this.crumbs[0]!="home"){
-            return;
-          }
-          for (let i = 0; i<data.content.res.length; i++){
-            const processedFile = Utils.processFileModel(data.content.res[i]);
-            if (this.extractCleanParentPath(processedFile.filePath)==path){
+        const path:string = decodeURIComponent(Utils.constructFilePathForApi(this.crumbs));
+        switch (data.eventType){
+          case "added":
+            if (this.crumbs[0]!="home"){
+              return;
+            }
+            for (let i = 0; i<data.content.res.length; i++){
+              const processedFile = Utils.processFileModel(data.content.res[i]);
+              if (this.extractCleanParentPath(processedFile.filePath)==path){
+                this.files.push(processedFile);
+              }
+            }
+            break;
+          case "favorite_updated" :
+            let updated = false;
+            this.files.forEach((f,i)=>{
+              if (f.fileId==data.content.id as string){
+                this.files[i].isFavorite = data.content.res.isFavorite as boolean;
+                updated = true
+              }
+            });
+            if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
+              const processedFile = Utils.processFileModel(data.content.res);
               this.files.push(processedFile);
+              return;
             }
-          }
-          break;
-        case "favorite_updated" :
-          let updated = false;
-          this.files.forEach((f,i)=>{
-            if (f.fileId==data.content.id as string){
-              this.files[i].isFavorite = data.content.res.isFavorite as boolean;
-              updated = true
+            break;
+          case "trash_updated":
+            const items:File[] = [];
+            for (let i = 0; i<data.content.updatedFolders.length; i++){
+              const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
+              items.push(processedFile);
             }
-          });
-          if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
-            const processedFile = Utils.processFileModel(data.content.res);
-            this.files.push(processedFile);
-            return;
-          }
-          break;
-        case "trash_updated":
-          const items:File[] = [];
-          for (let i = 0; i<data.content.updatedFolders.length; i++){
-            const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
-            items.push(processedFile);
-          }
-          for (let i = 0; i<data.content.updatedFiles.length; i++){
-            const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
-            items.push(processedFile);
-          }
-          for (let i = 0; i<items.length; i++){
-            if (!this.containsId(items[i].fileId)){
-              if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
-                this.files.push(items[i]);
+            for (let i = 0; i<data.content.updatedFiles.length; i++){
+              const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
+              items.push(processedFile);
+            }
+            for (let i = 0; i<items.length; i++){
+              if (!this.containsId(items[i].fileId)){
+                if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
+                  this.files.push(items[i]);
+                }
+                else if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
+                  this.files.push(items[i]);
+                }
               }
-              else if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
-                this.files.push(items[i]);
+              else{
+                this.files = this.files.filter((f)=>{
+                  return f.fileId != items[i].fileId;
+                });
               }
             }
-            else{
-              this.files = this.files.filter((f)=>{
-                return f.fileId != items[i].fileId;
+            break;
+          case "deleted":
+            for (let i = 0; i<data.content.ids.length; i++){
+              this.files = this.files.filter(file => {
+                return file.fileId != data.content.ids[i];
               });
             }
-          }
-          break;
-        case "deleted":
-          for (let i = 0; i<data.content.ids.length; i++){
-            this.files = this.files.filter(file => {
-              return file.fileId != data.content.ids[i];
+            break;
+          case "renamed":
+            this.files.forEach((f,i)=>{
+              if (f.fileId==data.content.id as string) {
+                const file:File = {...f};
+                file.fileName = data.content.val as string;
+                const fullPath = file.filePath.split("\\");
+                fullPath[fullPath.length-1] = data.content.val as string;
+                file.filePath = fullPath.join("\\");
+                this.files.splice(i, 1, file);
+                this.filesState.setRenaming(false);
+              }
             });
-          }
-          break;
-        case "renamed":
-          this.files.forEach((f,i)=>{
-            if (f.fileId==data.content.id as string) {
-              const file:File = {...f};
-              file.fileName = data.content.val as string;
-              const fullPath = file.filePath.split("\\");
-              fullPath[fullPath.length-1] = data.content.val as string;
-              file.filePath = fullPath.join("\\");
-              this.files.splice(i, 1, file);
-              this.filesState.setRenaming(false);
-            }
-          });
-          break;
-        case "moved":
-          for (let i = 0; i<data.content.length; i++){
-            if (this.containsId(data.content[i].id)){
-              if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
-                this.files = this.files.filter(file => { return data.content[i].id != file.fileId });
+            break;
+          case "moved":
+            for (let i = 0; i<data.content.length; i++){
+              if (this.containsId(data.content[i].id)){
+                if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                  this.files = this.files.filter(file => { return data.content[i].id != file.fileId });
+                }
+              }
+              else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                this.files.push(Utils.processFileModel(data.content[i].res));
               }
             }
-            else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
-              this.files.push(data.content[i].res);
-            }
-          }
-      }
-      this.cdRef.detectChanges();
+            this.cdRef.detectChanges();
+        }
+      });
     }
   }
 
@@ -207,26 +218,22 @@ export class ViewerComponent implements OnInit, OnDestroy{
     const appUrl = this.appUrl;
     this.crumbs = Utils.obtainBreadCrumbs(appUrl);
     this.breadcrumbService.setBreadcrumbs(this.crumbs);
+    this.loaderService.loadingStart();
     switch(appUrl[0]){
       case "filter":
         if (appUrl[1]){
           switch (appUrl[1]){
             case "home":
-              // TODO
-              this.loaderService.loadingStart();
               this.loadHomeFolder();
               break;
             case "recents":
               this.crumbs = ["Recents"];
               break;
             case "favorites":
-              this.loaderService.loadingStart();
               this.loadFavoriteFolders();
               this.crumbs = ["Favorites"];
-              // TODO For files
               break;
             case "trash":
-              this.loaderService.loadingStart();
               this.loadTrashFolders();
               this.crumbs = ["Trash"];
               break;
@@ -240,13 +247,16 @@ export class ViewerComponent implements OnInit, OnDestroy{
           this.foldersService.getAllFilesAndSubFoldersByParentFolderPath(this.filesState.getItemsBeingMoved().length==0, constructedPathForApi).subscribe({
             next: response => {
               this.files = response;
+              this.cdRef.detectChanges();
               this.filterOutFoldersBeingMoved();
               if (appUrl[appUrl.length-1]=='home'){
                 this.eventService.emit("home folder set active");
               }
             },
             error: err => {}, //TODO
-            complete: () => {} //TODO
+            complete: () => {
+              this.loaderService.loadingEnd();
+            } //TODO
           });
         }
         break;
