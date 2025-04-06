@@ -76,9 +76,9 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllInHome")]
-        public async Task<ActionResult<BulkResponse>> GetAllFoldersInHomeFolder(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
-            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllInHome(sortOrder, fetchFiles);
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllInHome(sortOrder, true);
             if (res.folders.Count == 0 && res.files.Count == 0)
             {
                 return NotFound();
@@ -88,47 +88,47 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("getAllChildrenById")]
-        public async Task<ActionResult<BulkResponse>> GetAllSubFolders(bool fetchFiles, Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllSubFolders(Guid parentFolderId, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
-            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parentFolderId, sortOrder, fetchFiles);
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parentFolderId, sortOrder, true);
             return new BulkResponse { folders = res.folders, files = res.files };
         }
 
         [HttpGet]
         [Route("getAllChildrenByPath")]
-        public async Task<ActionResult<BulkResponse>> GetAllSubFolders(bool fetchFiles, [ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllSubFolders([ModelBinder(typeof(AppendToPath))] string path, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             FolderResponse? parent = await _foldersRetrievalService.GetFolderByFolderPath(path);
             if (parent == null)
             {
                 return NotFound();
             }
-            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parent.FolderId, sortOrder, fetchFiles);
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllChildren(parent.FolderId, sortOrder, true);
             return new BulkResponse { folders = res.folders, files = res.files };
         }
 
         [HttpGet]
         [Route("getAllFiltered")]
-        public async Task<ActionResult<BulkResponse>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetFilteredFolders([ModelBinder(BinderType = typeof(RemoveInvalidFileFolderNameCharactersBinder))] string searchString, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             string searchStringTrimmed = searchString.Trim();
-            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFilteredChildren(searchStringTrimmed, sortOrder, fetchFiles);
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFilteredChildren(searchStringTrimmed, sortOrder, true);
             return new BulkResponse { folders = res.folders, files = res.files };
         }
 
         [HttpGet]
         [Route("getAllFavorites")]
-        public async Task<ActionResult<BulkResponse>> GetAllFavoriteFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllFavoriteFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
-            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFavorites(sortOrder, fetchFiles);
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllFavorites(sortOrder, true);
             return new BulkResponse { folders = res.folders, files = res.files };
         }
 
         [HttpGet]
         [Route("getAllTrashes")]
-        public async Task<ActionResult<BulkResponse>> GetAllTrashFolders(bool fetchFiles, SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        public async Task<ActionResult<BulkResponse>> GetAllTrashFolders(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
-            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllTrashes(sortOrder, fetchFiles);
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllTrashes(sortOrder, true);
             return new BulkResponse { folders = res.folders, files = res.files };
         }
     }

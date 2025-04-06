@@ -102,7 +102,7 @@ namespace CloudStoragePlatform.Core.Services
 
             if (retrieveFiles)
             {
-                List<File> files = await _filesRepository.GetFilteredFiles(f => f.IsFavorite);
+                List<File> files = await _filesRepository.GetFilteredFiles(f => f.IsTrash);
                 return GetResponse(folders, files, sortOptions);
             }
             else

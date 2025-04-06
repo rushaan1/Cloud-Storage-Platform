@@ -34,7 +34,7 @@
       <div ngClass="{{FileType[type]}}" class="file-item-icon-move-state"></div>
       <div *ngIf="!this.renaming" class="file-name-text-div file-name-text-div-move-state">{{this.name}}</div>
     </div>
-    <div class="btn-container">
+    <div *ngIf="type==FileType.Folder" class="btn-container">
       <button (click)="move();" class="move-options">Move inside this folder</button>
       <button (click)="fetchSubFoldersRedirect();" class="move-options">Open Folder</button>
     </div>

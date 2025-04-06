@@ -10,11 +10,12 @@ import {
 import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
 import { EventService } from '../../services/event-service.service';
 import {File} from "../../models/File";
-import {timestamp} from "rxjs";
+import {forkJoin, timestamp} from "rxjs";
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {Utils} from "../../Utils";
 import {Router} from "@angular/router";
+import {FileType} from "../../models/FileType";
 
 @Component({
   selector: 'notification-center',
@@ -236,32 +237,46 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   moveToTrash(){
-    this.foldersService.batchAddOrRemoveFoldersFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
-      next:()=>{
-        this.eventService.emit("addNotif", ["Moved to trash "+this.itemsSelected+" items.", 12000]);
+    const filesBeingMoved = this.selectedItems.filter(f=>{return f.fileType!=FileType.Folder});
+    const foldersBeingMoved = this.selectedItems.filter(f=>{return f.fileType==FileType.Folder});
+    forkJoin({
+      files: this.foldersService.batchAddOrRemoveFilesFromTrash(filesBeingMoved.map((f)=>f.fileId)),
+      folders: this.foldersService.batchAddOrRemoveFoldersFromTrash(foldersBeingMoved.map((f)=>f.fileId))
+    }).subscribe({
+      next: ()=>{
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to trash.", 12000]);},800);
         this.filesState.deSelectAll();
-        this.eventService.emit("reload viewer list");
       }
     });
   }
 
   restore(){
-    this.foldersService.batchAddOrRemoveFoldersFromTrash(this.selectedItems.map((f)=>f.fileId)).subscribe({
-      next:()=>{
-        this.eventService.emit("addNotif", ["Restored "+this.itemsSelected+" items.", 12000]);
+    const filesBeingMoved = this.selectedItems.filter(f=>{return f.fileType!=FileType.Folder});
+    const foldersBeingMoved = this.selectedItems.filter(f=>{return f.fileType==FileType.Folder});
+    forkJoin({
+      files: this.foldersService.batchAddOrRemoveFilesFromTrash(filesBeingMoved.map((f)=>f.fileId)),
+      folders: this.foldersService.batchAddOrRemoveFoldersFromTrash(foldersBeingMoved.map((f)=>f.fileId))
+    }).subscribe({
+      next: ()=>{
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Restored "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s).", 12000]);},800);
         this.filesState.deSelectAll();
-        this.eventService.emit("reload viewer list");
       }
     });
   }
 
   delete(){
-    this.foldersService.batchDeleteFolders(this.selectedItems.map((f)=>f.fileId)).subscribe({
-      next:()=>{
-        this.eventService.emit("addNotif", ["Deleted permanently "+this.itemsSelected+" items.", 12000]);
-        this.filesState.deSelectAll();
-        this.eventService.emit("reload viewer list");
-      }
+    this.eventService.emit("deleteConfirmNotif", "Are you sure you want to permanently delete all selected items?", ()=>{
+      const filesBeingDeleted = this.selectedItems.filter(f=>{return f.fileType!=FileType.Folder});
+      const foldersBeingDeleted = this.selectedItems.filter(f=>{return f.fileType==FileType.Folder});
+      forkJoin({
+        files: this.foldersService.batchDeleteFiles(filesBeingDeleted.map((f)=>f.fileId)),
+        folders: this.foldersService.batchDeleteFolders(foldersBeingDeleted.map((f)=>f.fileId))
+      }).subscribe({
+        next: ()=>{
+          setTimeout(()=>{this.eventService.emit("addNotif", ["Deleted "+(foldersBeingDeleted.length+filesBeingDeleted.length)+" item(s).", 12000]);},800);
+          this.filesState.deSelectAll();
+        }
+      });
     });
   }
 
@@ -287,19 +302,21 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       }
     }
 
-    this.foldersService.batchMoveFolders(this.itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)).subscribe({
-      next:()=>{
-        this.eventService.emit("addNotif", ["Moved "+this.itemsBeingMoved.length+" item(s) to "+this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]+".", 12000]);
+    const filesBeingMoved = this.filesState.getItemsBeingMoved().filter(f=>{return f.fileType!=FileType.Folder});
+    const foldersBeingMoved = this.filesState.getItemsBeingMoved().filter(f=>{return f.fileType==FileType.Folder});
+    forkJoin({
+      files: this.foldersService.batchMoveFiles(filesBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)),
+      folders: this.foldersService.batchMoveFolders(foldersBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs))
+    }).subscribe({
+      next: ()=>{
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]+".", 12000]);},800);
         this.filesState.setItemsBeingMoved([]);
-        this.eventService.emit("reload viewer list");
       }
     });
-    this.eventService.emit("reload viewer list");
   }
 
   moveAbort(){
     this.filesState.setItemsBeingMoved([]);
-    this.eventService.emit("reload viewer list");
   }
 
   getConcatenatedMovingItemsNames(){

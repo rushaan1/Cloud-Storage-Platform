@@ -21,6 +21,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Utils} from "../../Utils";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {FileType} from "../../models/FileType";
+import {forkJoin} from "rxjs";
 
 @Component({
   selector: 'file-large-item',
@@ -364,10 +365,14 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   }
 
   move(){
-    const itemsBeingMoved = this.filesState.getItemsBeingMoved();
-    this.foldersService.batchMoveFolders(itemsBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath))).subscribe({
-      next:()=>{
-        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+itemsBeingMoved.length+" item(s) to "+this.name+".", 12000]);},800);
+    const filesBeingMoved = this.filesState.getItemsBeingMoved().filter(f=>{return f.fileType!=FileType.Folder});
+    const foldersBeingMoved = this.filesState.getItemsBeingMoved().filter(f=>{return f.fileType==FileType.Folder});
+    forkJoin({
+      files: this.foldersService.batchMoveFiles(filesBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath))),
+      folders: this.foldersService.batchMoveFolders(foldersBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath)))
+    }).subscribe({
+      next: ()=>{
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+this.name+".", 12000]);},800);
         this.filesState.setItemsBeingMoved([]);
         this.fetchSubFoldersRedirect();
       }

@@ -244,7 +244,6 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         break;
       case HttpEventType.Response:
         console.log('Upload complete!', event.body);
-        this.eventService.emit("reload viewer list");
         this.uploadProgress = -1;
         // this.uploadInputHidden.nativeElement.value = '';
         break;

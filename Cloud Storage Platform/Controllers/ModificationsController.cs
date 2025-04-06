@@ -145,6 +145,14 @@ namespace Cloud_Storage_Platform.Controllers
         {
             List<FolderResponse> updatedFolders = new();
             List<FileResponse> updatedFiles = new();
+            if (isFolder)
+            {
+                updatedFolders.Capacity = ids.Count;
+            }
+            else 
+            {
+                updatedFiles.Capacity = ids.Count;
+            }
             foreach (Guid id in ids)
             {
                 if (isFolder)
@@ -166,18 +174,18 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("batchFoldersAdd")]
         public async Task<ActionResult> BatchAddFolders(List<string> paths)
         {
-            List<FolderResponse> responses = new();
+            List<FolderResponse> res = new();
             foreach (string path in paths)
             {
                 string fullpath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(path);
                 string[] splittedPath = fullpath.Split("\\");
-                responses.Add(await _foldersModificationService.AddFolder(new FolderAddRequest()
+                res.Add(await _foldersModificationService.AddFolder(new FolderAddRequest()
                 {
                     FolderName = splittedPath[splittedPath.Length - 1],
                     FolderPath = fullpath
                 }, true));
             }
-            await _sse.SendEventAsync("added", new { responses });
+            await _sse.SendEventAsync("added", new { res });
             return NoContent();
         }
 
@@ -211,6 +219,10 @@ namespace Cloud_Storage_Platform.Controllers
         [Route("batchMove")]
         public async Task<ActionResult> BatchMove(List<Guid> ids, [ModelBinder(typeof(AppendToPath))] string newFolderPath, bool isFolder)
         {
+            if (ids.Count == 0) 
+            {
+                return NoContent();
+            }
             var movedList = new List<object>();
             foreach (Guid id in ids)
             {

@@ -188,8 +188,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 this.files.push(Utils.processFileModel(data.content[i].res));
               }
             }
-            this.cdRef.detectChanges();
         }
+        this.cdRef.detectChanges();
+        this.handleEmptyTxt();
       });
     }
   }
@@ -244,7 +245,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
         const constructedPathForApi = Utils.constructFilePathForApi(appUrl);
 
         if (Utils.validString(constructedPathForApi)){
-          this.foldersService.getAllFilesAndSubFoldersByParentFolderPath(this.filesState.getItemsBeingMoved().length==0, constructedPathForApi).subscribe({
+          this.foldersService.getAllFilesAndSubFoldersByParentFolderPath( constructedPathForApi).subscribe({
             next: response => {
               this.files = response;
               this.cdRef.detectChanges();
@@ -253,7 +254,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 this.eventService.emit("home folder set active");
               }
             },
-            error: err => {}, //TODO
+            error: err => {
+              this.loaderService.loadingEnd();
+            }, //TODO
             complete: () => {
               this.loaderService.loadingEnd();
             } //TODO
@@ -273,13 +276,13 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadHomeFolder() {
     // API
-    this.foldersService.getAllInHome(this.filesState.getItemsBeingMoved().length==0).subscribe({
+    this.foldersService.getAllInHome().subscribe({
       next: (response) => {
         this.files = response;
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
-        // TODO
+        this.loaderService.loadingEnd();
       },
       complete: () => {
         this.loaderService.loadingEnd();
@@ -289,13 +292,13 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadFavoriteFolders() {
     // API
-    this.foldersService.getAllFavoriteFolders(this.filesState.getItemsBeingMoved().length==0).subscribe({
+    this.foldersService.getAllFavoriteFolders().subscribe({
       next: (response) => {
         this.files = response;
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
-        // TODO
+        this.loaderService.loadingEnd();
       },
       complete: () => {
         this.loaderService.loadingEnd();
@@ -306,13 +309,13 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   loadTrashFolders() {
     // API
-    this.foldersService.getAllTrashFolders(this.filesState.getItemsBeingMoved().length==0).subscribe({
+    this.foldersService.getAllTrashFolders().subscribe({
       next: (response) => {
         this.files = response;
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
-        // TODO
+        this.loaderService.loadingEnd();
       },
       complete: () => {
         this.loaderService.loadingEnd();
@@ -360,12 +363,14 @@ export class ViewerComponent implements OnInit, OnDestroy{
   handleSearchOperation(){
     if (Utils.validString(this.searchQuery)){
       this.loaderService.loadingStart();
-      this.foldersService.getFilteredFolders(this.filesState.getItemsBeingMoved().length==0,this.searchQuery!).subscribe({
+      this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
         next: res => {
           this.files = res;
           this.filterOutFoldersBeingMoved();
         },
-        error: err => {},
+        error: err => {
+          this.loaderService.loadingEnd();
+        },
         complete: () => {
           this.loaderService.loadingEnd();
           this.handleEmptyTxt("No search results match "+this.searchQuery);
