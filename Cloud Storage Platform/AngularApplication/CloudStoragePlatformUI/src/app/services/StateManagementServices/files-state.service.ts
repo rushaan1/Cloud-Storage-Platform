@@ -21,6 +21,9 @@ export class FilesStateService {
   private uncreatedFolderExists = new BehaviorSubject<boolean>(false);
   uncreatedFolderExists$ = this.uncreatedFolderExists.asObservable();
 
+  private filesInViewer = new BehaviorSubject<File[]>([]);
+  filesInViewer$ = this.filesInViewer.asObservable();
+
   addSelectedItem(item: File){
     this.selectedItems.next([...this.selectedItems.value, item]);
   }
@@ -51,5 +54,13 @@ export class FilesStateService {
 
   getItemsBeingMoved():File[]{
     return this.itemsBeingMoved.value;
+  }
+
+  setFilesInViewer(files:File[]){
+    this.filesInViewer.next(files);
+  }
+
+  getFilesInViewer():File[]{
+    return this.filesInViewer.value;
   }
 }

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {File} from "../../models/File";
 import {Metadata} from "../../models/Metadata";
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
@@ -8,13 +8,14 @@ import {forkJoin} from "rxjs";
 import {FilesStateService} from "../../services/StateManagementServices/files-state.service";
 import {FileType} from "../../models/FileType";
 import {EventService} from "../../services/event-service.service";
+import {NetworkStatusService} from "../../services/network-status-service.service";
 
 @Component({
   selector: 'info',
   templateUrl: './info.component.html',
   styleUrl: './info.component.css'
 })
-export class InfoComponent implements OnInit, AfterViewInit{
+export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
   @ViewChild("infoContent") infoContent!: ElementRef<HTMLDivElement>;
   @ViewChild("fav") favBtn!: ElementRef<HTMLButtonElement>;
   @ViewChild("trash") trashBtn!: ElementRef<HTMLButtonElement>;
@@ -27,17 +28,20 @@ export class InfoComponent implements OnInit, AfterViewInit{
   activeTab:number = 0;
   isDeleting = false;
   isFolder = false;
+  folderOrFileTxt = "";
+  eventSource!:EventSource;
 
-  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService, protected  eventService:EventService) {}
+  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService, protected  eventService:EventService, private ngZone:NgZone, private networkStatus:NetworkStatusService) {}
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id");
       if (!id) {
-        console.error("Error: Folder ID is missing.");
+        console.error("Error: ID is missing.");
         return;
       }
       const appUrl = this.router.url.split("?")[0].split("/");
       this.isFolder = appUrl[appUrl.length-2]=="foldermetadata";
+      this.folderOrFileTxt = this.isFolder ? "Folder" : "File";
 
       forkJoin({
         folder: this.foldersService.getFileOrFolderById(id, this.isFolder),
@@ -52,6 +56,36 @@ export class InfoComponent implements OnInit, AfterViewInit{
         error: (err) => console.error("Error fetching data", err),
       });
     });
+
+    this.eventSource = new EventSource("https://localhost:7219/api/Modifications/sse");
+    this.eventSource.onmessage = (event) => {
+      this.ngZone.run(()=>{
+        const data = JSON.parse(event.data);
+        console.log(data);
+        switch (data.eventType) {
+          case "favorite_updated" :
+            if (this.f.fileId==data.content.id as string){
+              this.f.isFavorite = data.content.res.isFavorite as boolean;
+              this.updateFavAndTrashTxts();
+            }
+            break;
+          case "trash_updated":
+            for (let i = 0; i<data.content.updatedFolders.length; i++){
+              if (this.f.fileId==data.content.updatedFolders[i].folderId as string){
+                this.f.isTrash = data.content.updatedFolders[i].isTrash as boolean;
+                this.updateFavAndTrashTxts();
+              }
+            }
+            for (let i = 0; i<data.content.updatedFiles.length; i++){
+              if (this.f.fileId==data.content.updatedFiles[i].fileId as string){
+                this.f.isTrash = data.content.updatedFiles[i].isTrash as boolean;
+                this.updateFavAndTrashTxts();
+              }
+            }
+            break;
+        }
+      });
+    };
   }
 
   ngAfterViewInit() {
@@ -64,8 +98,8 @@ export class InfoComponent implements OnInit, AfterViewInit{
   }
 
   updateFavAndTrashTxts(){
-    this.trashTxt = this.f.isTrash ? "Is this folder in trash?: Yes" : "Is this folder in trash?: No";
-    this.favTxt = this.f.isFavorite ? "Favorite Folder: Yes" : "Favorite Folder: No";
+    this.trashTxt = this.f.isTrash ? "Is this "+this.folderOrFileTxt+" in trash?: Yes" : "Is this "+this.folderOrFileTxt+" in trash?: No";
+    this.favTxt = this.f.isFavorite ? "Favorite "+this.folderOrFileTxt+": Yes" : "Favorite "+this.folderOrFileTxt+": No";
 
     this.trashBtnTxt = this.f.isTrash ? "Remove from Trash" : "Add to Trash";
     this.favBtnTxt = this.f.isFavorite ? "UnFavorite" : "Favorite";
@@ -78,6 +112,10 @@ export class InfoComponent implements OnInit, AfterViewInit{
   }
 
   delete(){
+    if (!this.networkStatus.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      return;
+    }
     this.isDeleting = true;
   }
   cancelDelete(){
@@ -89,7 +127,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
       next: () => {
         this.router.navigate(["/"]);
       },
-      error: (err) => console.error("Error deleting folder", err),
+      error: (err) => console.error("Error deleting "+this.folderOrFileTxt, err),
     });
   }
 
@@ -111,9 +149,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
     this.favBtn.nativeElement.disabled = true;
     this.favBtn.nativeElement.classList.add("disabled");
     this.foldersService.addOrRemoveFromFavorite(this.f.fileId, this.isFolder).subscribe({
-      next: (response:File) => {
-        this.f.isFavorite = response.isFavorite;
-        this.updateFavAndTrashTxts();
+      next: () => {
         setTimeout(()=>{
           this.favBtn.nativeElement.disabled = false;
           this.favBtn.nativeElement.classList.remove("disabled");
@@ -130,9 +166,7 @@ export class InfoComponent implements OnInit, AfterViewInit{
     this.trashBtn.nativeElement.disabled = true;
     this.trashBtn.nativeElement.classList.add("disabled");
     this.foldersService.addOrRemoveFromTrash(this.f.fileId, this.isFolder).subscribe({
-      next: (response:File) => {
-        this.f.isTrash = response.isTrash;
-        this.updateFavAndTrashTxts();
+      next: () => {
         setTimeout(()=>{
           this.trashBtn.nativeElement.disabled = false;
           this.trashBtn.nativeElement.classList.remove("disabled");
@@ -142,6 +176,10 @@ export class InfoComponent implements OnInit, AfterViewInit{
   }
 
   renameRedirect(){
+    if (!this.networkStatus.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      return;
+    }
     let path = Utils.cleanPath(this.f.filePath);
     path.pop();
     this.router.navigate(["folder",...path], {queryParams:{'renameFocus':this.f.fileId}});
@@ -149,4 +187,8 @@ export class InfoComponent implements OnInit, AfterViewInit{
 
   protected readonly Utils = Utils;
   protected readonly FileType = FileType;
+
+  ngOnDestroy(): void {
+    this.eventSource.close();
+  }
 }

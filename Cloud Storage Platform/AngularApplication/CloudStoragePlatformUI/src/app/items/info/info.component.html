@@ -7,7 +7,7 @@
 <div class="parent">
   <div class="top-view">
     <div class="icon-container">
-      <div ngClass="{{FileType[f.fileType]}}" class="file-item-icon"></div>
+      <div ngClass="{{FileType[f.fileType]}}" class="icon"></div>
     </div>
     <div class="nameTxtDiv">
       <span>Full Name:</span>
@@ -22,8 +22,8 @@
       <div class="metadata-div">Creation Date: {{metadata.creationDate | date:'dd/MM/yyyy hh:mm a'}}</div>
       <div class="metadata-div">{{favTxt}}</div>
       <div class="metadata-div"> {{trashTxt}}</div>
-      <div class="metadata-div">Subfolders count: {{metadata.subFoldersCount}}</div>
-      <div class="metadata-div">Subfiles count: {{metadata.subFilesCount}}</div>
+      <div *ngIf="isFolder" class="metadata-div">Subfolders count: {{metadata.subFoldersCount}}</div>
+      <div *ngIf="isFolder" class="metadata-div">Subfiles count: {{metadata.subFilesCount}}</div>
       <div class="metadata-div">Size: {{metadata.size}}</div>
       <div class="metadata-div options-txt">Options:</div>
       <div class="btn-options" *ngIf="!isDeleting">
@@ -34,13 +34,13 @@
         <button (click)="toggleTrash($event);" #trash class="btn">{{trashBtnTxt}}</button>
       </div>
       <div *ngIf="isDeleting" class="metadata-div">
-        <div>Are you sure you want to delete this?</div>
+        <div>Are you sure you want to delete this {{folderOrFileTxt}}?</div>
         <button (click)="confirmDelete();" class="btn yes-btn">Yes</button>
         <button (click)="cancelDelete();" class="btn">No</button>
       </div>
     </div>
     <div class="sharing-info-content info-container">
-      <div class="share-txt share-tab-margin">This folder is not currently being shared.</div>
+      <div class="share-txt share-tab-margin">This {{folderOrFileTxt}} is not currently being shared.</div>
       <button class="share-tab-margin btn share-btn">Create a shareable URL</button>
     </div>
     <div class="full-metadata-content info-container">
@@ -49,8 +49,8 @@
       <div class="metadata-div">Creation Date: {{metadata.creationDate | date:'dd/MM/yyyy hh:mm a'}}</div>
       <div class="metadata-div">{{favTxt}}</div>
       <div class="metadata-div"> {{trashTxt}}</div>
-      <div class="metadata-div">Subfolders count: {{metadata.subFoldersCount}}</div>
-      <div class="metadata-div">Subfiles count: {{metadata.subFilesCount}}</div>
+      <div *ngIf="isFolder" class="metadata-div">Subfolders count: {{metadata.subFoldersCount}}</div>
+      <div *ngIf="isFolder" class="metadata-div">Subfiles count: {{metadata.subFilesCount}}</div>
       <div class="metadata-div">Last renamed on: {{metadata.previousRenameDate}}</div>
       <div class="metadata-div">Number of times renamed: {{metadata.renameCount}}</div>
       <div class="metadata-div">Last opened on: {{metadata.lastOpened}}</div>
@@ -58,8 +58,6 @@
       <div class="metadata-div">Last moved on: {{metadata.previousMoveDate}}</div>
       <div class="metadata-div">Previous path: {{metadata.previousPath}}</div>
       <div class="metadata-div">Number of times moved: {{metadata.moveCount}}</div>
-      <div class="metadata-div">Last Replaced on: {{metadata.previousReplacementDate}}</div>
-      <div class="metadata-div">Number of times replaced: {{metadata.replaceCount}}</div>
     </div>
   </div>
 </div>

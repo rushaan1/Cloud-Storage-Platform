@@ -7,6 +7,7 @@ import {BreadcrumbService} from "../../services/StateManagementServices/breadcru
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
 import {Utils} from "../../Utils";
 import {HttpEvent, HttpEventType} from "@angular/common/http";
+import {NetworkStatusService} from "../../services/network-status-service.service";
 
 @Component({
   selector: 'panel',
@@ -34,7 +35,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
   crumbs:string[] = [];
-  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService){}
+  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
@@ -145,11 +146,19 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   }
 
   uploadFolder(){
+    if (!this.networkStatus.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      return;
+    }
     this.uploadInputHidden.nativeElement.webkitdirectory = true;
     this.uploadInputHidden.nativeElement.click();
   }
 
   uploadFile(){
+    if (!this.networkStatus.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      return;
+    }
     this.uploadInputHidden.nativeElement.webkitdirectory = false;
     this.uploadInputHidden.nativeElement.click();
   }
@@ -165,8 +174,17 @@ export class PanelComponent implements OnInit, AfterViewChecked {
 
 
   onFileSelected(event: Event) {
+    if (!this.networkStatus.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      this.uploadInputHidden.nativeElement.value = '';
+      return;
+    }
     const input = event.target as HTMLInputElement;
     const files = input.files;
+    let uploadPath = this.crumbs;
+    if (uploadPath[0] != "home"){
+      uploadPath = ["home"];
+    }
     if (this.uploadInputHidden.nativeElement.webkitdirectory){
       let pathOfFoldersToBeCreated:string[] = [];
       let pathOfTraversedFiles:string[] = [];
@@ -185,7 +203,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
           let separated = pathOfFoldersToBeCreated[i].split('/');
           separated.pop();
           for (let j = 0; j<separated.length; j++) {
-            const creationPath = Utils.constructFilePathForApi([...this.crumbs, ...separated.slice(0,j+1)]);
+            const creationPath = Utils.constructFilePathForApi([...uploadPath, ...separated.slice(0,j+1)]);
             if (!folderCreationPathsForApiCalls.includes(creationPath)){
               folderCreationPathsForApiCalls.push(creationPath);
             }
@@ -197,7 +215,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
             const formData = new FormData();
             Array.from(files).forEach(file => {
               formData.append("fileName", file.name);
-              formData.append("filePath", Utils.constructFilePathForApi([...this.crumbs, file.webkitRelativePath.replaceAll("/","\\")]));
+              formData.append("filePath", Utils.constructFilePathForApi([...uploadPath, file.webkitRelativePath.replaceAll("/","\\")]));
             });
             Array.from(files).forEach(file => {
               formData.append("file",file);
@@ -206,6 +224,13 @@ export class PanelComponent implements OnInit, AfterViewChecked {
             this.filesService.uploadFile(formData).subscribe({
               next: (event) => {
                 this.handleProgress(event);
+                this.uploadInputHidden.nativeElement.value = "";
+              },
+              error: (event) => {
+                this.uploadInputHidden.nativeElement.value = "";
+              },
+              complete: () => {
+                this.uploadInputHidden.nativeElement.value = "";
               }
             });
           }
@@ -219,7 +244,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         const formData = new FormData();
         Array.from(files).forEach(file => {
           formData.append("fileName", file.name);
-          formData.append("filePath", Utils.constructFilePathForApi([...this.crumbs, file.name]));
+          formData.append("filePath", Utils.constructFilePathForApi([...uploadPath, file.name]));
         });
 
         Array.from(files).forEach(file => {
@@ -229,6 +254,13 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         this.filesService.uploadFile(formData).subscribe({
           next: (event) => {
             this.handleProgress(event);
+            this.uploadInputHidden.nativeElement.value = "";
+          },
+          error: (event) => {
+            this.uploadInputHidden.nativeElement.value = "";
+          },
+          complete: () => {
+            this.uploadInputHidden.nativeElement.value = "";
           }
         });
       }

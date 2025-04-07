@@ -123,7 +123,7 @@ namespace ServiceTests
         [Fact]
         public async Task RenameFile_FileDoesNotExists()
         {
-            FileRenameRequest renameRequest = _fixture.Create<FileRenameRequest>();
+            RenameRequest renameRequest = _fixture.Create<RenameRequest>();
 
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync((File)null!);
@@ -147,9 +147,9 @@ namespace ServiceTests
             string fileToBeRenamedsName = _fixture.Create<string>();
             string fileToBeRenamedsPath = Path.Combine(initialPath, fileToBeRenamedsName);
 
-            FileRenameRequest renameRequest = _fixture.Build<FileRenameRequest>().With(frr => frr.FileNewName, newFileName).Create();
+            RenameRequest renameRequest = _fixture.Build<RenameRequest>().With(frr => frr.newName, newFileName).Create();
 
-            File fileToBeRenamed = new File() { FileId = renameRequest.FileId, FileName = fileToBeRenamedsName, FilePath = fileToBeRenamedsPath };
+            File fileToBeRenamed = new File() { FileId = renameRequest.id, FileName = fileToBeRenamedsName, FilePath = fileToBeRenamedsPath };
 
             CreateNewTestFile(pathOfExistingFileWithNewFileName);
 
@@ -177,13 +177,13 @@ namespace ServiceTests
             string fileName = _fixture.Create<string>();
             string filePath = Path.Combine(initialPath, fileName);
 
-            FileRenameRequest renameRequest = _fixture.Create<FileRenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
+            RenameRequest renameRequest = _fixture.Create<RenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
 
-            File file = new File() { FileId = renameRequest.FileId, FileName = fileName, FilePath = filePath };
+            File file = new File() { FileId = renameRequest.id, FileName = fileName, FilePath = filePath };
             Utilities.AttachMetadataForTesting(_fixture, null, file);
-            File updated = new File() { FileId = renameRequest.FileId, FileName = fileName, FilePath = filePath };
-            updated.FileName = renameRequest.FileNewName;
-            updated.FilePath = file.FilePath.Replace(file.FileName, renameRequest.FileNewName);
+            File updated = new File() { FileId = renameRequest.id, FileName = fileName, FilePath = filePath };
+            updated.FileName = renameRequest.newName;
+            updated.FilePath = file.FilePath.Replace(file.FileName, renameRequest.newName);
             CreateNewTestFile(filePath);
 
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
@@ -195,9 +195,9 @@ namespace ServiceTests
             FileResponse response = await _filesModificationService.RenameFile(renameRequest);
 
             //Assert
-            bool folderExists = System.IO.File.Exists(Path.Combine(initialPath, renameRequest.FileNewName));
-            response.FileId.Should().Be(renameRequest.FileId);
-            response.FileName.Should().Be(renameRequest.FileNewName);
+            bool folderExists = System.IO.File.Exists(Path.Combine(initialPath, renameRequest.newName));
+            response.FileId.Should().Be(renameRequest.id);
+            response.FileName.Should().Be(renameRequest.newName);
             response.FilePath.Should().Be(updated.FilePath);
             folderExists.Should().BeTrue();
             System.IO.File.Delete(response.FilePath!);

@@ -84,7 +84,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       const notificationQuantity = visibleInfoPanels.length;
 
       const alertTxt:HTMLElement|null = this.mostRecentNonStickyNotification.querySelector(".alertTxt");
-      if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>34){
+      if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>90){
         alertTxt!.style.display = "inline";
         alertTxt!.innerText = `+${notificationQuantity} notifications!`;
       }
@@ -196,7 +196,15 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     });
 
     this.eventService.listen("addNotif", (args:string|number[])=>{
-      const notification:HTMLElement = this.createNotificationDiv(args[0] as string);
+      const notifText:string = args[0] as string;
+      const duplicate = document.getElementsByClassName("divToDetectDuplicateText")[0]
+      if (duplicate){
+        const regex = /^(.*)\sat.*$/;
+        if (duplicate.textContent!.replace(regex,"$1") == notifText){
+          return;
+        }
+      }
+      const notification:HTMLElement = this.createNotificationDiv(notifText);
       this.setLatestAlertNotification(notification);
       setTimeout(()=>{
         this.dissmissTextNotif(notification);
@@ -219,6 +227,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     const textDiv = this.renderer.createElement('div');
     this.renderer.addClass(textDiv, 'margin-left');
     this.renderer.addClass(textDiv, 'infoText');
+    this.renderer.addClass(textDiv, 'divToDetectDuplicateText');
 
     const textNode = this.renderer.createText(notificationText + " ");
     this.renderer.appendChild(textDiv, textNode);

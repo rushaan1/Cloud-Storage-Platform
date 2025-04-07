@@ -4,8 +4,6 @@ export class Metadata {
   subFilesCount: number;
   creationDate: Date | null | string;
   metadataId: string;
-  previousReplacementDate: Date | null | string;
-  replaceCount: number;
   previousRenameDate: Date | null | string;
   renameCount: number;
   previousPath: string | null;
@@ -22,8 +20,6 @@ export class Metadata {
     this.subFilesCount = data.subFilesCount ?? 0;
     this.creationDate = data.creationDate ? new Date(data.creationDate) : null;
     this.metadataId = data.metadataId ?? "";
-    this.previousReplacementDate = data.previousReplacementDate ? new Date(data.previousReplacementDate) : null;
-    this.replaceCount = data.replaceCount ?? 0;
     this.previousRenameDate = data.previousRenameDate ? new Date(data.previousRenameDate) : null;
     this.renameCount = data.renameCount ?? 0;
     this.previousPath = data.previousPath ?? null;

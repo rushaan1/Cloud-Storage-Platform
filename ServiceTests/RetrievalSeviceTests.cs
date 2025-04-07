@@ -54,7 +54,7 @@ namespace ServiceTests
                 .ReturnsAsync(new Folder());
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -88,7 +88,7 @@ namespace ServiceTests
                 .ReturnsAsync(homeFolder);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -126,7 +126,7 @@ namespace ServiceTests
                 .ReturnsAsync(homeFolder);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -138,42 +138,6 @@ namespace ServiceTests
             fileResponses.Should().HaveCount(2);
             fileResponses[0].FileName.Should().Be("SmallFile.txt");
             fileResponses[1].FileName.Should().Be("BigFile.txt");
-        }
-
-        [Fact]
-        public async Task GetAllInHome_Success_WithoutFiles()
-        {
-            // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
-
-            var folders = new List<Folder>
-            {
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "A", FolderPath = Path.Combine(initialPath, "A") },
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "B", FolderPath = Path.Combine(initialPath, "B") }
-            };
-
-            var files = new List<File>
-            {
-                new File { FileId = _fixture.Create<Guid>(), FileName = "File1.txt", FilePath = Path.Combine(initialPath, "File1.txt") },
-                new File { FileId = _fixture.Create<Guid>(), FileName = "File2.txt", FilePath = Path.Combine(initialPath, "File2.txt") }
-            };
-
-            Folder homeFolder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders, Files = files };
-
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
-                .ReturnsAsync(homeFolder);
-
-            // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllInHome(sortOptions, false);
-
-            // Assert
-            folderResponses.Should().NotBeNull();
-            folderResponses.Should().HaveCount(2);
-            folderResponses[0].FolderName.Should().Be("A");
-            folderResponses[1].FolderName.Should().Be("B");
-
-            fileResponses.Should().NotBeNull();
-            fileResponses.Should().BeEmpty();
         }
 
         #endregion
@@ -190,7 +154,7 @@ namespace ServiceTests
             // Act
             Func<Task> action = async () =>
             {
-                (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(_fixture.Create<Guid>(), sortOptions, true);
+                (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(_fixture.Create<Guid>(), sortOptions);
             };
 
             // Assert
@@ -207,7 +171,7 @@ namespace ServiceTests
                 .ReturnsAsync(folder);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(folder.FolderId, sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(folder.FolderId, sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -241,7 +205,7 @@ namespace ServiceTests
                 .ReturnsAsync(folder);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(folder.FolderId, sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(folder.FolderId, sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -279,7 +243,7 @@ namespace ServiceTests
                 .ReturnsAsync(folder);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(folder.FolderId, sortOptions, false);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllChildren(folder.FolderId, sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -305,7 +269,7 @@ namespace ServiceTests
                 .ReturnsAsync(new List<File>());
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren(_fixture.Create<string>(), sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren(_fixture.Create<string>(), sortOptions);
 
             // Assert
             folderResponses.Should().BeEmpty();
@@ -338,7 +302,7 @@ namespace ServiceTests
 
             // Act
             //Should be case insensitive & search folder name
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren("ab", sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren("ab", sortOptions);
 
             // Assert
             folderResponses[0].FolderName.Should().Be(filteredFolders[1].FolderName);
@@ -376,7 +340,7 @@ namespace ServiceTests
 
             // Act
             //Should be case insensitive & search folder name
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren("ab", sortOptions, false);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren("ab", sortOptions);
 
             // Assert
             folderResponses[0].FolderName.Should().Be(filteredFolders[1].FolderName);
@@ -401,7 +365,7 @@ namespace ServiceTests
                 .ReturnsAsync(new List<File>());
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions);
 
             // Assert
             folderResponses.Should().BeEmpty();
@@ -433,7 +397,7 @@ namespace ServiceTests
                 .ReturnsAsync(favoriteFiles);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -463,7 +427,7 @@ namespace ServiceTests
                 .ReturnsAsync(favoriteFolders);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions, false);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -489,7 +453,7 @@ namespace ServiceTests
                 .ReturnsAsync(new List<File>());
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions);
 
             // Assert
             folderResponses.Should().BeEmpty();
@@ -521,7 +485,7 @@ namespace ServiceTests
                 .ReturnsAsync(trashFiles);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions, true);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();
@@ -551,7 +515,7 @@ namespace ServiceTests
                 .ReturnsAsync(trashFolders);
 
             // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions, false);
+            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions);
 
             // Assert
             folderResponses.Should().NotBeNull();

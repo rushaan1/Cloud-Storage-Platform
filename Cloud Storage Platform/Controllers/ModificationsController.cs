@@ -157,12 +157,12 @@ namespace Cloud_Storage_Platform.Controllers
             {
                 if (isFolder)
                 {
-                    var response = await _foldersModificationService.AddOrRemoveTrash(id, true);
+                    var response = await _foldersModificationService.AddOrRemoveTrash(id);
                     updatedFolders.Add(response);
                 }
                 else
                 {
-                    var response = await _filesModificationService.AddOrRemoveTrash(id, true);
+                    var response = await _filesModificationService.AddOrRemoveTrash(id);
                     updatedFiles.Add(response);
                 }
             }
@@ -183,7 +183,7 @@ namespace Cloud_Storage_Platform.Controllers
                 {
                     FolderName = splittedPath[splittedPath.Length - 1],
                     FolderPath = fullpath
-                }, true));
+                }));
             }
             await _sse.SendEventAsync("added", new { res });
             return NoContent();
@@ -198,14 +198,14 @@ namespace Cloud_Storage_Platform.Controllers
             {
                 if (isFolder)
                 {
-                    if (await _foldersModificationService.DeleteFolder(id, true))
+                    if (await _foldersModificationService.DeleteFolder(id))
                     {
                         deleted++;
                     }
                 }
                 else
                 {
-                    if (await _filesModificationService.DeleteFile(id, true))
+                    if (await _filesModificationService.DeleteFile(id))
                     {
                         deleted++;
                     }
@@ -228,7 +228,7 @@ namespace Cloud_Storage_Platform.Controllers
             {
                 if (isFolder)
                 {
-                    var response = await _foldersModificationService.MoveFolder(id, newFolderPath, true);
+                    var response = await _foldersModificationService.MoveFolder(id, newFolderPath);
                     movedList.Add(new
                     {
                         movedTo = Utilities.ReplaceLastOccurance(response.FolderPath!, "\\"+response.FolderName, ""),
@@ -238,7 +238,7 @@ namespace Cloud_Storage_Platform.Controllers
                 }
                 else
                 {
-                    var response = await _filesModificationService.MoveFile(id, newFolderPath, true);
+                    var response = await _filesModificationService.MoveFile(id, newFolderPath);
                     movedList.Add(new
                     {
                         movedTo = Utilities.ReplaceLastOccurance(response.FilePath!, "\\" + response.FileName, ""),

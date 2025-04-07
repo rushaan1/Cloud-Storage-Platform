@@ -8,8 +8,10 @@ import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../../items/breadcrumbs/breadcrumbs.component";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
-import {Subscription} from "rxjs";
+import {BehaviorSubject, fromEvent, mapTo, skip, Subscription} from "rxjs";
 import {FileType} from "../../models/FileType";
+import {map} from "rxjs/operators";
+import {NetworkStatusService} from "../../services/network-status-service.service";
 
 @Component({
   selector: 'viewer',
@@ -19,7 +21,7 @@ import {FileType} from "../../models/FileType";
 export class ViewerComponent implements OnInit, OnDestroy{
   @ViewChild(BreadcrumbsComponent) breadcrumbsComponent!: BreadcrumbsComponent;
   appUrl: string[] = [];
-  files: File[] = [];
+  visibleFiles: File[] = [];
   subscriptions: Subscription[] = [];
   emptyFolderTxtActive = false;
 
@@ -29,6 +31,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   anyFolderUncreated = false;
   crumbs : string[] = [];
   emptyTxt = "No folders to show";
+  renameFocus = false;
   private sse!:EventSource;
 
   constructor(
@@ -40,13 +43,31 @@ export class ViewerComponent implements OnInit, OnDestroy{
     private loaderService:LoadingService,
     private breadcrumbService:BreadcrumbService,
     protected filesState:FilesStateService,
-    private ngZone: NgZone) {}
+    private ngZone: NgZone,
+    private networkStatusService:NetworkStatusService) {}
 
   ngOnInit(): void {
-    this.filesState.setUncreatedFolderExists(false);
+    this.filesState.setUncreatedFolderExists(false)
+    this.subscriptions.push(this.networkStatusService.getStatus().pipe(skip(1)).subscribe(status => {
+      if (status) {
+        this.eventService.emit("reload viewer list");
+        console.log("Should reload");
+      }
+    }));
+    this.subscriptions.push(this.filesState.filesInViewer$.subscribe(files => {
+      this.visibleFiles = files;
+      this.filterOutFoldersBeingMoved();
+      if (this.crumbs[0]!="Trash"){
+        this.visibleFiles = this.visibleFiles.filter((f)=>{return !f.isTrash});
+      }
+    }));
     this.subscriptions.push(this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];
       const sort = params["sort"];
+      const renameFocus = params["renameFocus"];
+      if (renameFocus) {
+        this.renameFocus = true;
+      }
 
       this.searchQuery = searchQuery;
       this.sort = sort;
@@ -88,6 +109,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     }));
 
     this.subscriptions.push(this.eventService.listen("reload viewer list", () => {
+      this.loaderService.loadingStart();
       this.handleFolderLoaders();
     }));
 
@@ -113,67 +135,94 @@ export class ViewerComponent implements OnInit, OnDestroy{
             for (let i = 0; i<data.content.res.length; i++){
               const processedFile = Utils.processFileModel(data.content.res[i]);
               if (this.extractCleanParentPath(processedFile.filePath)==path){
-                this.files.push(processedFile);
+                this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(), processedFile]);
               }
             }
             break;
           case "favorite_updated" :
             let updated = false;
-            this.files.forEach((f,i)=>{
+            let allFiles = this.filesState.getFilesInViewer();
+            allFiles.forEach((f,i)=>{
               if (f.fileId==data.content.id as string){
-                this.files[i].isFavorite = data.content.res.isFavorite as boolean;
+                allFiles[i].isFavorite = data.content.res.isFavorite as boolean;
+                this.filesState.setFilesInViewer(allFiles);
+                const j = this.visibleFiles.findIndex((f2)=>{return f.fileId==f2.fileId});
+                this.visibleFiles[j].isFavorite = this.visibleFiles[i].isFavorite;
                 updated = true
               }
             });
             if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
               const processedFile = Utils.processFileModel(data.content.res);
-              this.files.push(processedFile);
+              this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),processedFile]);
               return;
             }
             break;
           case "trash_updated":
             const items:File[] = [];
+            let allFiles2 = this.filesState.getFilesInViewer();
             for (let i = 0; i<data.content.updatedFolders.length; i++){
               const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
               items.push(processedFile);
+              const ind = allFiles2.findIndex((f)=>{return f.fileId==processedFile.fileId});
+              if (ind != -1){
+                allFiles2[ind].isTrash = processedFile.isTrash;
+              }
             }
             for (let i = 0; i<data.content.updatedFiles.length; i++){
               const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
               items.push(processedFile);
+              const ind = allFiles2.findIndex((f,i)=>{return f.fileId==processedFile.fileId});
+              if (ind != -1){
+                allFiles2[ind].isTrash = processedFile.isTrash;
+              }
             }
+
             for (let i = 0; i<items.length; i++){
               if (!this.containsId(items[i].fileId)){
-                if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
-                  this.files.push(items[i]);
-                }
-                else if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
-                  this.files.push(items[i]);
+                // if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
+                //   this.visibleFiles.push(items[i]);
+                // }
+                if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
+                  allFiles2.push(items[i]);
                 }
               }
               else{
-                this.files = this.files.filter((f)=>{
-                  return f.fileId != items[i].fileId;
-                });
+                // this.visibleFiles = this.visibleFiles.filter((f)=>{
+                //   return f.fileId != items[i].fileId;
+                // });
+                if (this.crumbs[0] == "Trash"){
+                  allFiles2 = allFiles2.filter(f=>{
+                    return f.fileId != items[i].fileId;
+                  });
+                }
               }
+              this.filesState.setFilesInViewer(allFiles2);
             }
             break;
           case "deleted":
             for (let i = 0; i<data.content.ids.length; i++){
-              this.files = this.files.filter(file => {
+              this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => {
                 return file.fileId != data.content.ids[i];
-              });
+              }));
             }
             break;
           case "renamed":
-            this.files.forEach((f,i)=>{
-              if (f.fileId==data.content.id as string) {
-                const file:File = {...f};
-                file.fileName = data.content.val as string;
-                const fullPath = file.filePath.split("\\");
-                fullPath[fullPath.length-1] = data.content.val as string;
-                file.filePath = fullPath.join("\\");
-                this.files.splice(i, 1, file);
-                this.filesState.setRenaming(false);
+            this.filesState.getFilesInViewer().forEach((f,i)=>{
+              if (this.renameFocus){
+                const queryParams = { ...this.route.snapshot.queryParams };
+                delete queryParams["renameFocus"];
+                this.router.navigate([], {
+                  relativeTo: this.route,
+                  queryParams: queryParams,
+                  replaceUrl: true,
+                }).then(()=>{
+                  if (f.fileId==data.content.id as string) {
+                    this.renameUpdation(f, data, i);
+                  }
+                });
+              }
+              else{
+                this.renameUpdation(f, data, i);
               }
             });
             break;
@@ -181,22 +230,24 @@ export class ViewerComponent implements OnInit, OnDestroy{
             for (let i = 0; i<data.content.length; i++){
               if (this.containsId(data.content[i].id)){
                 if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
-                  this.files = this.files.filter(file => { return data.content[i].id != file.fileId });
+                  this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => { return data.content[i].id != file.fileId }));
                 }
               }
               else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
-                this.files.push(Utils.processFileModel(data.content[i].res));
+                this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),Utils.processFileModel(data.content[i].res)]);
               }
             }
         }
         this.cdRef.detectChanges();
-        this.handleEmptyTxt();
+        if (this.crumbs[0].toLowerCase()!="home"){
+          this.handleEmptyTxt();
+        }
       });
     }
   }
 
   filterOutFoldersBeingMoved(){
-    this.files = this.files.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
+    this.visibleFiles = this.visibleFiles.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
   }
 
   ngOnDestroy() {
@@ -205,7 +256,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   }
 
   containsId(id:string){
-    return this.files.map(f=>f.fileId).includes(id);
+    return this.visibleFiles.map(f=>f.fileId).includes(id);
   }
 
   extractCleanParentPath(path:string){
@@ -213,6 +264,20 @@ export class ViewerComponent implements OnInit, OnDestroy{
     splitted.pop();
     path = splitted.join("\\");
     return Utils.constructFilePathForApi(Utils.cleanPath(path));
+  }
+
+  renameUpdation(f:File, data:any, i:number){
+    if (f.fileId==data.content.id as string) {
+      const file:File = {...f};
+      file.fileName = data.content.val as string;
+      const fullPath = file.filePath.split("\\");
+      fullPath[fullPath.length-1] = data.content.val as string;
+      file.filePath = fullPath.join("\\");
+      let files = this.filesState.getFilesInViewer();
+      files.splice(i, 1, file);
+      this.filesState.setFilesInViewer(files);
+      this.filesState.setRenaming(false);
+    }
   }
 
   handleFolderLoaders(){
@@ -247,7 +312,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
         if (Utils.validString(constructedPathForApi)){
           this.foldersService.getAllFilesAndSubFoldersByParentFolderPath( constructedPathForApi).subscribe({
             next: response => {
-              this.files = response;
+              this.filesState.setFilesInViewer(response);
               this.cdRef.detectChanges();
               this.filterOutFoldersBeingMoved();
               if (appUrl[appUrl.length-1]=='home'){
@@ -278,7 +343,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     // API
     this.foldersService.getAllInHome().subscribe({
       next: (response) => {
-        this.files = response;
+        this.filesState.setFilesInViewer(response);
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
@@ -294,7 +359,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     // API
     this.foldersService.getAllFavoriteFolders().subscribe({
       next: (response) => {
-        this.files = response;
+        this.filesState.setFilesInViewer(response);
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
@@ -311,7 +376,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     // API
     this.foldersService.getAllTrashFolders().subscribe({
       next: (response) => {
-        this.files = response;
+        this.filesState.setFilesInViewer(response);
         this.filterOutFoldersBeingMoved();
       },
       error: (error) => {
@@ -328,8 +393,12 @@ export class ViewerComponent implements OnInit, OnDestroy{
     if (this.anyItemRenaming){
       return;
     }
+    if (!this.networkStatusService.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      return;
+    }
     this.filesState.setUncreatedFolderExists(true);
-    const folderWithNewFolderNameExists:boolean = this.files.filter(f=>f.fileName == "New Folder").length > 0;
+    const folderWithNewFolderNameExists:boolean = this.filesState.getFilesInViewer().filter(f=>f.fileName == "New Folder").length > 0;
     let uniqueNewFolderNameFound = false;
     let folderNameToBeUsed = "New Folder";
     let newFolderIndex = 1;
@@ -337,7 +406,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     while (!uniqueNewFolderNameFound) {
       if (folderWithNewFolderNameExists) {
         let nextFolderName = "New Folder (" + newFolderIndex + ")";
-        if (this.files.filter(f => f.fileName == nextFolderName).length == 0) {
+        if (this.filesState.getFilesInViewer().filter(f => f.fileName == nextFolderName).length == 0) {
           uniqueNewFolderNameFound = true;
           folderNameToBeUsed = nextFolderName;
         } else {
@@ -357,7 +426,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       uncreated: true,
       fileType: FileType.Folder
     };
-    this.files.push(folder);
+    this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),folder]);
   }
 
   handleSearchOperation(){
@@ -365,7 +434,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       this.loaderService.loadingStart();
       this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
         next: res => {
-          this.files = res;
+          this.filesState.setFilesInViewer(res);
           this.filterOutFoldersBeingMoved();
         },
         error: err => {
@@ -380,7 +449,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   }
 
   handleEmptyTxt(txt:string=this.emptyTxt){
-    if (this.files.length == 0) {
+    if (this.visibleFiles.length == 0) {
       this.emptyFolderTxtActive = true;
       this.emptyTxt = txt;
     }

@@ -14,8 +14,6 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public Guid MetadataId { get; set; }
         public virtual File? File { get; set; }
         public virtual Folder? Folder { get; set; }
-        public DateTime? PreviousReplacementDate { get; set; }
-        public int ReplaceCount { get; set; } = 0;
 
         public DateTime? PreviousRenameDate { get; set; }
         public int RenameCount { get; set; } = 0;
@@ -38,7 +36,6 @@ namespace CloudStoragePlatform.Core.Domain.Entities
             return new FileOrFolderMetadataResponse()
             {
                 MetadataId = MetadataId,
-                PreviousReplacementDate = PreviousReplacementDate,
                 PreviousRenameDate = PreviousRenameDate,
                 RenameCount = RenameCount,
                 PreviousMoveDate = PreviousMoveDate,
@@ -48,7 +45,6 @@ namespace CloudStoragePlatform.Core.Domain.Entities
                 ShareCount = ShareCount,
                 MoveCount = MoveCount,
                 OpenCount = OpenCount,
-                ReplaceCount = ReplaceCount
             };
         }
     }

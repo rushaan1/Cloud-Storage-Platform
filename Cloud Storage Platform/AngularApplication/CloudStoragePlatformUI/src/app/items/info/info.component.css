@@ -44,6 +44,8 @@
   height: 150px;
   width: 150px;
   display: inline-block;
+  background: url('../item-icons/document-icon.png');
+  background-size: contain;
 }
 .icon-container{
   flex: 0 1 auto;
@@ -102,17 +104,17 @@
   margin-bottom: 20px;
 }
 
-.picture {
+.Image {
   background: url('../item-icons/pic-icon.png');
   background-size: cover;
 }
 
-.video {
+.Video {
   background: url('../item-icons/video-icon.png');
   background-size: cover;
 }
 
-.folder {
+.Folder {
   background: url('../item-icons/folder-icon.png');
   background-size: cover;
 }

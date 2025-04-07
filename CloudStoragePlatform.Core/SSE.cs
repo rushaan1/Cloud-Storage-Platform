@@ -42,17 +42,9 @@ namespace CloudStoragePlatform.Core
             Console.WriteLine(json);
             lock (_clients)
             {
-                _clients.RemoveAll(client => {
-                    if (!client.HttpContext.Response.Body.CanWrite) 
-                    {
-                        Console.WriteLine("don't work");
-                        return true;
-                    }
-                    else
-                    {
-                        Console.WriteLine("do work");
-                        return false;
-                    }
+                _clients.RemoveAll(client =>
+                {
+                    return client.HttpContext.RequestAborted.IsCancellationRequested;
                 });
             }
 
@@ -68,6 +60,8 @@ namespace CloudStoragePlatform.Core
                     RemoveClient(client);
                 }
             });
+
+            Console.WriteLine("SSE subscribed by "+_clients.Count+" clients.");
 
             await Task.WhenAll(tasks);
         }

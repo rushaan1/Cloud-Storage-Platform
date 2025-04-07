@@ -9,7 +9,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
 {
     public interface IFilesModificationService
     {
-        Task<FileResponse> UploadFile(FileAddRequest fileAddRequest, Stream file, bool skipSSE = false);
+        Task<FileResponse> UploadFile(FileAddRequest fileAddRequest, Stream file);
         Task<FileResponse> RenameFile(RenameRequest fileRenameRequest);
 
 
@@ -20,9 +20,9 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         /// <param name="fileId"></param>
         /// <param name="newFilePath">MUST ONLY INCLUDE THE DESTINATION File PATH WITHOUT THE FILE TO BE MOVED'S PATH</param>
         /// <returns></returns>
-        Task<FileResponse> MoveFile(Guid fileId, string newFilePath, bool skipSSE = false);
+        Task<FileResponse> MoveFile(Guid fileId, string newFilePath);
         Task<FileResponse> AddOrRemoveFavorite(Guid fileId);
-        Task<FileResponse> AddOrRemoveTrash(Guid fileId, bool skipSSE = false);
-        Task<bool> DeleteFile(Guid fileId, bool skipSSE = false);
+        Task<FileResponse> AddOrRemoveTrash(Guid fileId);
+        Task<bool> DeleteFile(Guid fileId);
     }
 }

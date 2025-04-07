@@ -15,8 +15,6 @@ namespace CloudStoragePlatform.Core.DTO
         public int SubFilesCount { get; set; }
         public DateTime CreationDate { get; set; }
         public Guid MetadataId { get; set; }
-        public DateTime? PreviousReplacementDate { get; set; }
-        public int ReplaceCount { get; set; }
 
         public DateTime? PreviousRenameDate { get; set; }
         public int RenameCount { get; set; }

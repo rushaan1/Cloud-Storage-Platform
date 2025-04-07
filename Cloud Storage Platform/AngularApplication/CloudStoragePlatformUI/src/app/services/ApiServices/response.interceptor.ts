@@ -26,15 +26,9 @@ export class ResponseInterceptor implements HttpInterceptor {
     let array:Array<any> = [];
     if ((data.folders instanceof Array)||(data.files instanceof Array)){
       for (let i = 0; i < data.folders.length; i++) {
-        if (data.folders[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
-          continue;
-        }
         array.push(Utils.processFileModel(data.folders[i]));
       }
       for (let i = 0; i < data.files.length; i++) {
-        if (data.files[i].isTrash.toString() == "true" && !url.includes("/getAllTrashes")){
-          continue;
-        }
         array.push(Utils.processFileModel(data.files[i]));
       }
       return array;
@@ -47,12 +41,6 @@ export class ResponseInterceptor implements HttpInterceptor {
       }
       else{
         data.creationDate = formatter.format(new Date(data.creationDate));
-      }
-      if(!data.previousReplacementDate){
-        data.previousReplacementDate = "N/A";
-      }
-      else{
-        data.previousReplacementDate = formatter.format(new Date(data.previousReplacementDate));
       }
       if(!data.previousRenameDate){
         data.previousRenameDate = "N/A";

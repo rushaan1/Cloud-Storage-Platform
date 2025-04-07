@@ -22,6 +22,7 @@ import {Utils} from "../../Utils";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {FileType} from "../../models/FileType";
 import {forkJoin} from "rxjs";
+import {NetworkStatusService} from "../../services/network-status-service.service";
 
 @Component({
   selector: 'file-large-item',
@@ -63,7 +64,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   anyUncreatedFolderExists = false;
   preservedExtensionForRename = "";
 
-  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute) { }
+  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute, private networkStatus:NetworkStatusService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
@@ -120,13 +121,15 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       }
     });
 
-    this.route.queryParams.subscribe((params) => {
-      const renameFocus = params["renameFocus"];
-      if (renameFocus==this.FileFolder.fileId){
-        this.setupInput(false);
-        this.el.nativeElement.scrollIntoView({behavior: "smooth", block: "start"});
-      }
-    });
+    setTimeout(()=>{
+      this.route.queryParams.subscribe((params) => {
+        const renameFocus = params["renameFocus"];
+        if (renameFocus==this.FileFolder.fileId){
+          this.setupInput(false);
+          this.el.nativeElement.scrollIntoView({behavior: "smooth", block: "start"});
+        }
+      });
+    },200);
   }
 
   @HostListener('window:click', ['$event'])
@@ -208,6 +211,10 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   setupInput(collapseOptions:boolean, event?:Event) {
     event?.stopPropagation();
+    if (!this.networkStatus.statusVal()){
+      this.eventService.emit("addNotif", ["Not connected. Please check your internet connection.", 12000]);
+      return;
+    }
     if (this.anyFileIsRenaming && !this.renaming){
       this.eventService.emit("addNotif", ["Please finish renaming the current file first", 15000]);
       this.expandOrCollapseOptions();
@@ -278,6 +285,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.filesState.setUncreatedFolderExists(false);
         folderCreationCompleted = true;
         this.destroy.emit();
+        this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(f=>!f.uncreated));
       },
       error: err => {
         // TODO ErrorNotif for this
