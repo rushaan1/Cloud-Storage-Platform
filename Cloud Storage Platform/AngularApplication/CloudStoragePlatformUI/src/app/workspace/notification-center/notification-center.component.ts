@@ -83,6 +83,10 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     if (this.mostRecentNonStickyNotification!=null){
       const notificationQuantity = visibleInfoPanels.length;
 
+      const alertTexts = document.getElementsByClassName("alertTxt");
+      for (let i = 0; i < alertTexts.length; i++) {
+        alertTexts[i].textContent = "";
+      }
       const alertTxt:HTMLElement|null = this.mostRecentNonStickyNotification.querySelector(".alertTxt");
       if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>90){
         alertTxt!.style.display = "inline";
@@ -125,7 +129,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     }
   }
 
-  dissmissTextNotif(div:any){
+  dismissTextNotif(div:any){
     if (this.recentInfoPanelsInSequence.length>0){
       this.setLatestAlertNotification(this.recentInfoPanelsInSequence.pop() as HTMLElement, true);
     }
@@ -207,7 +211,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       const notification:HTMLElement = this.createNotificationDiv(notifText);
       this.setLatestAlertNotification(notification);
       setTimeout(()=>{
-        this.dissmissTextNotif(notification);
+        this.dismissTextNotif(notification);
       },args[1] as number)
     });
   }
@@ -222,7 +226,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     const icon = this.renderer.createElement('i');
     this.renderer.addClass(icon, 'fa-solid');
     this.renderer.addClass(icon, 'fa-square-xmark');
-    this.renderer.listen(icon, 'click', (event: MouseEvent) => this.dissmissTextNotif(infoPanel));
+    this.renderer.listen(icon, 'click', (event: MouseEvent) => this.dismissTextNotif(infoPanel));
 
     const textDiv = this.renderer.createElement('div');
     this.renderer.addClass(textDiv, 'margin-left');

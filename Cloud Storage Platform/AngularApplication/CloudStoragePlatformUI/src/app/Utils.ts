@@ -74,4 +74,17 @@ export class Utils {
       );
     }
   }
+
+  public static findUniqueName(existingOnes: string[], startingName: string): string {
+    let folderNameToBeUsed = startingName;
+    let newFolderIndex = 1;
+
+    while (existingOnes.includes(folderNameToBeUsed)) {
+      folderNameToBeUsed = `${startingName} (${newFolderIndex})`;
+      newFolderIndex++;
+    }
+
+    return folderNameToBeUsed;
+  }
+
 }

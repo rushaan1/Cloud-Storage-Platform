@@ -398,28 +398,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
       return;
     }
     this.filesState.setUncreatedFolderExists(true);
-    const folderWithNewFolderNameExists:boolean = this.filesState.getFilesInViewer().filter(f=>f.fileName == "New Folder").length > 0;
-    let uniqueNewFolderNameFound = false;
-    let folderNameToBeUsed = "New Folder";
-    let newFolderIndex = 1;
-
-    while (!uniqueNewFolderNameFound) {
-      if (folderWithNewFolderNameExists) {
-        let nextFolderName = "New Folder (" + newFolderIndex + ")";
-        if (this.filesState.getFilesInViewer().filter(f => f.fileName == nextFolderName).length == 0) {
-          uniqueNewFolderNameFound = true;
-          folderNameToBeUsed = nextFolderName;
-        } else {
-          newFolderIndex++;
-        }
-      } else {
-        uniqueNewFolderNameFound = true;
-      }
-    }
 
     let folder:File = {
       fileId: "",
-      fileName: folderNameToBeUsed,
+      fileName: Utils.findUniqueName(this.filesState.getFilesInViewer().map(f=>f.fileName), "New Folder"),
       filePath: Utils.constructFilePathForApi(this.crumbs)+"\\",
       isFavorite: false,
       isTrash: false,
