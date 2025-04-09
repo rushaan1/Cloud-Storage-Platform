@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { WorkspaceModule } from './workspace/workspace.module';
-import { NotificationCenterComponent } from './workspace/notification-center/notification-center.component';
+import { NotificationCenterComponent } from './notification-center/notification-center.component';
 
 @NgModule({
   declarations: [

@@ -75,16 +75,24 @@ export class Utils {
     }
   }
 
-  public static findUniqueName(existingOnes: string[], startingName: string): string {
+  public static findUniqueName(existingOnes: string[], startingName: string, preserveExtension:boolean=false): string {
     let folderNameToBeUsed = startingName;
     let newFolderIndex = 1;
-
-    while (existingOnes.includes(folderNameToBeUsed)) {
+    let extension = "";
+    if (preserveExtension){
+      const extensionIndex = startingName.lastIndexOf(".");
+      extension = startingName.substring(extensionIndex);
+      if (extensionIndex !== -1) {
+        startingName = startingName.substring(0, extensionIndex);
+        folderNameToBeUsed = startingName;
+      }
+    }
+    while (existingOnes.includes(folderNameToBeUsed+extension)) {
       folderNameToBeUsed = `${startingName} (${newFolderIndex})`;
       newFolderIndex++;
     }
 
-    return folderNameToBeUsed;
+    return folderNameToBeUsed+extension;
   }
 
 }

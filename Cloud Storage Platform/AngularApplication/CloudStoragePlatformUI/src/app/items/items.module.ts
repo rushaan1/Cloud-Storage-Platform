@@ -8,6 +8,7 @@ import {ResponseInterceptor} from "../services/ApiServices/response.interceptor"
 import {HTTP_INTERCEPTORS} from "@angular/common/http";
 import { InfoComponent } from './info/info.component';
 import {BreadcrumbsComponent} from "./breadcrumbs/breadcrumbs.component";
+import {NotificationCenterComponent} from "../notification-center/notification-center.component";
 
 
 @NgModule({
@@ -24,10 +25,11 @@ import {BreadcrumbsComponent} from "./breadcrumbs/breadcrumbs.component";
       multi: true,
     },
   ],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule
-    ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NotificationCenterComponent
+  ],
   exports:[
     FileLargeComponent,
     FileListComponent,

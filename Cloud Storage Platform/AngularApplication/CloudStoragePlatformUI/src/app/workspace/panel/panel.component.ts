@@ -8,6 +8,8 @@ import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folde
 import {Utils} from "../../Utils";
 import {HttpEvent, HttpEventType} from "@angular/common/http";
 import {NetworkStatusService} from "../../services/network-status-service.service";
+import {finalize} from "rxjs";
+import {FilesStateService} from "../../services/StateManagementServices/files-state.service";
 
 @Component({
   selector: 'panel',
@@ -35,7 +37,8 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   searchFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
   pfpDropdownShowing = false;
   crumbs:string[] = [];
-  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService){}
+  filesInMutualPath:string[] = [];
+  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService, private filesState:FilesStateService){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
@@ -179,12 +182,29 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       this.uploadInputHidden.nativeElement.value = '';
       return;
     }
+    this.filesInMutualPath = [];
+    if (this.crumbs[0] != "home"){
+      this.filesService.getAllInHome().subscribe({
+        next: data => {
+          this.filesInMutualPath = data.map(f=>f.fileName);
+          this.processUpload(this.filesInMutualPath, event);
+        }
+      });
+    }
+    else{
+      this.filesInMutualPath = this.filesState.getFilesInViewer().map(f=>f.fileName);
+      this.processUpload(this.filesInMutualPath, event);
+    }
+  }
+
+  processUpload(filesInMutualPath:string[], event:Event){
     const input = event.target as HTMLInputElement;
     const files = input.files;
     let uploadPath = this.crumbs;
     if (uploadPath[0] != "home"){
       uploadPath = ["home"];
     }
+
     if (this.uploadInputHidden.nativeElement.webkitdirectory){
       let pathOfFoldersToBeCreated:string[] = [];
       let pathOfTraversedFiles:string[] = [];
@@ -199,11 +219,21 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         pathOfFoldersToBeCreated = pathOfTraversedFiles.sort((a,b)=>{
           return a.split('/').length - b.split('/').length;
         });
+        let originalDuplicateNameBeforeModification = "";
+        let modifiedRootFolderName = "";
         Array.from(pathOfFoldersToBeCreated).forEach((path, i) => {
           let separated = pathOfFoldersToBeCreated[i].split('/');
           separated.pop();
           for (let j = 0; j<separated.length; j++) {
-            const creationPath = Utils.constructFilePathForApi([...uploadPath, ...separated.slice(0,j+1)]);
+            if (j==0 && i==0){
+              originalDuplicateNameBeforeModification = separated[j];
+              modifiedRootFolderName = Utils.findUniqueName(filesInMutualPath, separated[j]);
+            }
+            let pathToAppend = separated.slice(0,j+1);
+            if (modifiedRootFolderName!=""){
+              pathToAppend[0] = pathToAppend[0].replace(originalDuplicateNameBeforeModification, modifiedRootFolderName);
+            }
+            const creationPath = Utils.constructFilePathForApi([...uploadPath, ...pathToAppend]);
             if (!folderCreationPathsForApiCalls.includes(creationPath)){
               folderCreationPathsForApiCalls.push(creationPath);
             }
@@ -212,27 +242,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         });
         this.filesService.batchAddFolders(folderCreationPathsForApiCalls).subscribe({
           next:(f)=>{
-            const formData = new FormData();
-            Array.from(files).forEach(file => {
-              formData.append("fileName", file.name);
-              formData.append("filePath", Utils.constructFilePathForApi([...uploadPath, file.webkitRelativePath.replaceAll("/","\\")]));
-            });
-            Array.from(files).forEach(file => {
-              formData.append("file",file);
-            });
-            this.reportProgress();
-            this.filesService.uploadFile(formData).subscribe({
-              next: (event) => {
-                this.handleProgress(event);
-                this.uploadInputHidden.nativeElement.value = "";
-              },
-              error: (event) => {
-                this.uploadInputHidden.nativeElement.value = "";
-              },
-              complete: () => {
-                this.uploadInputHidden.nativeElement.value = "";
-              }
-            });
+            this.handleFilesUploadToServer(files, uploadPath, (file:File)=>{return file.webkitRelativePath.replace(originalDuplicateNameBeforeModification, modifiedRootFolderName).replaceAll("/","\\")});
           }
         });
       }
@@ -240,30 +250,36 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     }
 
     else{
-      if (files && files.length>0){
-        const formData = new FormData();
-        Array.from(files).forEach(file => {
-          formData.append("fileName", file.name);
-          formData.append("filePath", Utils.constructFilePathForApi([...uploadPath, file.name]));
-        });
+      this.handleFilesUploadToServer(files, uploadPath, (file:File)=>{return Utils.findUniqueName(filesInMutualPath,file.name.replaceAll("\\","-"), true)}, true);
+    }
+  }
 
-        Array.from(files).forEach(file => {
-          formData.append("file",file);
-        });
-        this.reportProgress();
-        this.filesService.uploadFile(formData).subscribe({
-          next: (event) => {
-            this.handleProgress(event);
-            this.uploadInputHidden.nativeElement.value = "";
-          },
-          error: (event) => {
-            this.uploadInputHidden.nativeElement.value = "";
-          },
-          complete: () => {
-            this.uploadInputHidden.nativeElement.value = "";
-          }
-        });
-      }
+  handleFilesUploadToServer(files:FileList|null, uploadPath:string[], pathProcessor:(f:File)=>string, onlyFiles:boolean=false){
+    if (files) {
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        let processedName:string = file.name;
+        const processedPath = pathProcessor(file);
+        if (onlyFiles){
+          processedName = processedPath;
+        }
+        formData.append("fileName", processedName);
+        formData.append("filePath", Utils.constructFilePathForApi([...uploadPath, processedPath]));
+        if (onlyFiles){
+          this.filesInMutualPath.push(processedName);
+        }
+      });
+      Array.from(files).forEach(file => {
+        formData.append("file", file);
+      });
+      this.reportProgress();
+      this.filesService.uploadFile(formData).pipe(finalize(() => {
+        this.uploadInputHidden.nativeElement.value = "";
+      })).subscribe({
+        next: (event) => {
+          this.handleProgress(event);
+        },
+      });
     }
   }
 
@@ -284,7 +300,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
 
   reportProgress() {
     const interval = setInterval(() => {
-      console.log(this.uploadProgress);
+      localStorage.setItem("uploadProgress", this.uploadProgress.toString());
 
       if (this.uploadProgress === -1) {
         clearInterval(interval);

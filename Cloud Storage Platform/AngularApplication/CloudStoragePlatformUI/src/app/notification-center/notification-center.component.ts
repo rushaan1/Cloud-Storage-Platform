@@ -7,20 +7,25 @@ import {
   Renderer2,
   ViewChild
 } from '@angular/core';
-import { FilesStateService } from '../../services/StateManagementServices/files-state.service';
-import { EventService } from '../../services/event-service.service';
-import {File} from "../../models/File";
+import { FilesStateService } from '../services/StateManagementServices/files-state.service';
+import { EventService } from '../services/event-service.service';
+import {File} from "../models/File";
 import {forkJoin, timestamp} from "rxjs";
-import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
-import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
-import {Utils} from "../../Utils";
+import {FilesAndFoldersService} from "../services/ApiServices/files-and-folders.service";
+import {BreadcrumbService} from "../services/StateManagementServices/breadcrumb.service";
+import {Utils} from "../Utils";
 import {Router} from "@angular/router";
-import {FileType} from "../../models/FileType";
+import {FileType} from "../models/FileType";
+import {NgIf} from "@angular/common";
 
 @Component({
   selector: 'notification-center',
   templateUrl: './notification-center.component.html',
-  styleUrl: './notification-center.component.css'
+  styleUrl: './notification-center.component.css',
+  imports: [
+    NgIf
+  ],
+  standalone: true
 })
 export class NotificationCenterComponent implements AfterViewChecked, AfterViewInit {
   protected readonly window = window;
