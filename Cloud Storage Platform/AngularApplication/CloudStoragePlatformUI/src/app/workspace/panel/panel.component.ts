@@ -182,6 +182,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       this.uploadInputHidden.nativeElement.value = '';
       return;
     }
+    localStorage.setItem("folderUploadedQty", "0");
     this.filesInMutualPath = [];
     if (this.crumbs[0] != "home"){
       this.filesService.getAllInHome().subscribe({
@@ -242,6 +243,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         });
         this.filesService.batchAddFolders(folderCreationPathsForApiCalls).subscribe({
           next:(f)=>{
+            localStorage.setItem("folderUploadedQty", f.length.toString());
             this.handleFilesUploadToServer(files, uploadPath, (file:File)=>{return file.webkitRelativePath.replace(originalDuplicateNameBeforeModification, modifiedRootFolderName).replaceAll("/","\\")});
           }
         });
@@ -273,6 +275,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         formData.append("file", file);
       });
       this.reportProgress();
+      localStorage.setItem("filesUploadedQty", files.length.toString());
       this.filesService.uploadFile(formData).pipe(finalize(() => {
         this.uploadInputHidden.nativeElement.value = "";
       })).subscribe({
@@ -301,7 +304,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   reportProgress() {
     const interval = setInterval(() => {
       localStorage.setItem("uploadProgress", this.uploadProgress.toString());
-
+      this.eventService.emit("uploadProgress", this.uploadProgress.toString());
       if (this.uploadProgress === -1) {
         clearInterval(interval);
         this.uploadProgress = 0;

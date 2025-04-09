@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   HostListener,
+  Input,
   Renderer2,
   ViewChild
 } from '@angular/core';
@@ -29,9 +30,13 @@ import {NgIf} from "@angular/common";
 })
 export class NotificationCenterComponent implements AfterViewChecked, AfterViewInit {
   protected readonly window = window;
+  @Input() fromViewer = true;
   @ViewChild("selectionInfoPanel") selectionInfoPanel!:ElementRef;
   @ViewChild("deleteConfirmNotif") deleteConfirmNotif!:ElementRef;
   @ViewChild("moveNotif") moveNotif!:ElementRef;
+  @ViewChild("uploadProgressNotif") uploadProgressNotif!:ElementRef;
+  @ViewChild("progressBar") progressBarElement!:ElementRef;
+  @ViewChild("progressTxt") progressTxt!:ElementRef;
 
   orderedInfoPanels:HTMLElement[] = [];
   recentInfoPanelsInSequence:HTMLElement[] = [];
@@ -56,7 +61,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   constructor(public filesState:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FilesAndFoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
 
   ngAfterViewInit(): void {
-    this.orderedInfoPanels = [this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement, this.moveNotif.nativeElement];
+    this.orderedInfoPanels = [this.uploadProgressNotif.nativeElement, this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement, this.moveNotif.nativeElement];
     //any new info panel must be added in the array above based on its position in the HTML file
 
     this.setNotificationEventListeners();
@@ -113,14 +118,23 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     });
 
     if (visibleOrderedStickyInfoPanels.length>0){
-      visibleOrderedStickyInfoPanels[0].style.top = `119.5px`;
+      if (!this.fromViewer){
+        visibleOrderedStickyInfoPanels[0].style.top = `163px`
+      }
+      else{
+        visibleOrderedStickyInfoPanels[0].style.top = `119.5px`;
+      }
       let cumulativeHeights = 0;
       for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
         let previousInfoPanelHeight:number = parseFloat(
           window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1]).height
         );
         cumulativeHeights += previousInfoPanelHeight;
-        visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+119.5}px`;
+        let offset:number = 119.5;
+        if (!this.fromViewer){
+          offset = 163;
+        }
+        visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+offset}px`;
         console.log(previousInfoPanelHeight);
       }
     }
@@ -218,6 +232,29 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       setTimeout(()=>{
         this.dismissTextNotif(notification);
       },args[1] as number)
+    });
+
+    this.eventService.listen("uploadProgress", (progress:number)=>{
+      this.uploadProgressNotif.nativeElement.style.display = "flex";
+      if (progress==-1){
+        progress = 100;
+        setTimeout(()=>{
+          this.uploadProgressNotif.nativeElement.style.display = "none";
+          const foldersUploaded = localStorage.getItem("foldersUploadedQty");
+          const filesUploaded = localStorage.getItem("filesUploadedQty");
+          if (filesUploaded !==null && filesUploaded!==undefined){
+            if (foldersUploaded !==null && foldersUploaded!==undefined) {
+              if (Number(foldersUploaded) > 0) {
+                this.eventService.emit("addNotif", ["Uploaded " + foldersUploaded + " folder(s) and " + filesUploaded + " file(s)", 12000]);
+                return;
+              }
+            }
+            this.eventService.emit("addNotif", ["Uploaded "+filesUploaded+" file(s)", 12000]);
+          }
+        }, 1500);
+      }
+      this.progressBarElement.nativeElement.style.width = `${progress}%`;
+      this.progressTxt.nativeElement.innerText = `${progress}%`;
     });
   }
 

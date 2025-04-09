@@ -1,3 +1,11 @@
+<div #uploadProgressNotif class="info-panel sticky-notif">
+  <div class="margin-left infoText flex"><span>Upload in progress:</span>
+    <div class="inner-outer"><span #progressTxt class="progress-txt">1%</span>
+      <div #progressBar class="progress-bar"></div>
+    </div>
+  </div>
+</div>
+
 <div #selectionInfoPanel class="info-panel sticky-notif">
   <button (click)="unselect()" class="panel-selected-menu-btn">Unselect All</button>
   <span class="items-select-txt txt">{{itemsSelected}} Item(s) Selected</span>
@@ -18,5 +26,3 @@
   <button *ngIf="crumbs[0]=='home'" (click)="move(); dismissNotificationAlert($event)" class="panel-selected-menu-btn">Move over here</button>
   <button (click)="moveAbort(); dismissNotificationAlert($event)" class="panel-selected-menu-btn">Cancel</button>
 </div>
-
-<!--TODO: De-clutter alertTxt anchor tag by utilizing a single-line reusable function-->

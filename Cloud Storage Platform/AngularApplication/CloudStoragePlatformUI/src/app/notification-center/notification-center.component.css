@@ -54,3 +54,39 @@
   font-weight: bold;
   text-decoration: underline;
 }
+
+
+.flex{
+  display: flex;
+  font-size: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.inner-outer{
+  background-color: #F5F5F5;
+  height: 25px;
+  border: 2px solid black;
+  border-radius: 5px;
+  width: 250px;
+  margin-left: 17px;
+  align-self: center;
+  display: inline-block;
+}
+
+
+
+.progress-bar{
+  width: 1%;
+  height: 100%;
+  background: bisque;
+  background-size: cover;
+  transition: width 1s ease-in-out;
+  display: inline-block;
+  border-radius: 5px;
+}
+.progress-txt{
+  margin-top: 2px;
+  margin-left: 105px;
+  position: absolute;
+}

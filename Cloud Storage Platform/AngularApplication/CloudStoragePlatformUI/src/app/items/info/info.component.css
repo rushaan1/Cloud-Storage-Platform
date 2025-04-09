@@ -6,10 +6,6 @@
   z-index: 10;
 }
 
-.notification-center{
-  position: sticky;
-}
-
 .tab{
   font-size: 20px;
   font-family: Inter;
