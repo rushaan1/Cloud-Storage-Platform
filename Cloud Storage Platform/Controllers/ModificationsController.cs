@@ -105,7 +105,7 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpPatch]
         [Route("rename")]
-        public async Task<ActionResult> RenameFolder(RenameRequest renameReq, bool isFolder)
+        public async Task<ActionResult> Rename(RenameRequest renameReq, bool isFolder)
         {
             string newName;
             if (isFolder)

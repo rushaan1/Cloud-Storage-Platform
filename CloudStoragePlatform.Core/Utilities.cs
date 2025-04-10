@@ -190,5 +190,31 @@ namespace CloudStoragePlatform.Core
                 folder.Metadata = m;
             }
         }
+
+        public static string FindUniqueName(string[] existingOnes, string startingName, bool preserveExtension = false)
+        {
+            string folderNameToBeUsed = startingName;
+            int newFolderIndex = 1;
+            string extension = "";
+
+            if (preserveExtension)
+            {
+                int extensionIndex = startingName.LastIndexOf('.');
+                if (extensionIndex != -1)
+                {
+                    extension = startingName.Substring(extensionIndex);
+                    startingName = startingName.Substring(0, extensionIndex);
+                    folderNameToBeUsed = startingName;
+                }
+            }
+
+            while (Array.Exists(existingOnes, name => name == folderNameToBeUsed + extension))
+            {
+                folderNameToBeUsed = $"{startingName} ({newFolderIndex})";
+                newFolderIndex++;
+            }
+
+            return folderNameToBeUsed + extension;
+        }
     }
 }

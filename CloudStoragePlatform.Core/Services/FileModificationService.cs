@@ -62,7 +62,14 @@ namespace CloudStoragePlatform.Core.Services
                 };
 
                 Folder? parent = await _foldersRepository.GetFolderByFolderPath(parentFolderPath);
-
+                if (fileAddRequest.FileName.Contains("\\"))
+                {
+                    // This is a very rare exceptional edge case as Linux allows file names to have \
+                    string[] filesInParent = (string[])parent!.Files.Select((f) => { return f.FileName; });
+                    string newName = Utilities.FindUniqueName(filesInParent, fileAddRequest.FileName.Replace("\\", "-"), true);
+                    fileAddRequest.FilePath = Utilities.ReplaceLastOccurance(fileAddRequest.FilePath, fileAddRequest.FileName, newName);
+                    fileAddRequest.FileName = newName;
+                }
                 file = new File()
                 {
                     FileId = Guid.NewGuid(),

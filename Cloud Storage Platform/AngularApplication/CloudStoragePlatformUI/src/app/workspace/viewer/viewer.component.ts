@@ -54,12 +54,15 @@ export class ViewerComponent implements OnInit, OnDestroy{
         console.log("Should reload");
       }
     }));
-    this.subscriptions.push(this.filesState.filesInViewer$.subscribe(files => {
-      this.visibleFiles = files;
-      this.filterOutFoldersBeingMoved();
+    this.subscriptions.push(this.filesState.filesInViewer$.pipe(skip(1)).subscribe(files => {
+
       if (this.crumbs[0]!="Trash"){
-        this.visibleFiles = this.visibleFiles.filter((f)=>{return !f.isTrash});
+        this.visibleFiles = files.filter((f)=>{return !f.isTrash});
       }
+      else{
+        this.visibleFiles = files;
+      }
+      this.filterOutFoldersBeingMoved();
     }));
     this.subscriptions.push(this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];

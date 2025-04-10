@@ -2,7 +2,7 @@ import {
   AfterViewChecked,
   AfterViewInit,
   Component,
-  ElementRef,
+  ElementRef, Host,
   HostListener,
   Input,
   Renderer2,
@@ -68,11 +68,21 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.breadcrumbService.breadcrumbs$.subscribe((c)=>{
       this.crumbs = c;
     });
+    if (Number(localStorage.getItem("uploadProgress"))!=-1){
+      this.uploadProgressNotificationUpdate(Number(localStorage.getItem("uploadProgress")));
+    }
   }
 
   @HostListener('window:scroll', ['$event'])
   onWindowClick() {
     this.updateNotificationAlertTxt();
+  }
+
+  @HostListener('window:storage', ['$event'])
+  onStorageChange(event:StorageEvent){
+    if (event.key == "uploadProgress"){
+      this.uploadProgressNotificationUpdate(Number(event.newValue));
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -235,27 +245,31 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     });
 
     this.eventService.listen("uploadProgress", (progress:number)=>{
-      this.uploadProgressNotif.nativeElement.style.display = "flex";
-      if (progress==-1){
-        progress = 100;
-        setTimeout(()=>{
-          this.uploadProgressNotif.nativeElement.style.display = "none";
-          const foldersUploaded = localStorage.getItem("foldersUploadedQty");
-          const filesUploaded = localStorage.getItem("filesUploadedQty");
-          if (filesUploaded !==null && filesUploaded!==undefined){
-            if (foldersUploaded !==null && foldersUploaded!==undefined) {
-              if (Number(foldersUploaded) > 0) {
-                this.eventService.emit("addNotif", ["Uploaded " + foldersUploaded + " folder(s) and " + filesUploaded + " file(s)", 12000]);
-                return;
-              }
-            }
-            this.eventService.emit("addNotif", ["Uploaded "+filesUploaded+" file(s)", 12000]);
-          }
-        }, 1500);
-      }
-      this.progressBarElement.nativeElement.style.width = `${progress}%`;
-      this.progressTxt.nativeElement.innerText = `${progress}%`;
+      this.uploadProgressNotificationUpdate(progress);
     });
+  }
+
+  uploadProgressNotificationUpdate(progress:number){
+    this.uploadProgressNotif.nativeElement.style.display = "flex";
+    if (progress==-1){
+      progress = 100;
+      setTimeout(()=>{
+        this.uploadProgressNotif.nativeElement.style.display = "none";
+        const foldersUploaded = localStorage.getItem("foldersUploadedQty");
+        const filesUploaded = localStorage.getItem("filesUploadedQty");
+        if (filesUploaded !==null && filesUploaded!==undefined){
+          if (foldersUploaded !==null && foldersUploaded!==undefined) {
+            if (Number(foldersUploaded) > 0) {
+              this.eventService.emit("addNotif", ["Uploaded " + foldersUploaded + " folder(s) and " + filesUploaded + " file(s) to "+Utils.resize(decodeURIComponent(localStorage.getItem("uploadingTo")!),25), 12000]);
+              return;
+            }
+          }
+          this.eventService.emit("addNotif", ["Uploaded "+filesUploaded+" file(s) to "+Utils.resize(decodeURIComponent(localStorage.getItem("uploadingTo")!),25) , 12000]);
+        }
+      }, 1500);
+    }
+    this.progressBarElement.nativeElement.style.width = `${progress}%`;
+    this.progressTxt.nativeElement.innerText = `${progress}%`;
   }
 
 

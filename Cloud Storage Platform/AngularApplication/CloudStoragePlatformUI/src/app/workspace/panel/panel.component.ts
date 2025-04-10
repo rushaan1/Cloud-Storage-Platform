@@ -45,6 +45,10 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     this.breadCrumbService.breadcrumbs$.subscribe((crumbs)=>{
       this.crumbs = crumbs;
     });
+    const uploadProgress = localStorage.getItem("uploadProgress");
+    if (!(uploadProgress!=null && uploadProgress!="" && uploadProgress!=undefined)){
+      localStorage.setItem("uploadProgress", "-1");
+    }
   }
 
   ngAfterViewChecked(){
@@ -182,7 +186,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       this.uploadInputHidden.nativeElement.value = '';
       return;
     }
-    localStorage.setItem("folderUploadedQty", "0");
+    localStorage.setItem("foldersUploadedQty", "0");
     this.filesInMutualPath = [];
     if (this.crumbs[0] != "home"){
       this.filesService.getAllInHome().subscribe({
@@ -205,6 +209,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     if (uploadPath[0] != "home"){
       uploadPath = ["home"];
     }
+    localStorage.setItem("uploadingTo", uploadPath[uploadPath.length-1]);
 
     if (this.uploadInputHidden.nativeElement.webkitdirectory){
       let pathOfFoldersToBeCreated:string[] = [];
@@ -243,7 +248,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         });
         this.filesService.batchAddFolders(folderCreationPathsForApiCalls).subscribe({
           next:(f)=>{
-            localStorage.setItem("folderUploadedQty", f.length.toString());
+            localStorage.setItem("foldersUploadedQty", folderCreationPathsForApiCalls.length.toString());
             this.handleFilesUploadToServer(files, uploadPath, (file:File)=>{return file.webkitRelativePath.replace(originalDuplicateNameBeforeModification, modifiedRootFolderName).replaceAll("/","\\")});
           }
         });

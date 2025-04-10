@@ -5,7 +5,7 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
-  Input,
+  Input, OnDestroy,
   OnInit,
   Output,
   ViewChild
@@ -21,8 +21,10 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Utils} from "../../Utils";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {FileType} from "../../models/FileType";
-import {forkJoin} from "rxjs";
+import {distinctUntilChanged, forkJoin, Subject, take, takeUntil} from "rxjs";
 import {NetworkStatusService} from "../../services/network-status-service.service";
+import {LoadingService} from "../../services/StateManagementServices/loading.service";
+import {map} from "rxjs/operators";
 
 @Component({
   selector: 'file-large-item',
@@ -63,8 +65,9 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   anyFileIsRenaming = false;
   anyUncreatedFolderExists = false;
   preservedExtensionForRename = "";
+  renameFocus:any;
 
-  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute, private networkStatus:NetworkStatusService) { }
+  constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute, private networkStatus:NetworkStatusService, private loadingService:LoadingService) { }
 
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
@@ -121,15 +124,19 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       }
     });
 
-    setTimeout(()=>{
-      this.route.queryParams.subscribe((params) => {
-        const renameFocus = params["renameFocus"];
-        if (renameFocus==this.FileFolder.fileId){
-          this.setupInput(false);
-          this.el.nativeElement.scrollIntoView({behavior: "smooth", block: "start"});
-        }
-      });
-    },200);
+    this.route.queryParams.subscribe((params) => {
+      this.renameFocus = params["renameFocus"];
+      if (this.renameFocus==this.FileFolder.fileId){
+        this.setupInput(false);
+        setTimeout(()=>{
+          this.el.nativeElement.scrollIntoView({behavior: "smooth", block: "center"});
+        },1000);
+      }
+    });
+
+    this.loadingService.loading$.subscribe((loading)=>{
+      console.log(loading);
+    });
   }
 
   @HostListener('window:click', ['$event'])
