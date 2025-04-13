@@ -1,0 +1,23 @@
+<p class="full-name">{{file.fileName}}</p>
+<div class="options">
+  <button title="Download file" class="btn">
+    <i class="fa-solid fa-download"></i>
+  </button>
+  <button title="Share file" class="btn">
+    <i class="fa-solid fa-share-nodes"></i>
+  </button>
+  <button (click)="router.navigate(['filemetadata',file.fileId])" title="File metadata" class="btn">
+    <i class="fa-solid fa-circle-info"></i>
+  </button>
+</div>
+<div *ngIf="file.fileName.split('.')[file.fileName.split('.').length-1] == 'txt'">
+  <pre>{{ fileText }}</pre>
+</div>
+
+<div class="previewParent">
+  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="fileUrl" [width]="'fit-content'" [height]="'450px'" alt="image"/>
+
+  <video *ngIf="file.fileType==FileType.Video" src="{{fileUrl}}" controls width="600"></video>
+
+  <audio *ngIf="file.fileType==FileType.Audio" src="{{fileUrl}}" controls></audio>
+</div>

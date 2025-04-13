@@ -24,6 +24,37 @@ namespace Cloud_Storage_Platform.Controllers
             _filesRetrievalService = filesRetrievalService;
         }
 
+        [HttpGet("filePreview")]
+        public IActionResult GetFile(string filePath)
+        {
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("File not found");
+            }
+
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            var mimeType = extension switch
+            {
+                ".txt" => "text/plain",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".mp4" => "video/mp4",
+                ".webm" => "video/webm",
+                ".mp3" => "audio/mpeg",
+                ".wav" => "audio/wav",
+                _ => null
+            };
+
+            if (mimeType == null)
+            {
+                return BadRequest("Unsupported file type");
+            }
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes, mimeType);
+        }
+
         [HttpGet]
         [Route("getFolderById")]
         public async Task<ActionResult<FolderResponse>> GetFolderById(Guid id)

@@ -34,6 +34,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   renameFocus = false;
   private sse!:EventSource;
   guidsHiddenDueToFileFilter:string[] = [];
+  fileBeingPreviewd?:File|null = null;
 
   constructor(
     private cdRef:ChangeDetectorRef,
@@ -325,10 +326,26 @@ export class ViewerComponent implements OnInit, OnDestroy{
             },
             error: err => {
               this.loaderService.loadingEnd();
-            }, //TODO
+            },
             complete: () => {
               this.loaderService.loadingEnd();
-            } //TODO
+            }
+          });
+        }
+        break;
+      case "preview":
+        const constructedPathForApiFile = Utils.constructFilePathForApi(appUrl);
+        if (Utils.validString(constructedPathForApiFile)){
+          this.foldersService.getFileOrFolderByPath(constructedPathForApiFile, false).subscribe({
+            next: response => {
+              this.fileBeingPreviewd = response;
+            },
+            error: err => {
+              this.loaderService.loadingEnd();
+            },
+            complete: () => {
+              this.loaderService.loadingEnd();
+            }
           });
         }
         break;
@@ -340,6 +357,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
       default:
         this.router.navigate(["filter", "home"]);
         break;
+    }
+    if (appUrl[0]!="preview"){
+      this.fileBeingPreviewd = null;
     }
   }
 
@@ -442,6 +462,11 @@ export class ViewerComponent implements OnInit, OnDestroy{
     else {
       this.emptyFolderTxtActive = false;
     }
+  }
+
+  fileFilterUpdates(f:File, event:boolean){
+    event ? this.guidsHiddenDueToFileFilter.push(f.fileId) : this.guidsHiddenDueToFileFilter = this.guidsHiddenDueToFileFilter.filter((id) => id != f.fileId)
+    console.log(this.guidsHiddenDueToFileFilter);
   }
 
   protected readonly Utils = Utils;

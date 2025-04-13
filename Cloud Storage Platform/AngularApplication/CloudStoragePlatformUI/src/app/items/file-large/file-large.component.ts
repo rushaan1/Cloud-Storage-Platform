@@ -164,7 +164,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     });
 
     this.loadingService.loading$.subscribe((loading)=>{
-      console.log(loading);
+      // console.log(loading);
     });
   }
 
@@ -310,7 +310,12 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       }
       return;
     }
-    this.router.navigate(["folder", ...Utils.cleanPath(this.FileFolder.filePath)]);
+    if (this.FileFolder.fileType == FileType.Folder) {
+      this.router.navigate(["folder", ...Utils.cleanPath(this.FileFolder.filePath)]);
+    }
+    else {
+      this.router.navigate(["preview", ...Utils.cleanPath(this.FileFolder.filePath)]);
+    }
   }
 
   createFolder(name:string){
