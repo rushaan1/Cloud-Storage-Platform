@@ -33,6 +33,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
   emptyTxt = "No folders to show";
   renameFocus = false;
   private sse!:EventSource;
+  guidsHiddenDueToFileFilter:string[] = [];
 
   constructor(
     private cdRef:ChangeDetectorRef,
@@ -444,4 +445,5 @@ export class ViewerComponent implements OnInit, OnDestroy{
   }
 
   protected readonly Utils = Utils;
+  protected readonly document = document;
 }

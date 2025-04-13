@@ -6,12 +6,14 @@
 
   <div *ngIf="!emptyFolderTxtActive && crumbs[0]=='Search Results'" class="topTxt resultsTxt">Search Results for {{searchQuery}}</div>
   <div *ngIf="emptyFolderTxtActive" class="topTxt">{{emptyTxt}}</div>
+  <div *ngIf="!emptyFolderTxtActive && document.getElementsByClassName('file-being-displayed').length==0 && guidsHiddenDueToFileFilter.length!=0" class="topTxt">No files match the applied filters.</div>
   <div class="files-and-folders">
     <file-large-item *ngFor="let f of visibleFiles; index as i" [ngClass]="{'file-move-state-width-override':filesState.getItemsBeingMoved().length>0}" [FileFolder]="f" [type]="f.fileType"
-                     class="file-large-item-from-viewer" (destroy)="this.visibleFiles.splice(i,1)"></file-large-item>
-    <div *ngIf="!anyFolderUncreated && crumbs[0]=='home' && filesState.getItemsBeingMoved().length==0" (click)="this.createNewFolder()" class="newFolder">
+                     class="file-large-item-from-viewer" (hiddenDueToFileFilter)="$event ? this.guidsHiddenDueToFileFilter.push(f.fileId) : this.guidsHiddenDueToFileFilter.splice(i, 1)" (destroy)="this.visibleFiles.splice(i,1)"></file-large-item>
+    <div *ngIf="!anyFolderUncreated && crumbs[0]=='home' && filesState.getItemsBeingMoved().length==0 && guidsHiddenDueToFileFilter.length == 0" (click)="this.createNewFolder()" class="newFolder">
       <i class="fa-solid fa-folder-plus"></i>
       <div>Create folder</div>
     </div>
   </div>
+
 </div>

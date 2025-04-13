@@ -49,7 +49,8 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   @ViewChild("ellipsis") ellipsis!: ElementRef<HTMLElement>;
   @ViewChild("renamingFileOptionDiv") renamingFileOptionDiv?: ElementRef<HTMLDivElement>;
   @ViewChild("abortCreationCross", {static:true}) abortCreationCross?: ElementRef;
-
+  @ViewChild("parent") parent!: ElementRef<HTMLDivElement>;
+  @Output() hiddenDueToFileFilter = new EventEmitter<boolean>();
   renameFormControl = new FormControl("", [Validators.required, Validators.pattern(/\S/), invalidCharacter]);
 
   uniqueComponentIdentifierUUID:string = "";
@@ -66,6 +67,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   anyUncreatedFolderExists = false;
   preservedExtensionForRename = "";
   renameFocus:any;
+  fileFilters: FileType[] = [];
 
   constructor(private el: ElementRef, protected filesState: FilesStateService, protected router:Router, protected cdRef: ChangeDetectorRef, protected foldersService:FilesAndFoldersService, protected eventService: EventService, protected breadcrumbService:BreadcrumbService, private route:ActivatedRoute, private networkStatus:NetworkStatusService, private loadingService:LoadingService) { }
 
@@ -126,6 +128,33 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
     this.route.queryParams.subscribe((params) => {
       this.renameFocus = params["renameFocus"];
+      this.fileFilters = [];
+      let fileFilters = params["fileFilters"];
+      if (fileFilters != undefined && fileFilters.length>0) {
+        fileFilters.forEach((filter: string) => {
+          filter = filter.replaceAll("s", "");
+          if (filter == "Document") {
+            this.fileFilters.push(FileType.Document);
+          } else if (filter == "Audio") {
+            this.fileFilters.push(FileType.Audio);
+          } else if (filter == "Video") {
+            this.fileFilters.push(FileType.Video);
+          } else if (filter == "Image") {
+            this.fileFilters.push(FileType.Image);
+          } else if (filter == "GIF") {
+            this.fileFilters.push(FileType.GIF);
+          }
+        });
+      }
+      if (!this.fileFilters.includes(this.FileFolder.fileType) && this.fileFilters.length!=0 && !this.FileFolder.uncreated){
+        this.parent.nativeElement.style.display = "none";
+        this.hiddenDueToFileFilter.emit(true);
+      }
+      else{
+        this.parent.nativeElement.style.display = "block";
+        this.hiddenDueToFileFilter.emit(false);
+      }
+
       if (this.renameFocus==this.FileFolder.fileId){
         this.setupInput(false);
         setTimeout(()=>{
@@ -387,7 +416,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
       folders: this.foldersService.batchMoveFolders(foldersBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(Utils.cleanPath(this.FileFolder.filePath)))
     }).subscribe({
       next: ()=>{
-        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+this.name+".", 12000]);},800);
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+decodeURIComponent(this.name)+".", 12000]);},800);
         this.filesState.setItemsBeingMoved([]);
         this.fetchSubFoldersRedirect();
       }

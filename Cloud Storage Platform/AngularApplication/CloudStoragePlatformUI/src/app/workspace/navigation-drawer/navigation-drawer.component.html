@@ -46,11 +46,11 @@
     </li>
     <li (click)="typeItemSelected($event, 1)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
         class="category-tab" id="Audio"
-        style="padding-left: 0;"><input id="1-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-music"></i>Audio</a>
+        style="padding-left: 0;"><input id="1-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-music"></i>Audios</a>
     </li>
     <li (click)="typeItemSelected($event, 2)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
         class="category-tab" id="Video"
-        style="padding-left: 0;"><input id="2-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-video"></i>Video</a>
+        style="padding-left: 0;"><input id="2-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-video"></i>Videos</a>
     </li>
     <li (click)="typeItemSelected($event, 3)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
         class="category-tab" id="Documents"
@@ -58,7 +58,7 @@
     </li>
     <li (click)="typeItemSelected($event, 4)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
         class="category-tab" id="GIF"
-        style="padding-left: 0;"><input id="4-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-palette"></i>GIF</a>
+        style="padding-left: 0;"><input id="4-NavCheckbox" type="checkbox"/><a><i class="fa-solid fa-palette"></i>GIFs</a>
     </li>
   </ul>
 </div>
@@ -93,7 +93,7 @@
 
 
     <ul *ngIf="filesState.getItemsBeingMoved().length==0" class="category bottom-category m-bottom-cat">
-      <li (click)="typeItemSelectedMini($event,'Images', 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
+      <li (click)="typeItemSelectedMini($event,'Image', 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Images" id="Images"
           style="padding-left: 0;"><a><i class="fa-regular fa-image"></i></a></li>
       <li (click)="typeItemSelectedMini($event,'Audio', 1)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
@@ -102,7 +102,7 @@
       <li (click)="typeItemSelectedMini($event,'Video', 2)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Video" id="Video"
           style="padding-left: 0;"><a><i class="fa-solid fa-video"></i></a></li>
-      <li (click)="typeItemSelectedMini($event,'Documents', 3)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
+      <li (click)="typeItemSelectedMini($event,'Document', 3)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Documents" id="Documents"
           style="padding-left: 0;"><a><i class="fa-solid fa-file"></i></a></li>
       <li (click)="typeItemSelectedMini($event,'GIF', 4)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"

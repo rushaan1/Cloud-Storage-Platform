@@ -378,7 +378,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       folders: this.foldersService.batchMoveFolders(foldersBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs))
     }).subscribe({
       next: ()=>{
-        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]+".", 12000]);},800);
+        setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+decodeURIComponent(this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1])+".", 12000]);},800);
         this.filesState.setItemsBeingMoved([]);
       }
     });

@@ -1,5 +1,5 @@
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {EventService} from "../../services/event-service.service";
 import {Utils} from "../../Utils";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
@@ -23,7 +23,7 @@ export class NavigationDrawerComponent implements OnInit {
   selectedTypeItems: string[] = [];
   breadCrumbs: string[] = [];
   anyItemRenaming = false;
-  constructor(private router: Router, protected eventService:EventService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService) {
+  constructor(private router: Router, protected eventService:EventService, private breadcrumbService:BreadcrumbService, protected filesState:FilesStateService, private route:ActivatedRoute) {
 
   }
   ngOnInit(): void {
@@ -127,6 +127,8 @@ export class NavigationDrawerComponent implements OnInit {
       this.setBackgroundColors(aLi, li, iElement, "antiquewhite");
       li.style.backgroundColor = "";
     }
+
+    this.router.navigate([], {relativeTo:this.route, replaceUrl: true, queryParams:{fileFilters:this.selectedTypeItems}});
   }
 
   typeItemSelectedMini(event: MouseEvent, name: string, liIndex: number) {

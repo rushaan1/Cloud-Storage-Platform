@@ -24,9 +24,9 @@ export class AppComponent implements AfterViewInit {
         this.miniToggle(this.miniset);
         this.initialMiniSet = true;
       }
-      // if (loading){
-      //   window.scrollTo({behavior: 'instant', top: 0});
-      // }
+      if (loading){
+        window.scrollTo({behavior: 'instant', top: 0});
+      }
     });
   }
 

@@ -1,4 +1,4 @@
-<div *ngIf="this.filesState.getItemsBeingMoved().length==0 else moveFile" (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file">
+<div #parent *ngIf="this.filesState.getItemsBeingMoved().length==0 else moveFile" (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file" [ngClass]="{'file-being-displayed':parent.style.display!='none'}">
     <div #fileOptionsMenu class="file-options-menu">
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="trash($event); expandOrCollapseOptions();" class="file-option" id="trash-file-option">Move to trash</div>
         <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="restore($event); expandOrCollapseOptions();" class="file-option" id="restore">Restore</div>
