@@ -99,6 +99,15 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
+            ThumbnailService thumbnailService = new ThumbnailService();
+            if (file.FileType == FileType.Image || file.FileType == FileType.GIF)
+            {
+                await thumbnailService.GenerateImageThumbnail(file.FileId, file.FilePath, file.FileType == FileType.GIF);
+            }
+            else if (file.FileType == FileType.Video)
+            {
+                await thumbnailService.GenerateVideoThumbnail(file.FileId, file.FilePath);
+            }
             var response = file.ToFileResponse();
             return response;
         }

@@ -20,8 +20,10 @@
     <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : this.filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
     <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
-    <div ngClass="{{FileType[type]}}" class="file-item-icon"></div>
-
+    <div [ngClass]="{'file-item-icon':FileFolder.thumbnail==null, 'thumbnail-active':FileFolder.thumbnail!=null}" class="file-item-icon {{FileType[type]}}">
+      <img width="90px" height="90px" *ngIf="FileFolder.thumbnail!=null" [src]="'data:image/png;base64,' + FileFolder.thumbnail" alt="image">
+      <div *ngIf="FileFolder.fileType==FileType.Video && FileFolder.thumbnail !=null" class="film-frame"></div>
+    </div>
 
     <div class="file-name-text">
         <div *ngIf="!this.renaming" class="file-name-text-div">{{this.name}}</div>

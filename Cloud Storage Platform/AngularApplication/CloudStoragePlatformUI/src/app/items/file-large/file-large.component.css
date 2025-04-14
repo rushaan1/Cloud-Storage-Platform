@@ -12,6 +12,10 @@
   width: 45px;
 }
 
+.thumbnail-active{
+  background: unset !important;
+}
+
 .file-move-state{
   display: flex;
   flex-direction: row;
@@ -37,6 +41,15 @@
 .file {
   padding: 15px;
   position: relative;
+}
+
+.film-frame{
+  background: url("C:\\Users\\rusha\\OneDrive\\Pictures\\filmframe.webp") !important;
+  background-size: cover !important;
+  position: absolute !important;
+  width: 90px;
+  height: 90px;
+  top:40px;
 }
 
 .file:hover {

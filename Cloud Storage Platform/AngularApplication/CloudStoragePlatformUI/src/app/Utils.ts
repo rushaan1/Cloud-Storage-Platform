@@ -60,7 +60,8 @@ export class Utils {
         data.isFavorite,
         data.isTrash,
         data.fileType as FileType,
-        false
+        false,
+        data.thumbnail
       );
     } else {
       return new File(
@@ -70,7 +71,7 @@ export class Utils {
         data.isFavorite,
         data.isTrash,
         FileType.Folder,
-        false // uncreated
+        false
       );
     }
   }

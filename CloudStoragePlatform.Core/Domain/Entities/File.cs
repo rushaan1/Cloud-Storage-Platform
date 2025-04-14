@@ -1,5 +1,6 @@
 ﻿using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Enums;
+using CloudStoragePlatform.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -25,6 +26,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
 
         public FileResponse ToFileResponse()
         {
+            byte[]? bytes = ThumbnailService.GetThumbnail(FileId);
             return new FileResponse()
             {
                 FileId = FileId,
@@ -32,7 +34,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
                 FilePath = FilePath,
                 IsFavorite = IsFavorite,
                 IsTrash = IsTrash, 
-                FileType = FileType
+                FileType = FileType,
+                Thumbnail = bytes
             };
         }
     }

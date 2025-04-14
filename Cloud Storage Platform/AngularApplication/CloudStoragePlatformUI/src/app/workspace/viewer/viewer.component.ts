@@ -430,7 +430,8 @@ export class ViewerComponent implements OnInit, OnDestroy{
       isFavorite: false,
       isTrash: false,
       uncreated: true,
-      fileType: FileType.Folder
+      fileType: FileType.Folder,
+      thumbnail: null
     };
     this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),folder]);
   }
@@ -466,7 +467,6 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   fileFilterUpdates(f:File, event:boolean){
     event ? this.guidsHiddenDueToFileFilter.push(f.fileId) : this.guidsHiddenDueToFileFilter = this.guidsHiddenDueToFileFilter.filter((id) => id != f.fileId)
-    console.log(this.guidsHiddenDueToFileFilter);
   }
 
   protected readonly Utils = Utils;

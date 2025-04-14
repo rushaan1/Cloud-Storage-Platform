@@ -15,5 +15,6 @@ namespace CloudStoragePlatform.Core.DTO
         public bool? IsFavorite { get; set; }
         public bool? IsTrash { get; set; }
         public FileType FileType { get; set; }
+        public byte[]? Thumbnail { get; set; }
     }
 }

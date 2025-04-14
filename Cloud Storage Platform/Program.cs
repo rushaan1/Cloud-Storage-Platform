@@ -39,7 +39,7 @@ namespace CloudStoragePlatform.Web
                     });
             });
 
-            builder.Services.AddScoped<IRetrievalService, RetrievalService>();
+            builder.Services.AddScoped<IRetrievalService, BulkRetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
             builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
