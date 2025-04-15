@@ -21,8 +21,7 @@
     <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
     <div [ngClass]="{'file-item-icon':FileFolder.thumbnail==null, 'thumbnail-active':FileFolder.thumbnail!=null}" class="file-item-icon {{FileType[type]}}">
-      <img width="90px" height="90px" *ngIf="FileFolder.thumbnail!=null" [src]="'data:image/png;base64,' + FileFolder.thumbnail" alt="image">
-      <div *ngIf="FileFolder.fileType==FileType.Video && FileFolder.thumbnail !=null" class="film-frame"></div>
+      <img class="thumbnail" *ngIf="FileFolder.thumbnail!=null" [src]="'data:image/png;base64,' + FileFolder.thumbnail" alt="image">
     </div>
 
     <div class="file-name-text">

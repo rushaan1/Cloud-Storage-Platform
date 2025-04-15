@@ -16,13 +16,13 @@ namespace CloudStoragePlatform.Core.Services
             await Task.Run(() =>
             {
                 using var image = Image.Load(filePath);
-                //if (isGIF)
-                //{
-                //    while (image.Frames.Count > 1)
-                //    {
-                //        image.Frames.RemoveFrame(1);
-                //    }
-                //}
+                if (isGIF)
+                {
+                    while (image.Frames.Count > 1)
+                    {
+                        image.Frames.RemoveFrame(1);
+                    }
+                }
                 image.Mutate(x => x.Resize(new ResizeOptions
                 {
                     Size = new Size(200, 200),
@@ -38,7 +38,7 @@ namespace CloudStoragePlatform.Core.Services
         public async Task GenerateVideoThumbnail(Guid id, string filePath)
         {
             var outputPath = @"C:\CloudStoragePlatform\thumbnails\" + id + ".png";
-            var overlayPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "playbtn.png");
+            var overlayPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "filmframe.png");
             var ffmpeg = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "ffmpeg.exe");
 
             var startInfo = new ProcessStartInfo
@@ -47,8 +47,8 @@ namespace CloudStoragePlatform.Core.Services
                 Arguments = $"-i \"{filePath}\" -i \"{overlayPath}\" -ss 00:00:01 -vframes 1 " +
                             "-filter_complex \"[0:v]scale=200:-1[bg];[bg][1:v]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2\" " +
                             $"\"{outputPath}\" -y",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
@@ -66,6 +66,11 @@ namespace CloudStoragePlatform.Core.Services
             }
             var bytes = File.ReadAllBytes(@"C:\CloudStoragePlatform\thumbnails\" + id + ".png");
             return bytes;
+        }
+
+        public void DeleteThumbnail(Guid id) 
+        {
+
         }
     }
 }

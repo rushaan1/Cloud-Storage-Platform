@@ -296,12 +296,13 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       case HttpEventType.UploadProgress:
         if (event.total) {
           this.uploadProgress = Math.round((100 * event.loaded) / event.total);
+          if (this.uploadProgress == 100) {
+            this.uploadProgress = -1;
+          }
         }
         break;
       case HttpEventType.Response:
-        console.log('Upload complete!', event.body);
         this.uploadProgress = -1;
-        // this.uploadInputHidden.nativeElement.value = '';
         break;
     }
   }

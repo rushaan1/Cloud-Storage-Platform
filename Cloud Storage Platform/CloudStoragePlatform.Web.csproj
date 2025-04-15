@@ -35,7 +35,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<Content Include="ffmpeg\playbtn.png">
+		<Content Include="ffmpeg\filmframe.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

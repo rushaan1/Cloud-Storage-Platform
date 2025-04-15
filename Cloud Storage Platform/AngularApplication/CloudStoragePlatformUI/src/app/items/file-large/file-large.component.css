@@ -12,8 +12,17 @@
   width: 45px;
 }
 
+.thumbnail {
+  height: fit-content;
+  width: fit-content;
+  max-height: 90px;
+  max-width: 90px;
+  display: inline;
+}
+
 .thumbnail-active{
   background: unset !important;
+  text-align: center;
 }
 
 .file-move-state{
@@ -43,14 +52,14 @@
   position: relative;
 }
 
-.film-frame{
-  background: url("C:\\Users\\rusha\\OneDrive\\Pictures\\filmframe.webp") !important;
-  background-size: cover !important;
-  position: absolute !important;
-  width: 90px;
-  height: 90px;
-  top:40px;
-}
+/*.film-frame{*/
+/*  background: url("C:\\Users\\rusha\\OneDrive\\Pictures\\filmframe.webp") !important;*/
+/*  background-size: cover !important;*/
+/*  position: absolute !important;*/
+/*  !*width: 90px;*!*/
+/*  !*height: 90px;*!*/
+/*  top: 40px;*/
+/*}*/
 
 .file:hover {
   background-color: rgba(211, 211, 211, 0.593);

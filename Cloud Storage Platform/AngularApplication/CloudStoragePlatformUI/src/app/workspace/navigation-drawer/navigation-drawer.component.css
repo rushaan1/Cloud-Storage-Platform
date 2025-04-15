@@ -172,7 +172,7 @@ a {
     height: 25px;
     background: url("C:\\Users\\rusha\\source\\repos\\Cloud Storage Platform\\Cloud Storage Platform\\AngularApplication\\CloudStoragePlatformUI\\src\\storage-bg.png");
     background-size: cover;
-    transition: width 1s ease-in-out;
+    transition: width 0.2s ease-in-out;
 }
 
 .space{
