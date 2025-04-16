@@ -5,6 +5,7 @@ import {Router} from "@angular/router";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 import {finalize, tap} from "rxjs";
+import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 
 @Component({
   selector: 'file-preview',
@@ -14,9 +15,10 @@ import {finalize, tap} from "rxjs";
 export class PreviewComponent implements AfterViewInit, OnDestroy{
   @Input() file!: File;
   fileText: string = '';
+  fileUrlSafe!: SafeResourceUrl;
   fileUrl: string = '';
   protected readonly FileType = FileType;
-  constructor(protected router:Router, private http: HttpClient, private loader:LoadingService) {}
+  constructor(protected router:Router, private http: HttpClient, private loader:LoadingService, private sanitizer: DomSanitizer) {}
 
   ngAfterViewInit(): void {
     this.loadFile();
@@ -42,9 +44,11 @@ export class PreviewComponent implements AfterViewInit, OnDestroy{
           reader.readAsText(res.body!);
         } else {
           this.fileUrl = URL.createObjectURL(res.body!);
+          this.fileUrlSafe = this.sanitizer.bypassSecurityTrustResourceUrl(this.fileUrl);
         }
       }
     });
   }
 
+  protected readonly window = window;
 }

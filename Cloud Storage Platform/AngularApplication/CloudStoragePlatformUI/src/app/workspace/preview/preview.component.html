@@ -9,15 +9,20 @@
   <button (click)="router.navigate(['filemetadata',file.fileId])" title="File metadata" class="btn">
     <i class="fa-solid fa-circle-info"></i>
   </button>
+  <button (click)="window.open(fileUrl, '_blank')" class="btn" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open full</button>
 </div>
 <div *ngIf="file.fileName.split('.')[file.fileName.split('.').length-1] == 'txt'">
   <pre>{{ fileText }}</pre>
 </div>
 
 <div class="previewParent">
-  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="fileUrl" [width]="'fit-content'" [height]="'450px'" alt="image"/>
+  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="fileUrlSafe" [width]="'fit-content'" [height]="'450px'" alt="image"/>
 
-  <video *ngIf="file.fileType==FileType.Video" src="{{fileUrl}}" controls width="600"></video>
+  <video *ngIf="file.fileType==FileType.Video" [src]="fileUrlSafe"  controls width="600"></video>
 
-  <audio *ngIf="file.fileType==FileType.Audio" src="{{fileUrl}}" controls></audio>
+  <audio *ngIf="file.fileType==FileType.Audio" [src]="fileUrlSafe"  controls></audio>
+
+  <
+
+  <iframe [attr.src]="fileUrlSafe" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"> </iframe>
 </div>

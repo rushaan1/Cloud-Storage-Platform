@@ -44,6 +44,7 @@ namespace Cloud_Storage_Platform.Controllers
                 ".mp3" => "audio/mpeg",
                 ".wav" => "audio/wav",
                 ".webp" => "image/webp",
+                ".pdf" => "application/pdf",
                 _ => null
             };
 

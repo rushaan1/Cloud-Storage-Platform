@@ -41,6 +41,12 @@ img, video{
   margin: 15px;
 }
 
+iframe{
+  width: 95%;
+  height: 500px;
+  margin-bottom: 20px;
+}
+
 audio{
   margin-top: 20px;
   width: 50%;
