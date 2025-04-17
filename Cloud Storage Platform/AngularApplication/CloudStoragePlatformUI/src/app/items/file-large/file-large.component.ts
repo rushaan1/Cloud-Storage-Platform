@@ -183,7 +183,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     const menu = this.fileOptionsMenu.nativeElement;
     if (this.fileOptionsVisible == false) {
       menu.style.visibility = "visible";
-      menu.style.height = "200px";
+      menu.style.height = "240px";
       this.fileOptionsVisible = true;
       this.eventService.emit("file options expanded", this.uniqueComponentIdentifierUUID);
       this.ellipsis.nativeElement.style.backgroundColor = "lightgray";
@@ -430,4 +430,5 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
 
   protected readonly Utils = Utils;
   protected readonly FileType = FileType;
+  protected readonly window = window;
 }

@@ -25,7 +25,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpGet("filePreview")]
-        public IActionResult GetFile(string filePath)
+        public async Task<IActionResult> GetFileForPreview(string filePath)
         {
             if (!System.IO.File.Exists(filePath))
             {
@@ -53,9 +53,19 @@ namespace Cloud_Storage_Platform.Controllers
                 return BadRequest("Unsupported file type");
             }
 
-            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
             return File(fileBytes, mimeType);
         }
+
+        [HttpGet]
+        [Route("downloadFolder")]
+        public async Task<IActionResult> DownloadFolder(Guid id) 
+        {
+            var downloadResponse = await _foldersRetrievalService.DownloadFolder(id);
+            MemoryStream zipStream = downloadResponse.zipStream;
+            return File(zipStream, "application/zip", downloadResponse.folderName+".zip");
+        }
+
 
         [HttpGet]
         [Route("getFolderById")]

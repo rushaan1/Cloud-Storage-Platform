@@ -33,26 +33,29 @@ namespace CloudStoragePlatform.Core.Services
             return folder.ToFolderResponse();
         }
 
-        public async Task<MemoryStream> DownloadFolder(Guid fid) 
+        public async Task<(MemoryStream zipStream, string folderName)> DownloadFolder(Guid fid) 
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
             if (folder == null)
             {
-                return null;
+                throw new DirectoryNotFoundException();
             }
             List<File> allSubFilesUptoMaxDepth = await _fileRepository.GetFilteredFiles(f => f.FilePath.Contains(folder.FolderPath));
-            using MemoryStream zipStream = new MemoryStream();
-            using ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true);
-            foreach (File subFile in allSubFilesUptoMaxDepth)
+            MemoryStream zipStream = new MemoryStream();
+            using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
             {
-                string path = $"{folder.FolderName}/"+subFile.FilePath.Replace(folder.FolderPath, "").Replace("\\", "/");
-                var entry = archive.CreateEntry(path);
-                using var entryStream = entry.Open();
-                await using var fileStream = System.IO.File.OpenRead(subFile.FilePath);
-                await fileStream.CopyToAsync(entryStream);
+                foreach (File subFile in allSubFilesUptoMaxDepth)
+                {
+                    string path = $"{folder.FolderName}" + subFile.FilePath.Replace(folder.FolderPath, "").Replace("\\", "/");
+
+                    var entry = archive.CreateEntry(path);
+                    using var entryStream = entry.Open();
+                    await using var fileStream = System.IO.File.OpenRead(subFile.FilePath);
+                    await fileStream.CopyToAsync(entryStream);
+                }
             }
             zipStream.Seek(0, SeekOrigin.Begin);
-            return zipStream;
+            return (zipStream, folder.FolderName);
         }
 
         public async Task<FolderResponse?> GetFolderByFolderPath(string fpath)
