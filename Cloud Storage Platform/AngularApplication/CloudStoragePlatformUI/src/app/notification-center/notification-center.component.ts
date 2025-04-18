@@ -391,5 +391,10 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   getConcatenatedMovingItemsNames(){
     return this.itemsBeingMoved.map(f=>f.fileName).join(", ");
   }
-
+  downloadSelectedFolders(){
+    const ids = this.selectedItems.map(f=>f.fileId).join("&ids=");
+    const url = `https://localhost:7219/api/Retrievals/downloadFolder?ids=${ids}&name=${encodeURIComponent(this.selectedItems[0].fileName)}`;
+    window.open(url, '_blank');
+    this.unselect();
+  }
 }

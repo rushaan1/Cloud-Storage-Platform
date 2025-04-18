@@ -5,6 +5,7 @@ using CloudStoragePlatform.Core.ServiceContracts;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
@@ -33,29 +34,48 @@ namespace CloudStoragePlatform.Core.Services
             return folder.ToFolderResponse();
         }
 
-        public async Task<(MemoryStream zipStream, string folderName)> DownloadFolder(Guid fid) 
+        public async Task DownloadFolder(List<Guid> fids, Stream outputStream)
         {
-            Folder? folder = await _foldersRepository.GetFolderByFolderId(fid);
-            if (folder == null)
+            List<Folder?> folders = new();
+            foreach (var fid in fids) 
+            {
+                folders.Add(await _foldersRepository.GetFolderByFolderId(fid));
+            }
+            
+            if (folders.Contains(null))
             {
                 throw new DirectoryNotFoundException();
             }
-            List<File> allSubFilesUptoMaxDepth = await _fileRepository.GetFilteredFiles(f => f.FilePath.Contains(folder.FolderPath));
-            MemoryStream zipStream = new MemoryStream();
-            using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
+            using (ZipArchive archive = new ZipArchive(outputStream, ZipArchiveMode.Create, leaveOpen: false))
             {
-                foreach (File subFile in allSubFilesUptoMaxDepth)
+                foreach (var folder in folders)
                 {
-                    string path = $"{folder.FolderName}" + subFile.FilePath.Replace(folder.FolderPath, "").Replace("\\", "/");
-
-                    var entry = archive.CreateEntry(path);
-                    using var entryStream = entry.Open();
-                    await using var fileStream = System.IO.File.OpenRead(subFile.FilePath);
-                    await fileStream.CopyToAsync(entryStream);
+                    List<File> allSubFilesUptoMaxDepth = await _fileRepository.GetFilteredFiles(f => f.FilePath.Contains(folder.FolderPath));
+                    List<Folder> allSubFoldersUptoMaxDepth = await _foldersRepository.GetFilteredFolders(f => f.FolderPath.Contains(folder.FolderPath));
+                    //.Replace(folder.FolderPath, "").Replace("\\", "/")
+                    foreach (var subFolder in allSubFoldersUptoMaxDepth) 
+                    {
+                        string path = $"{folder.FolderName}" + subFolder.FolderPath.Replace(folder.FolderPath, "").Replace("\\", "/") + "/";
+                        if (folders.Count > 1)
+                        {
+                            path = folders.Count + " folders inside/" + path;
+                        }
+                        archive.CreateEntry(path);
+                    }
+                    foreach (File subFile in allSubFilesUptoMaxDepth)
+                    {
+                        string path = $"{folder.FolderName}" + subFile.FilePath.Replace(folder.FolderPath, "").Replace("\\", "/");
+                        if (folders.Count > 1)
+                        {
+                            path = folders.Count + " folders inside/" + path;
+                        }
+                        var entry = archive.CreateEntry(path);
+                        using var entryStream = entry.Open();
+                        await using var fileStream = System.IO.File.OpenRead(subFile.FilePath);
+                        await fileStream.CopyToAsync(entryStream);
+                    }
                 }
             }
-            zipStream.Seek(0, SeekOrigin.Begin);
-            return (zipStream, folder.FolderName);
         }
 
         public async Task<FolderResponse?> GetFolderByFolderPath(string fpath)

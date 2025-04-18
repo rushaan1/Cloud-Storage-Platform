@@ -4,6 +4,7 @@ using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.ServiceContracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace Cloud_Storage_Platform.Controllers
 {
@@ -59,11 +60,19 @@ namespace Cloud_Storage_Platform.Controllers
 
         [HttpGet]
         [Route("downloadFolder")]
-        public async Task<IActionResult> DownloadFolder(Guid id) 
+        public async Task DownloadFolder([FromQuery] List<Guid> ids, string name) 
         {
-            var downloadResponse = await _foldersRetrievalService.DownloadFolder(id);
-            MemoryStream zipStream = downloadResponse.zipStream;
-            return File(zipStream, "application/zip", downloadResponse.folderName+".zip");
+            if (ids.Count > 1) 
+            {
+                name = ids.Count + " folders download";
+            }
+            Response.ContentType = "application/zip";
+            Response.Headers["Content-Disposition"] =
+                new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = Uri.UnescapeDataString(name)+".zip"
+                }.ToString(); 
+            await _foldersRetrievalService.DownloadFolder(ids, new AsyncOnlyStreamWrapper(Response.Body));
         }
 
 

@@ -7,6 +7,7 @@ using CloudStoragePlatform.Core.Services;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using CloudStoragePlatform.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -62,6 +63,10 @@ namespace CloudStoragePlatform.Web
             
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.Configure<KestrelServerOptions>(opts =>
+            {
+                opts.AllowSynchronousIO = true;
+            });
 
             var app = builder.Build();
             app.UseStaticFiles();

@@ -11,7 +11,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
 {
     public interface IFoldersRetrievalService
     {
-        Task<(MemoryStream zipStream, string folderName)> DownloadFolder(Guid id);
+        Task DownloadFolder(List<Guid> fids, Stream outputStream);
         Task<FolderResponse?> GetFolderByFolderId(Guid id);
         Task<FolderResponse?> GetFolderByFolderPath(string path);
         Task<FileOrFolderMetadataResponse> GetMetadata(Guid folderId);
