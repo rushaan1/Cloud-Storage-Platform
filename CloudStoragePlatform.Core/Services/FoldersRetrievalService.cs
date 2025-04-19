@@ -34,10 +34,10 @@ namespace CloudStoragePlatform.Core.Services
             return folder.ToFolderResponse();
         }
 
-        public async Task DownloadFolder(List<Guid> fids, Stream outputStream)
+        public async Task DownloadFolder(List<Guid> folderIds, Stream outputStream)
         {
             List<Folder?> folders = new();
-            foreach (var fid in fids) 
+            foreach (var fid in folderIds) 
             {
                 folders.Add(await _foldersRepository.GetFolderByFolderId(fid));
             }
@@ -50,9 +50,9 @@ namespace CloudStoragePlatform.Core.Services
             {
                 foreach (var folder in folders)
                 {
-                    List<File> allSubFilesUptoMaxDepth = await _fileRepository.GetFilteredFiles(f => f.FilePath.Contains(folder.FolderPath));
-                    List<Folder> allSubFoldersUptoMaxDepth = await _foldersRepository.GetFilteredFolders(f => f.FolderPath.Contains(folder.FolderPath));
-                    //.Replace(folder.FolderPath, "").Replace("\\", "/")
+                    List<File> allSubFilesUptoMaxDepth = await _fileRepository.GetFilteredFiles(f => (f.FilePath+"\\").Contains(folder.FolderPath + "\\"));
+                    List<Folder> allSubFoldersUptoMaxDepth = await _foldersRepository.GetFilteredFolders(f => (f.FolderPath + "\\").Contains(folder.FolderPath + "\\"));
+
                     foreach (var subFolder in allSubFoldersUptoMaxDepth) 
                     {
                         string path = $"{folder.FolderName}" + subFolder.FolderPath.Replace(folder.FolderPath, "").Replace("\\", "/") + "/";
