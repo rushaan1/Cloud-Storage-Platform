@@ -16,4 +16,8 @@ export class LoadingService {
   loadingEnd(){
     this.loading.next(false);
   }
+
+  getLoadingStatus(){
+    return this.loading.getValue();
+  }
 }

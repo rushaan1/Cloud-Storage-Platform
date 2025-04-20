@@ -2,16 +2,16 @@ import {
   AfterViewChecked,
   AfterViewInit,
   Component,
-  ElementRef, Host,
+  ElementRef,
   HostListener,
   Input,
   Renderer2,
   ViewChild
 } from '@angular/core';
-import { FilesStateService } from '../services/StateManagementServices/files-state.service';
-import { EventService } from '../services/event-service.service';
+import {FilesStateService} from '../services/StateManagementServices/files-state.service';
+import {EventService} from '../services/event-service.service';
 import {File} from "../models/File";
-import {forkJoin, timestamp} from "rxjs";
+import {forkJoin} from "rxjs";
 import {FilesAndFoldersService} from "../services/ApiServices/files-and-folders.service";
 import {BreadcrumbService} from "../services/StateManagementServices/breadcrumb.service";
 import {Utils} from "../Utils";
@@ -391,10 +391,33 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   getConcatenatedMovingItemsNames(){
     return this.itemsBeingMoved.map(f=>f.fileName).join(", ");
   }
-  downloadSelectedFolders(){
-    const ids = this.selectedItems.map(f=>f.fileId).join("&ids=");
-    const url = `https://localhost:7219/api/Retrievals/downloadFolder?ids=${ids}&name=${encodeURIComponent(this.selectedItems[0].fileName)}`;
+
+  download() {
+    const folders = this.selectedItems.filter(item => item.fileType == FileType.Folder);
+    const files = this.selectedItems.filter(item => item.fileType != FileType.Folder);
+
+    const folderIds = folders.map(item => item.fileId).join("&folderIds=");
+    const fileIds = files.map(item => item.fileId).join("&fileIds=");
+
+    const queryParams = [];
+
+    if (folderIds) {
+      queryParams.push(`folderIds=${folderIds}`);
+    }
+
+    if (fileIds) {
+      queryParams.push(`fileIds=${fileIds}`);
+    }
+
+    const nameSource = folders.length > 0 ? folders[0] : files[0];
+    const name = encodeURIComponent(nameSource.fileName);
+
+    queryParams.push(`name=${name}`);
+
+    const url = `https://localhost:7219/api/Retrievals/download?${queryParams.join("&")}`;
+
     window.open(url, '_blank');
     this.unselect();
   }
+
 }

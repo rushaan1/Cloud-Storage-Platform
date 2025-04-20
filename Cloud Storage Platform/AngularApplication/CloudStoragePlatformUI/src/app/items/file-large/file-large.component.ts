@@ -428,7 +428,18 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     });
   }
 
+  download(){
+    let url = "https://localhost:7219/api/Retrievals/download";
+    if (this.FileFolder.fileType==FileType.Folder){
+      url = url+"?folderIds="+this.FileFolder.fileId;
+    }
+    else{
+      url = url+"?fileIds="+this.FileFolder.fileId;
+    }
+    url += "&name="+this.FileFolder.fileName;
+    window.open(url, "_blank");
+  }
+
   protected readonly Utils = Utils;
   protected readonly FileType = FileType;
-  protected readonly window = window;
 }

@@ -8,7 +8,7 @@
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="activateMoveState($event); expandOrCollapseOptions();" class="file-option" id="move-file-option">Move to...</div>
         <div *ngIf="this.FileFolder.isFavorite" (click)="toggleFavorite($event); expandOrCollapseOptions();" class="file-option" id="unfavorite-file-option">UnFavorite</div>
         <div *ngIf="!this.FileFolder.isFavorite" (click)="toggleFavorite($event); expandOrCollapseOptions();" class="file-option" id="favorite-file-option">Favorite</div>
-        <div (click)="window.open('https://localhost:7219/api/Retrievals/downloadFolder?ids='+FileFolder.fileId+'&name='+FileFolder.fileName)" class="file-option" id="download">Download</div>
+        <div (click)="download();" class="file-option" id="download">Download</div>
         <div (click)="expandOrCollapseOptions(); router.navigate(this.type==FileType.Folder ? ['foldermetadata',FileFolder.fileId]:['filemetadata',FileFolder.fileId])" class="file-option" id="info-file-option">Info</div>
     </div>
 

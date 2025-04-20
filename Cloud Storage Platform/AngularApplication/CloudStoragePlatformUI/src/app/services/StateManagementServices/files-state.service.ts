@@ -24,6 +24,8 @@ export class FilesStateService {
   private filesInViewer = new BehaviorSubject<File[]>([]);
   filesInViewer$ = this.filesInViewer.asObservable();
 
+  fileOpened = false;
+
   addSelectedItem(item: File){
     this.selectedItems.next([...this.selectedItems.value, item]);
   }

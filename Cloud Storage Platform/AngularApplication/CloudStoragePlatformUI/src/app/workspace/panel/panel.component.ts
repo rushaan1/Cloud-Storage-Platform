@@ -196,6 +196,17 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         }
       });
     }
+    else if (this.filesState.fileOpened){
+      let crumbs:string[] = [];
+      this.breadCrumbService.getBreadcrumbs().forEach(f=>crumbs.push(f));
+      crumbs.pop();
+      this.filesService.getAllFilesAndSubFoldersByParentFolderPath(Utils.constructFilePathForApi(crumbs)).subscribe({
+        next: data => {
+          this.filesInMutualPath = data.map(f=>f.fileName);
+          this.processUpload(this.filesInMutualPath, event);
+        }
+      });
+    }
     else{
       this.filesInMutualPath = this.filesState.getFilesInViewer().map(f=>f.fileName);
       this.processUpload(this.filesInMutualPath, event);
@@ -208,6 +219,9 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     let uploadPath = this.crumbs;
     if (uploadPath[0] != "home"){
       uploadPath = ["home"];
+    }
+    if (this.filesState.fileOpened){
+      uploadPath = this.breadCrumbService.getBreadcrumbs().slice(0, this.breadCrumbService.getBreadcrumbs().length-1);
     }
     localStorage.setItem("uploadingTo", uploadPath[uploadPath.length-1]);
 

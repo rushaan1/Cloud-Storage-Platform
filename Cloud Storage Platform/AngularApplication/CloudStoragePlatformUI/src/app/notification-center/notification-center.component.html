@@ -13,7 +13,7 @@
   <button *ngIf="this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]=='trash'" (click)="restore()" class="trash-btn panel-selected-menu-btn">Restore</button>
   <button *ngIf="this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1]=='trash'" (click)="delete()" class="trash-btn panel-selected-menu-btn">Delete Permanently</button>
   <button (click)="activateMoveState()" class="trash-btn panel-selected-menu-btn">Move to other folder</button>
-  <button (click)="downloadSelectedFolders()" class="panel-selected-menu-btn">Download All</button>
+  <button (click)="download()" class="panel-selected-menu-btn">Download All</button>
 </div>
 
 <div #deleteConfirmNotif class="info-panel sticky-notif">

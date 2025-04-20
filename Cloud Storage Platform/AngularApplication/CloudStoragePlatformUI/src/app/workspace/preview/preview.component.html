@@ -16,13 +16,11 @@
 </div>
 
 <div class="previewParent">
-  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="fileUrlSafe" [width]="'fit-content'" [height]="'450px'" alt="image"/>
+  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath" [width]="'fit-content'" [height]="'450px'" alt="image"/>
 
-  <video *ngIf="file.fileType==FileType.Video" [src]="fileUrlSafe"  controls width="600"></video>
+  <video *ngIf="file.fileType==FileType.Video" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls width="600"></video>
 
-  <audio *ngIf="file.fileType==FileType.Audio" [src]="fileUrlSafe"  controls></audio>
+  <audio *ngIf="file.fileType==FileType.Audio" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls></audio>
 
-  <
-
-  <iframe [attr.src]="fileUrlSafe" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"> </iframe>
+  <iframe [attr.src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"> </iframe>
 </div>

@@ -12,12 +12,12 @@ namespace Cloud_Storage_Platform.Controllers
     [ApiController]
     public class RetrievalsController : ControllerBase
     {
-        private readonly IRetrievalService _retrievalService;
+        private readonly IBulkRetrievalService _retrievalService;
         private readonly IFoldersRetrievalService _foldersRetrievalService;
         private readonly IFilesRetrievalService _filesRetrievalService;
         private readonly IConfiguration _configuration;
 
-        public RetrievalsController(IRetrievalService retrievalService, IFoldersRetrievalService foldersRetrievalService, IConfiguration configuration, IFilesRetrievalService filesRetrievalService)
+        public RetrievalsController(IBulkRetrievalService retrievalService, IFoldersRetrievalService foldersRetrievalService, IConfiguration configuration, IFilesRetrievalService filesRetrievalService)
         {
             _foldersRetrievalService = foldersRetrievalService;
             _configuration = configuration;
@@ -54,25 +54,54 @@ namespace Cloud_Storage_Platform.Controllers
                 return BadRequest("Unsupported file type");
             }
 
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, mimeType);
+            //var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
+            Response.Headers.Add("X-Accel-Buffering", "no");
+            return new RentedStreamResult(filePath, mimeType);
         }
 
         [HttpGet]
-        [Route("downloadFolder")]
-        public async Task DownloadFolder([FromQuery] List<Guid> ids, string name) 
+        [Route("download")]
+        public async Task Download([FromQuery] List<Guid>? folderIds, [FromQuery] List<Guid>? fileIds, string name)
         {
-            if (ids.Count > 1) 
+            folderIds ??= new List<Guid>();
+            fileIds ??= new List<Guid>();
+
+            if (folderIds.Count == 0 && fileIds.Count == 0)
             {
-                name = ids.Count + " folders download";
+                return;
             }
-            Response.ContentType = "application/zip";
+
+            if (folderIds.Count > 1)
+            {
+                name = folderIds.Count + " folders ";
+                if (fileIds.Count > 0) { name += "and " + fileIds.Count + " file(s) "; }
+                name += "download from cloud";
+            }
+            else if (folderIds.Count == 1 && fileIds.Count > 0)
+            {
+                name += " folder and " + fileIds.Count + " file(s) download from cloud";
+            }
+            else if (fileIds.Count > 1)
+            {
+                name = fileIds.Count + " files download from cloud";
+            }
+            string finalFileName = Uri.UnescapeDataString(name);
+            if (folderIds.Count == 0 && fileIds.Count == 1)
+            {
+                Response.ContentType = "application/octet-stream";
+            }
+            else
+            {
+                Response.ContentType = "application/zip";
+                finalFileName += ".zip";
+            }
+
             Response.Headers["Content-Disposition"] =
                 new ContentDispositionHeaderValue("attachment")
                 {
-                    FileName = Uri.UnescapeDataString(name)+".zip"
-                }.ToString(); 
-            await _foldersRetrievalService.DownloadFolder(ids, new AsyncOnlyStreamWrapper(Response.Body));
+                    FileName = finalFileName
+                }.ToString();
+            await _retrievalService.DownloadFolder(folderIds, fileIds, new AsyncOnlyStreamWrapper(Response.Body));
         }
 
 
@@ -117,7 +146,7 @@ namespace Cloud_Storage_Platform.Controllers
             {
                 folderDetailsResponse = await _foldersRetrievalService.GetMetadata(id);
             }
-            else 
+            else
             {
                 folderDetailsResponse = await _filesRetrievalService.GetMetadata(id);
             }

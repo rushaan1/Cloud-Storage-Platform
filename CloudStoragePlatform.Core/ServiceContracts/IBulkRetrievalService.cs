@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Core.ServiceContracts
 {
-    public interface IRetrievalService
+    public interface IBulkRetrievalService
     {
+
+        Task DownloadFolder(List<Guid> folderIds, List<Guid> fileIds, Stream outputStream);
         Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllChildren(Guid parentFolderId, SortOrderOptions sortOptions);
         Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllFavorites(SortOrderOptions sortOptions);
         Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllInHome(SortOrderOptions sortOptions);

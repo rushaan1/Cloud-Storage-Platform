@@ -42,7 +42,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     private route: ActivatedRoute,
     private foldersService:FilesAndFoldersService,
     private eventService:EventService,
-    private loaderService:LoadingService,
+    protected loaderService:LoadingService,
     private breadcrumbService:BreadcrumbService,
     protected filesState:FilesStateService,
     private ngZone: NgZone,
@@ -290,6 +290,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.crumbs = Utils.obtainBreadCrumbs(appUrl);
     this.breadcrumbService.setBreadcrumbs(this.crumbs);
     this.loaderService.loadingStart();
+    this.filesState.fileOpened = false;
     switch(appUrl[0]){
       case "filter":
         if (appUrl[1]){
@@ -335,6 +336,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
         break;
       case "preview":
         const constructedPathForApiFile = Utils.constructFilePathForApi(appUrl);
+        this.filesState.fileOpened = true;
         if (Utils.validString(constructedPathForApiFile)){
           this.foldersService.getFileOrFolderByPath(constructedPathForApiFile, false).subscribe({
             next: response => {

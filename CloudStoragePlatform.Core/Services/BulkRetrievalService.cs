@@ -6,6 +6,8 @@ using CloudStoragePlatform.Core.ServiceContracts;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,7 +16,7 @@ using File = CloudStoragePlatform.Core.Domain.Entities.File;
 
 namespace CloudStoragePlatform.Core.Services
 {
-    public class BulkRetrievalService : IRetrievalService
+    public class BulkRetrievalService : IBulkRetrievalService
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
@@ -24,6 +26,74 @@ namespace CloudStoragePlatform.Core.Services
             _foldersRepository = foldersRepository;
             _configuration = configuration;
             _filesRepository = filesRepository;
+        }
+
+        public async Task DownloadFolder(List<Guid> folderIds, List<Guid> fileIds, Stream outputStream)
+        {
+            List<Folder?> folders = new();
+            List<File?> files = new();
+            foreach (var fid in folderIds)
+            {
+                folders.Add(await _foldersRepository.GetFolderByFolderId(fid));
+            }
+            foreach (var fid in fileIds)
+            {
+                files.Add(await _filesRepository.GetFileByFileId(fid));
+            }
+
+            if (folders.Contains(null) || files.Contains(null))
+            {
+                throw new DirectoryNotFoundException();
+            }
+
+            if (folders.Count == 0 && files.Count == 1)
+            {
+                var file = files.First();
+                if (file != null)
+                {
+                    await using var fileStream = System.IO.File.OpenRead(file.FilePath);
+                    await fileStream.CopyToAsync(outputStream);
+                }
+                return;
+            }
+
+            using (ZipArchive archive = new ZipArchive(outputStream, ZipArchiveMode.Create, leaveOpen: false))
+            {
+                foreach (var folder in folders)
+                {
+                    List<File> allSubFilesUptoMaxDepth = await _filesRepository.GetFilteredFiles(f => (f.FilePath + "\\").Contains(folder.FolderPath + "\\"));
+                    List<Folder> allSubFoldersUptoMaxDepth = await _foldersRepository.GetFilteredFolders(f => (f.FolderPath + "\\").Contains(folder.FolderPath + "\\"));
+
+                    foreach (var subFolder in allSubFoldersUptoMaxDepth)
+                    {
+                        string path = $"{folder.FolderName}" + subFolder.FolderPath.Replace(folder.FolderPath, "").Replace("\\", "/") + "/";
+                        if (folders.Count > 1)
+                        {
+                            path = folders.Count + " folders inside/" + path;
+                        }
+                        archive.CreateEntry(path);
+                    }
+                    foreach (File subFile in allSubFilesUptoMaxDepth)
+                    {
+                        string path = $"{folder.FolderName}" + subFile.FilePath.Replace(folder.FolderPath, "").Replace("\\", "/");
+                        if (folders.Count > 1)
+                        {
+                            path = folders.Count + " folders inside/" + path;
+                        }
+                        var entry = archive.CreateEntry(path);
+                        using var entryStream = entry.Open();
+                        await using var fileStream = System.IO.File.OpenRead(subFile.FilePath);
+                        await fileStream.CopyToAsync(entryStream);
+                    }
+                }
+                foreach (var file in files)
+                {
+                    var entry = archive.CreateEntry(file.FileName);
+                    using var entryStream = entry.Open();
+                    await using var fileStream = System.IO.File.OpenRead(file.FilePath);
+                    await fileStream.CopyToAsync(entryStream);
+                }
+            }
         }
 
         public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllInHome(SortOrderOptions sortOptions)
