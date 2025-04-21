@@ -18,7 +18,7 @@
 <div class="previewParent">
   <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath" [width]="'fit-content'" [height]="'450px'" alt="image"/>
 
-  <video *ngIf="file.fileType==FileType.Video" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls width="600"></video>
+  <video preload="auto" *ngIf="file.fileType==FileType.Video" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls width="600"></video>
 
   <audio *ngIf="file.fileType==FileType.Audio" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls></audio>
 

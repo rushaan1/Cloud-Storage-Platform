@@ -35,7 +35,7 @@
 img, video{
   background-size: cover;
   max-width: 95%;
-  height: 450px;
+  max-height: 450px;
   border-radius: 10px;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.26);
   margin: 15px;

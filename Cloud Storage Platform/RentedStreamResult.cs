@@ -10,14 +10,14 @@ namespace Cloud_Storage_Platform
         public RentedStreamResult(string path, string contentType)
           => (_path, _contentType) = (path, contentType);
 
+        // This is an attempt to optimize file previewing endpoint (mainly memory usage) as much as possible without going in depth into video streaming
         public async Task ExecuteResultAsync(ActionContext context)
         {
             var response = context.HttpContext.Response;
             response.ContentType = _contentType;
             response.Headers["Accept-Ranges"] = "bytes";
-            response.Headers["Connection"] = "close";   // <- ensure per‑request teardown
+            response.Headers["Connection"] = "close"; 
 
-            // Rent one big buffer (e.g. 512KB)
             var poolBuf = ArrayPool<byte>.Shared.Rent(512 * 1024);
 
             try
@@ -30,15 +30,12 @@ namespace Cloud_Storage_Platform
                 var rangeHeader = context.HttpContext.Request.Headers["Range"].ToString();
                 var openEnded = rangeHeader.EndsWith("-", StringComparison.Ordinal);
 
-                // ParseRange gives you (start, intendedEnd)
                 var (start, intendedEnd) = ParseRange(context.HttpContext.Request, total);
 
-                // If it was open‑ended (no "-12345"), cap it to one buffer
                 var end = openEnded
                     ? Math.Min(start + poolBuf.Length - 1, total - 1)
                     : intendedEnd;
 
-                // Setup headers for this chunk
                 var length = end - start + 1;
                 response.StatusCode = (start == 0 && end == total - 1) ? 200 : 206;
                 response.Headers["Content-Range"] = $"bytes {start}-{end}/{total}";
@@ -48,7 +45,6 @@ namespace Cloud_Storage_Platform
                 var ct = context.HttpContext.RequestAborted;
                 long remaining = length;
 
-                // Read → Write → Flush, respecting cancellation
                 while (remaining > 0 && !ct.IsCancellationRequested)
                 {
                     int toRead = (int)Math.Min(poolBuf.Length, remaining);
@@ -87,12 +83,12 @@ namespace Cloud_Storage_Platform
             long end;
             if (range.Length == 2 && long.TryParse(range[1], out end))
             {
-                // Ensure the requested end is not larger than file
+                // Ensursing the requested end is not larger than file
                 end = Math.Min(end, fileLength - 1);
             }
             else
             {
-                // No end provided, serve to end of file
+                // End is not provided so serving to end of file
                 end = fileLength - 1;
             }
 
