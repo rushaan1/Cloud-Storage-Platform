@@ -32,6 +32,7 @@ namespace Cloud_Storage_Platform.Controllers
             {
                 return NotFound("File not found");
             }
+            // TODO After Azure integration ensure file being opened's metadata is being updated
 
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
             var mimeType = extension switch
@@ -54,9 +55,9 @@ namespace Cloud_Storage_Platform.Controllers
                 return BadRequest("Unsupported file type");
             }
 
-            //var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
-            Response.Headers.Add("X-Accel-Buffering", "no");
-            return new RentedStreamResult(filePath, mimeType);
+            var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
+            Response.Headers["X-Accel-Buffering"] = "no";
+            return File(stream, mimeType, true);
         }
 
         [HttpGet]

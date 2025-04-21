@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, Input, OnDestroy} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {File} from "../../models/File";
 import {FileType} from "../../models/FileType";
 import {Router} from "@angular/router";
@@ -12,42 +12,40 @@ import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
   templateUrl: './preview.component.html',
   styleUrl: './preview.component.css'
 })
-export class PreviewComponent implements AfterViewInit, OnDestroy{
+export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
   @Input() file!: File;
   fileText: string = '';
-  fileUrlSafe!: SafeResourceUrl;
-  fileUrl: string = '';
+  trustedUrl: SafeResourceUrl = '';
   protected readonly FileType = FileType;
-  constructor(protected router:Router, private http: HttpClient, private loader:LoadingService, private sanitizer: DomSanitizer) {}
+  constructor(private cd:ChangeDetectorRef,protected router:Router, private http: HttpClient, private loader:LoadingService, protected sanitizer: DomSanitizer) {}
 
   ngAfterViewInit(): void {
-    this.loadFile();
+    this.loadTxtFile();
   }
 
   ngOnDestroy() {
-    if (this.fileUrl && this.fileUrl.length > 0) {
-      URL.revokeObjectURL(this.fileUrl);
-    }
+    // if (this.fileUrl && this.fileUrl.length > 0) {
+    //   URL.revokeObjectURL(this.fileUrl);
+    // }
   }
 
-  loadFile() {
+  loadTxtFile() {
+    if (!this.file.filePath.endsWith(".txt")){return;}
     const url = `https://localhost:7219/api/Retrievals/filePreview`;
     const httpParams = new HttpParams()
       .set('filePath', this.file.filePath);
     this.loader.loadingStart();
     this.http.get(url, { responseType: 'blob', observe: 'response', params: httpParams}).pipe(finalize(()=>{this.loader.loadingEnd();})).subscribe({
       next: (res) => {
-        const mime = res.headers.get('Content-Type') || '';
-        if (mime.startsWith('text')) {
-          const reader = new FileReader();
-          reader.onload = () => this.fileText = reader.result as string;
-          reader.readAsText(res.body!);
-        } else {
-          this.fileUrl = URL.createObjectURL(res.body!);
-          this.fileUrlSafe = this.sanitizer.bypassSecurityTrustResourceUrl(this.fileUrl);
-        }
+        const reader = new FileReader();
+        reader.onload = () => this.fileText = reader.result as string;
+        reader.readAsText(res.body!);
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl('https://localhost:7219/api/Retrievals/filePreview?filePath=' + this.file.filePath);
   }
 
   protected readonly window = window;

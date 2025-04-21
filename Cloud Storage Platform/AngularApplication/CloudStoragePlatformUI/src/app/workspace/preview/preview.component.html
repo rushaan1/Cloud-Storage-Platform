@@ -9,18 +9,18 @@
   <button (click)="router.navigate(['filemetadata',file.fileId])" title="File metadata" class="btn">
     <i class="fa-solid fa-circle-info"></i>
   </button>
-  <button (click)="window.open(fileUrl, '_blank')" class="btn" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open full</button>
+  <button (click)="window.open('https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath, '_blank')" class="btn" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open full</button>
 </div>
 <div *ngIf="file.fileName.split('.')[file.fileName.split('.').length-1] == 'txt'">
   <pre>{{ fileText }}</pre>
 </div>
 
 <div class="previewParent">
-  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF" [ngSrc]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath" [width]="'fit-content'" [height]="'450px'" alt="image"/>
+  <img *ngIf="file.fileType==FileType.Image || file.fileType==FileType.GIF && trustedUrl" [src]="trustedUrl" [width]="'450'" [height]="'450'" alt="image"/>
 
-  <video preload="auto" *ngIf="file.fileType==FileType.Video" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls width="600"></video>
+  <video preload="metadata" *ngIf="file.fileType==FileType.Video" [src]="trustedUrl" controls width="600"></video>
 
-  <audio *ngIf="file.fileType==FileType.Audio" [src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath"  controls></audio>
+  <audio *ngIf="file.fileType==FileType.Audio" [src]="trustedUrl"  controls></audio>
 
-  <iframe [attr.src]="'https://localhost:7219/api/Retrievals/filePreview?filePath='+file.filePath" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"> </iframe>
+  <iframe [attr.src]="trustedUrl" *ngIf="file.fileType==FileType.Document && file.filePath.split('.')[file.filePath.split('.').length-1]=='pdf'"> </iframe>
 </div>
