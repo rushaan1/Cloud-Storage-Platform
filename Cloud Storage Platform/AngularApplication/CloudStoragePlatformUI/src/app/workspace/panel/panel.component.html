@@ -44,7 +44,8 @@
 
 
       <div class="style">
-        <div class="large-icon-text">Switch to list style</div>
+        <div *ngIf="localStorage.getItem('list')!='Y'" (click)="localStorage.setItem('list','Y'); cd.detectChanges();" class="large-icon-text">Switch to list style</div>
+        <div *ngIf="localStorage.getItem('list')=='Y'" (click)="localStorage.setItem('list','N'); cd.detectChanges();" class="large-icon-text">Switch to large icons</div>
       </div>
 
       <div class="dark-mode">

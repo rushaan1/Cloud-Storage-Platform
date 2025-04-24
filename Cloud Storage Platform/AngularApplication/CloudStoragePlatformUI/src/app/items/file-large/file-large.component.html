@@ -1,5 +1,5 @@
-<div #parent *ngIf="this.filesState.getItemsBeingMoved().length==0 else moveFile" (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" class="file" [ngClass]="{'file-being-displayed':parent.style.display!='none'}">
-    <div #fileOptionsMenu class="file-options-menu">
+<div #parent *ngIf="this.filesState.getItemsBeingMoved().length==0 else moveFile" (click)="this.fetchSubFoldersRedirect();" #file (mouseleave)="hoveringOver = false; !appIsInSelectionState ? hideCheckbox() : false" (mouseover)="hoveringOver = true; showCheckbox();" [title]="originalName" [ngClass]="{'file-large':localStorage.getItem('list')!='Y','file-list':localStorage.getItem('list')=='Y','file-being-displayed':parent.style.display!='none'}">
+    <div #fileOptionsMenu [ngClass]="{'file-options-menu-large':localStorage.getItem('list')!='Y','file-options-menu-list':localStorage.getItem('list')=='Y'}">
         <div *ngIf="crumbs[crumbs.length-1]!='trash'" (click)="trash($event); expandOrCollapseOptions();" class="file-option" id="trash-file-option">Move to trash</div>
         <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="restore($event); expandOrCollapseOptions();" class="file-option" id="restore">Restore</div>
         <div *ngIf="crumbs[crumbs.length-1]=='trash'" (click)="delete($event); expandOrCollapseOptions();" class="file-option" id="delete">Delete Permanently</div>
@@ -12,23 +12,24 @@
         <div (click)="expandOrCollapseOptions(); router.navigate(this.type==FileType.Folder ? ['foldermetadata',FileFolder.fileId]:['filemetadata',FileFolder.fileId])" class="file-option" id="info-file-option">Info</div>
     </div>
 
-    <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" class="file-options">
-        <i [ngClass]="{'ellipsis-visible':(!this.selected && !FileFolder.uncreated)}" #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
+    <div [title]="FileFolder.uncreated ? 'Cancel' : 'Options'" [ngClass]="{'file-options-large':localStorage.getItem('list')!='Y','file-options-list':localStorage.getItem('list')=='Y'}">
+        <i [ngClass]="{'ellipsis-visible':(!this.selected && !FileFolder.uncreated), 'fa-ellipsis-large':localStorage.getItem('list')!='Y','fa-ellipsis-list':localStorage.getItem('list')=='Y'}" #ellipsis (click)="expandOrCollapseOptions($event)" class="fa-solid fa-ellipsis"></i>
         <i (mouseenter)="hoveringOverDestroy=true" (mouseleave)="hoveringOverDestroy=false" #abortCreationCross (click)="destroy.emit(); filesState.setRenaming(false); filesState.setUncreatedFolderExists(false);" *ngIf="this.FileFolder.uncreated" class="fa-solid fa-xmark"></i>
     </div>
 
     <!--150x180.25-->
-    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : this.filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" id="selectFile"/>
-    <i *ngIf="this.FileFolder.isFavorite" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
+    <input *ngIf="!FileFolder.uncreated" (click)="$event?.stopPropagation(); selectFileCheckbox.nativeElement.checked ? filesState.addSelectedItem(FileFolder) : this.filesState.deselectItem(FileFolder);" #selectFile type="checkbox" name="selectFile" [id]="localStorage.getItem('list')!='Y'?'selectFile-large':'selectFile-list'"/>
+    <i *ngIf="this.FileFolder.isFavorite" [ngClass]="{'fa-heart-large':localStorage.getItem('list')!='Y','fa-heart-list':localStorage.getItem('list')=='Y'}" title="Added as favorite. Unfavorite from three-dot menu." class="fa-solid fa-heart"></i>
 
-    <div [ngClass]="{'file-item-icon':FileFolder.thumbnail==null, 'thumbnail-active':FileFolder.thumbnail!=null}" class="file-item-icon {{FileType[type]}}">
+    <div [ngClass]="{'file-item-icon-list':FileFolder.thumbnail==null && localStorage.getItem('list')=='Y','file-item-icon-large':FileFolder.thumbnail==null && localStorage.getItem('list')!='Y', 'thumbnail-active':FileFolder.thumbnail!=null}" class="{{FileType[type]}}">
       <img class="thumbnail" *ngIf="FileFolder.thumbnail!=null" [src]="'data:image/png;base64,' + FileFolder.thumbnail" alt="image">
     </div>
 
-    <div class="file-name-text">
-        <div *ngIf="!this.renaming" class="file-name-text-div">{{this.name}}</div>
-        <input #fileNameInput *ngIf="this.renaming" [formControl]="this.renameFormControl" (blur)="!hoveringOverDestroy ? renameEnter($event) : false" (keydown.enter)="renameEnter($event)" class="file-name-text-input" type="text" [value]="this.originalName"/>
+    <div [ngClass]="{'file-name-text-div-large':localStorage.getItem('list')!='Y','file-name-text-div-list':localStorage.getItem('list')=='Y'}">
+        <div *ngIf="!this.renaming" [ngClass]="{'file-name-text-input-large':localStorage.getItem('list')!='Y','file-name-text-input-list':localStorage.getItem('list')=='Y'}">{{this.name}}</div>
+        <input #fileNameInput *ngIf="this.renaming" [formControl]="this.renameFormControl" (blur)="!hoveringOverDestroy ? renameEnter($event) : false" (keydown.enter)="renameEnter($event)" [ngClass]="{'file-name-text-input-large':localStorage.getItem('list')!='Y','file-name-text-input-list':localStorage.getItem('list')=='Y'}" type="text" [value]="this.originalName"/>
     </div>
+  <span *ngIf="localStorage.getItem('list')=='Y'" class="fileTypeSpan">{{getFileTypeSpanContent()}}</span>
 </div>
 
 <ng-template #moveFile class="file-move-state">

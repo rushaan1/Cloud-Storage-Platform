@@ -1,4 +1,4 @@
-import {AfterViewChecked, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewChecked, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FormControl, Validators} from "@angular/forms";
 import {EventService} from "../../services/event-service.service";
 import {invalidCharacter, invalidFileNameChars} from "../../CustomValidators";
@@ -38,7 +38,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   pfpDropdownShowing = false;
   crumbs:string[] = [];
   filesInMutualPath:string[] = [];
-  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService, private filesState:FilesStateService){}
+  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService, private filesState:FilesStateService, protected cd:ChangeDetectorRef){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
@@ -331,4 +331,6 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       }
     }, 500);
   }
+
+  protected readonly localStorage = localStorage;
 }

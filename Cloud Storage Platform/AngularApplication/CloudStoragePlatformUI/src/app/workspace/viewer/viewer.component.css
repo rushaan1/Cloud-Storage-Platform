@@ -7,6 +7,10 @@
   text-wrap: wrap;
 }
 
+.w-100{
+  width: 100% !important;
+}
+
 /*.apply-width-for-file-from-viewer{*/
 /*  width: 120px;*/
 /*}*/

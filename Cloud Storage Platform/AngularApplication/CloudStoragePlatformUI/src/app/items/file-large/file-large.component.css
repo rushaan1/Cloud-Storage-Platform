@@ -1,8 +1,16 @@
-.file-item-icon {
+.file-item-icon-large {
   background: url('../item-icons/document-icon.png');
   background-size: cover;
   height: 90px;
   width: 90px;
+}
+
+.file-item-icon-list {
+  background: url('../item-icons/document-icon.png');
+  background-size: cover;
+  height: 45px;
+  width: 45px;
+  margin-left: 67px;
 }
 
 .file-item-icon-move-state {
@@ -47,9 +55,15 @@
   background-size: cover;
 }
 
-.file {
+.file-large {
   padding: 15px;
   position: relative;
+}
+
+.file-list {
+  padding: 2px;
+  position: relative;
+  display: flex !important;
 }
 
 /*.film-frame{*/
@@ -61,21 +75,41 @@
 /*  top: 40px;*/
 /*}*/
 
-.file:hover {
+.file-large:hover {
   background-color: rgba(211, 211, 211, 0.593);
   cursor: pointer;
 }
 
-.file-options {
+.file-list:hover {
+  background-color: rgba(211, 211, 211, 0.593);
+  cursor: pointer;
+}
+
+.file-options-large {
   text-align: right;
 }
 
-.fa-ellipsis {
+.file-options-list {
+  text-align: right;
+  align-self: center;
+  display: inline-block;
+  order: 3;
+  margin-left: 20%;
+}
+
+.fa-ellipsis-large {
   margin-right: 34px;
   padding: 4px;
   border-radius: 10px;
   position: relative;
   visibility: hidden;
+}
+
+.fa-ellipsis-list {
+  padding: 4px;
+  border-radius: 10px;
+  visibility: hidden;
+  align-self: center;
 }
 
 .ellipsis-visible {
@@ -95,12 +129,19 @@
   background-color: lightgray;
 }
 
-.file-name-text {
+.file-name-text-large {
   margin-left: 1.5px;
 }
 
+.file-name-text-list {
+  margin-left: 14.5px;
+  align-self: center;
+  width: 300px;
+  margin-right: 10%;
+}
 
-.file-options-menu {
+
+.file-options-menu-large {
   display: flex;
   position: absolute;
   width: 84px;
@@ -114,6 +155,26 @@
   flex-direction: column;
   top: 40px;
   right: 0px;
+  border: 2px solid lightgray;
+  transition: height 0.4s ease-in-out;
+  z-index: 6;
+  overflow: hidden;
+}
+
+.file-options-menu-list {
+  display: flex;
+  position: absolute;
+  width: 84px;
+  height: 0px;
+  visibility: hidden;
+  font-size: 12px;
+  justify-content: flex-start;
+  background-color: white;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  top: 40px;
+  right: 23%;
   border: 2px solid lightgray;
   transition: height 0.4s ease-in-out;
   z-index: 6;
@@ -136,12 +197,23 @@
   background-color: lightgray;
 }
 
-.file-name-text-input {
+.file-name-text-input-large {
   display: inline-block;
   background: transparent;
   text-align: center;
   width: 85px;
   padding: 5px;
+}
+
+.file-name-text-input-list {
+  display: inline-block;
+  background: transparent;
+  text-align: start;
+  width: 300px;
+  padding: 5px;
+  align-self: center;
+  margin-left: 14.5px;
+  margin-right: 10%;
 }
 
 input.file-name-text-input-red {
@@ -153,12 +225,22 @@ input.file-name-text-input-red:focus {
   border: 1px solid red;
 }
 
-.file-name-text-div {
+.file-name-text-div-large {
   text-wrap: wrap;
   overflow-wrap: anywhere;
   display: inline-block;
   width: 85px;
   text-align: center;
+}
+
+.file-name-text-div-list {
+  text-wrap: nowrap;
+  overflow-wrap: anywhere;
+  display: inline-block;
+  width: 300px;
+  text-align: start;
+  margin-right: 10%;
+  align-self: center;
 }
 
 .file-name-text-div-move-state{
@@ -200,7 +282,7 @@ input.file-name-text-input-red:focus {
 
 /*TODO: Remove above, most likely redundant*/
 
-.fa-heart {
+.fa-heart-large {
   position: absolute;
   display: inline;
   top: 18px;
@@ -208,11 +290,30 @@ input.file-name-text-input-red:focus {
   font-size: 16px;
 }
 
-#selectFile {
+.fa-heart-list {
+  display: inline;
+  top: unset;
+  right: 117px;
+  font-size: 16px;
+  align-self: center;
+  order: 3;
+  margin-left: 10%;
+}
+
+#selectFile-large {
   display: inline;
   position: absolute;
   top: 18px;
   visibility: hidden;
+}
+
+#selectFile-list {
+  display: inline;
+  position: absolute;
+  left: 10px;
+  visibility: hidden;
+  align-self: center;
+  margin-left: 2%;
 }
 
 .visible-checkbox {
@@ -230,4 +331,11 @@ input.file-name-text-input-red:focus {
   display: flex;
   flex-direction: row;
   margin-right: 25px;
+}
+
+.fileTypeSpan{
+  text-transform: uppercase;
+  align-self: center;
+  position: absolute;
+  left: 60%;
 }

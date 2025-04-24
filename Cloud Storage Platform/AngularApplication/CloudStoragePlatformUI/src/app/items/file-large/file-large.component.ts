@@ -440,6 +440,14 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
     window.open(url, "_blank");
   }
 
+  getFileTypeSpanContent():string{
+    if (this.FileFolder.fileType!=FileType.Folder){
+      return this.FileFolder.filePath.split('.')[this.FileFolder.filePath.split('.').length-1];
+    }
+    return "";
+  }
+
   protected readonly Utils = Utils;
   protected readonly FileType = FileType;
+  protected readonly localStorage = localStorage;
 }

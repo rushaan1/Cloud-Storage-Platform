@@ -473,4 +473,5 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   protected readonly Utils = Utils;
   protected readonly document = document;
+  protected readonly localStorage = localStorage;
 }
