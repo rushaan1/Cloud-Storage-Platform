@@ -47,3 +47,26 @@
 .margin-right{
   margin-right: 75px;
 }
+
+@media (max-width: 1200px) {
+  .breadcrumbs {
+    padding-right: 120px;
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .breadcrumbs {
+    padding-right: 40px;
+    font-size: 24px;
+    height: unset;
+  }
+}
+
+@media (max-width: 600px) {
+  .breadcrumbs {
+    padding-right: 0px;
+    font-size: 20px;
+    height: unset;
+  }
+}

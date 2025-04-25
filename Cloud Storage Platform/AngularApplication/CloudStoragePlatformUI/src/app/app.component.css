@@ -1,8 +1,8 @@
-/*html, body {*/
-/*  margin: 0;*/
-/*  padding: 0;*/
-/*  overflow-y: hidden;*/
-/*}*/
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-y: hidden;
+}
 
 /*When integrating backend make sure to have dynamic routing with variable route paramters for every fodler*/
 .navigation-drawer {
@@ -14,7 +14,8 @@
 
 .content {
   display: flex;
-  max-width: 99.5%;
+  height: 100%;
+  /*max-width: 99.5%;*/
   /*overflow-x: hidden;*/
 }
 
@@ -74,4 +75,10 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+@media (max-width: 1095px) {
+  /*.navigation-drawer {*/
+  /*  min-width: unset !important;*/
+  /*}*/
 }

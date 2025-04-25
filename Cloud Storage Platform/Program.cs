@@ -34,8 +34,8 @@ namespace CloudStoragePlatform.Web
                 options.AddPolicy("AllowAngularLocalhost",
                     builder =>
                     {
-                        builder.WithOrigins("http://localhost:4200") // Allow Angular's localhost
-                               .AllowAnyMethod() // Allow any HTTP method (GET, POST, etc.)
+                        builder.WithOrigins("http://localhost:4200", "http://192.168.29.161:4200")
+                               .AllowAnyMethod() 
                                .AllowAnyHeader();
                     });
             });
