@@ -1,9 +1,11 @@
 .panel-main {
-  position: sticky;
+  position: fixed;
   height: 65px;
   background-color: #F5F5F5;
   width: 100%;
   padding-left: 4px;
+  user-select: none;
+  z-index: 1000;
 }
 
 .panel-main-flex {
@@ -145,18 +147,13 @@ span {
 
 .sort-parent-div{
   display: flex;
-  max-width: 8.3%;
+  width: 71px;
   flex-direction: column;
 }
 
 #sortBy {
   height: fit-content;
-  max-width: 100%;
   padding: 0 2.5px 1px 2.5px;
-  /*display: flex;*/
-  /*justify-content: center;*/
-  /*align-items: center;*/
-  /*text-align: center;*/
   background: transparent;
   border: none;
 }
@@ -248,4 +245,54 @@ span {
 .fa-circle-xmark:hover{
   color: unset;
   cursor: pointer;
+}
+
+@media (max-width: 1095px) {
+  .upload{
+    padding: 2px 11px 2px 10px;
+  }
+  .search{
+    width: 22%;
+  }
+}
+
+@media (max-width: 750px) {
+  .sort-parent-div{
+    width: 50px;
+  }
+}
+
+@media (max-width: 715px) {
+  .fa-arrow-up {
+    margin-right: 4.2px;
+  }
+}
+
+@media (max-width: 615px) {
+  .style-text {
+    font-size: 12px;
+  }
+  .dark-mode-text-div{
+    font-size: 12px;
+  }
+}
+
+.search-mobile-icon {
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+}
+
+.search-mobile-expanded {
+  width: 100%;
+  z-index: 1000;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  box-sizing: border-box;
 }

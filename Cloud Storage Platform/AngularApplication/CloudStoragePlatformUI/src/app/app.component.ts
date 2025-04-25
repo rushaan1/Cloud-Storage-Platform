@@ -40,9 +40,9 @@ export class AppComponent implements AfterViewInit {
       this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 54px)";
     }
     else{
-      this.navDrawer.nativeElement.style.minWidth = "290px";
+      this.navDrawer.nativeElement.style.minWidth = "271px";
       this.navDrawer.nativeElement.style.height = `${document.documentElement.scrollHeight}px`;
-      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 290px)";
+      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 271px)";
     }
   }
 }

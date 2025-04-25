@@ -1,11 +1,19 @@
 <div class="content-panel">
-  <div class="panel-main">
+  <div #panelMain class="panel-main">
     <div #panelMainFlex class="panel-main-flex">
 
-      <div (mouseenter)="searchCrossVisibleDueToHover=true;" (mouseleave)="searchCrossVisibleDueToHover=false" #searchDiv class="search">
-        <input (blur)="searchLightenBorder(); searchCrossVisibleDueToFocus=false;" (focus)="searchDarkenBorder(); searchCrossVisibleDueToFocus=true;"
+      <!-- Mobile search icon only -->
+      <div *ngIf="windowWidth < 715 && !mobileSearchActive" class="search search-mobile-icon">
+        <div (click)="activateMobileSearch()" class="search-btn">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+      </div>
+
+      <!-- Expanded search bar for desktop or mobile active -->
+      <div *ngIf="!(windowWidth < 715 && !mobileSearchActive)" (mouseenter)="searchCrossVisibleDueToHover=true;" (mouseleave)="searchCrossVisibleDueToHover=false" #searchDiv class="search search-expanded" [ngClass]="{'search-mobile-expanded': windowWidth < 715 && mobileSearchActive}">
+        <input (blur)="onSearchBlur()" (focus)="searchDarkenBorder(); searchCrossVisibleDueToFocus=true;"
                (keydown.enter)="this.searchClick()" [formControl]="this.searchFormControl" class="searchbox" id="search" name="search"
-               placeholder="Search the cloud" type="text">
+               [placeholder]="GenSearchPlaceholderVal()" type="text">
         <i (click)="searchClear()" *ngIf="(searchCrossVisibleDueToHover || searchCrossVisibleDueToFocus) && searchFormControl!.value!.trim().length>0" class="fa-solid fa-circle-xmark"></i>
 
         <div (click)="this.searchClick()" class="search-btn">
@@ -13,56 +21,57 @@
         </div>
       </div>
 
-      <input #uploadInputHidden (change)="onFileSelected($event)" type="file" multiple hidden>
+      <!-- Hide all other elements if mobile search is active -->
+      <ng-container *ngIf="!(windowWidth < 715 && mobileSearchActive)">
+        <input #uploadInputHidden (change)="onFileSelected($event)" type="file" multiple hidden>
 
-      <div (mouseenter)="uploadOptionsVisible=true" (mouseleave)="uploadOptionsVisible=false" class="upload-container">
-        <button class="upload">
-          <i class="fa-solid fa-arrow-up"></i>
-          Upload
-        </button>
-        <div [ngClass]="{'upload-options-active':uploadOptionsVisible}" class="upload-options">
-          <div (click)="uploadFolder();" class="upload-option uo-1">Upload Folder</div>
-          <div (click)="uploadFile();" class="upload-option">Upload Files</div>
-        </div>
-      </div>
-
-
-      <div #sortParent class="sort-parent-div">
-        <select #sortSelection (change)="sortingChanged($event)" id="sortBy">
-          <option>Sort by</option>
-          <option class="asc" value="0">Alphabetical (A to Z)</option>
-          <option class="desc" value="1">Alphabetical (Z to A)</option>
-          <option class="desc" value="3">Date Added (New to Old)</option>
-          <option class="asc" value="2">Date Added (Old to New)</option>
-          <option class="asc" value="6">Size (Low to High)</option>
-          <option class="desc" value="7">Size (High to Low)</option>
-          <option class="desc" value="5">Last Opened (Recently opened first)</option>
-          <option class="asc" value="4">Last Opened (Least recently opened first)</option>
-        </select>
-        <span #sorting></span>
-      </div>
-
-
-      <div class="style">
-        <div *ngIf="localStorage.getItem('list')!='Y'" (click)="localStorage.setItem('list','Y'); cd.detectChanges();" class="large-icon-text">Switch to list style</div>
-        <div *ngIf="localStorage.getItem('list')=='Y'" (click)="localStorage.setItem('list','N'); cd.detectChanges();" class="large-icon-text">Switch to large icons</div>
-      </div>
-
-      <div class="dark-mode">
-        <i class="fa-solid fa-moon"></i>
-        <span class="dark-mode-text-div">Enable dark mode</span>
-      </div>
-
-      <div class="user-info">
-        <div #pfp (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp"></div>
-        <div #pfpDropdown *ngIf="this.pfpDropdownShowing" class="top-pointed-dropdown">
-          <span #pfpDropDownSpan>
-            Hi FirstName, <br>
-            <b>Click to open account settings</b>
-          </span>
+        <div (mouseenter)="uploadOptionsVisible=true" (mouseleave)="uploadOptionsVisible=false" class="upload-container">
+          <button class="upload">
+            <i class="fa-solid fa-arrow-up"></i>
+            Upload
+          </button>
+          <div [ngClass]="{'upload-options-active':uploadOptionsVisible}" class="upload-options">
+            <div (click)="uploadFolder();" class="upload-option uo-1">Upload Folder</div>
+            <div (click)="uploadFile();" class="upload-option">Upload Files</div>
+          </div>
         </div>
 
-      </div>
+        <div #sortParent class="sort-parent-div">
+          <select #sortSelection (change)="sortingChanged($event)" id="sortBy">
+            <option>{{ getSortByLabel() }}</option>
+            <option class="asc" value="0">Alphabetical (A to Z)</option>
+            <option class="desc" value="1">Alphabetical (Z to A)</option>
+            <option class="desc" value="3">Date Added (New to Old)</option>
+            <option class="asc" value="2">Date Added (Old to New)</option>
+            <option class="asc" value="6">Size (Low to High)</option>
+            <option class="desc" value="7">Size (High to Low)</option>
+            <option class="desc" value="5">Last Opened (Recently opened first)</option>
+            <option class="asc" value="4">Last Opened (Least recently opened first)</option>
+          </select>
+          <span #sorting></span>
+        </div>
+
+        <div (click)="styleChange()" class="style">
+          <div class="style-text">
+            {{ getStyleSwitchLabel() }}
+          </div>
+        </div>
+
+        <div class="dark-mode">
+          <i class="fa-solid fa-moon"></i>
+          <span class="dark-mode-text-div">Dark Mode</span>
+        </div>
+
+        <div class="user-info">
+          <div #pfp (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp"></div>
+          <div #pfpDropdown *ngIf="this.pfpDropdownShowing" class="top-pointed-dropdown">
+            <span #pfpDropDownSpan>
+              Hi FirstName, <br>
+              <b>Click to open account settings</b>
+            </span>
+          </div>
+        </div>
+      </ng-container>
 
     </div>
   </div>

@@ -21,7 +21,7 @@ html, body {
 
 .top-panel {
   height: 65px;
-  position: sticky;
+  position: relative;
   top: 0px;
   z-index: 14;
 }
@@ -30,6 +30,7 @@ html, body {
   height: 100%;
   display: block;
   top: 0px;
+  background-color: #F5F5F5;
 }
 
 .dashboard {

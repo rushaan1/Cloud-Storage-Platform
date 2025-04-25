@@ -5,6 +5,7 @@
 .file-large-item-from-viewer {
   display: inline-block;
   text-wrap: wrap;
+  user-select: none;
 }
 
 .w-100{

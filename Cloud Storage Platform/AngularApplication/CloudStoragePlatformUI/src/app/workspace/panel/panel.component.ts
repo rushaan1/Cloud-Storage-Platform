@@ -26,6 +26,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   @ViewChild("sorting") sortingTxt!: ElementRef<HTMLSpanElement>;
   @ViewChild('sortParent') sortParent!: ElementRef<HTMLDivElement>;
   @ViewChild('uploadInputHidden') uploadInputHidden!: ElementRef<HTMLInputElement>;
+  @ViewChild('panelMain') panelMain!: ElementRef<HTMLDivElement>;
 
   mouseHoveringOverPfp = false;
   onlyHiText = false;
@@ -38,6 +39,9 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   pfpDropdownShowing = false;
   crumbs:string[] = [];
   filesInMutualPath:string[] = [];
+  windowWidth: number = window.innerWidth;
+  mobileSearchActive: boolean = false;
+
   constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService, private filesState:FilesStateService, protected cd:ChangeDetectorRef){}
 
   ngOnInit(){
@@ -48,6 +52,13 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     const uploadProgress = localStorage.getItem("uploadProgress");
     if (!(uploadProgress!=null && uploadProgress!="" && uploadProgress!=undefined)){
       localStorage.setItem("uploadProgress", "-1");
+    }
+    window.addEventListener('resize', this.onResize.bind(this));
+  }
+  setPanelWidth() {
+    const parent = this.panelMain.nativeElement.parentElement as HTMLElement;
+    if (parent) {
+      this.panelMain.nativeElement.style.width = parent.offsetWidth + 'px';
     }
   }
 
@@ -62,6 +73,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         this.pfpDropDownSpan.nativeElement.innerHTML = "Hi FirstName, <br> <b>Click to open account settings</b>";
       }
     }
+    this.setPanelWidth();
   }
 
   searchDarkenBorder(){
@@ -73,22 +85,21 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     this.searchDiv.nativeElement.style.borderColor = "gray";
   }
 
-  styleChange(){
-    if (localStorage["style"]!=undefined && localStorage["style"]!=null && localStorage["style"]!=""){
-      if (localStorage["style"]=="large"){
-        localStorage["style"] = "list";
-      }
-      else{
-        localStorage["style"] = "large";
-      }
+  styleChange() {
+    const current = localStorage.getItem('list');
+    if (current === 'Y') {
+      localStorage.setItem('list', 'N');
+    } else {
+      localStorage.setItem('list', 'Y');
     }
-    else{
-      localStorage["style"] = "list";
-    }
-    console.log(localStorage["style"]);
+    this.cd.detectChanges();
   }
 
   searchClick(){
+    if (this.windowWidth < 715 && this.mobileSearchActive) {
+      this.deactivateMobileSearch();
+      return;
+    }
     if (this.searchFormControl.invalid){
       if (this.searchFormControl.hasError("invalidCharacter")){
         this.eventService.emit("addNotif",["Invalid character in input: "+this.searchFormControl.errors?.['invalidCharactersString'], 8000]);
@@ -169,16 +180,6 @@ export class PanelComponent implements OnInit, AfterViewChecked {
     this.uploadInputHidden.nativeElement.webkitdirectory = false;
     this.uploadInputHidden.nativeElement.click();
   }
-
-  // appendFoldersToBeCreated(folders:string[], currentDirCheck:string[]){
-  //   let pathToCheck = Utils.constructFilePathForApi([...this.crumbs, ...currentDirCheck];
-  //   if (!folders.includes(pathToCheck)){
-  //     folders.push(pathToCheck);
-  //   }
-  //   this.appendFoldersToBeCreated(folders, [...currentDirCheck,currentDirCheck[currentDirCheck.length-1]]);
-  // }
-
-
 
   onFileSelected(event: Event) {
     if (!this.networkStatus.statusVal()){
@@ -330,6 +331,52 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         this.uploadProgress = 0;
       }
     }, 500);
+  }
+
+  onResize() {
+    this.windowWidth = window.innerWidth;
+    if (this.windowWidth > 715 && this.mobileSearchActive) {
+      this.deactivateMobileSearch();
+    }
+    this.setPanelWidth();
+    this.cd.detectChanges();
+  }
+
+  getStyleSwitchLabel(): string {
+    const isList = localStorage.getItem('list') === 'Y';
+    if (this.windowWidth < 1100) {
+      return isList ? 'Grid Style' : 'List Style';
+    } else {
+      return isList ? 'Switch to large icons' : 'Switch to list style';
+    }
+  }
+
+  GenSearchPlaceholderVal(): string {
+    return this.windowWidth > 1100 ? 'Search the cloud' : 'Search';
+  }
+
+  getSortByLabel(): string {
+    return this.windowWidth < 750 ? 'Sort' : 'Sort by';
+  }
+
+  activateMobileSearch() {
+    this.mobileSearchActive = true;
+    setTimeout(() => {
+      const input = document.getElementById('search');
+      if (input) (input as HTMLInputElement).focus();
+    }, 0);
+  }
+
+  deactivateMobileSearch() {
+    this.mobileSearchActive = false;
+  }
+
+  onSearchBlur() {
+    this.searchLightenBorder();
+    this.searchCrossVisibleDueToFocus = false;
+    if (this.windowWidth < 715) {
+      this.deactivateMobileSearch();
+    }
   }
 
   protected readonly localStorage = localStorage;
