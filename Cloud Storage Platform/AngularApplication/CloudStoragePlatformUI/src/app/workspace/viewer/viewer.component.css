@@ -29,13 +29,13 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 120px;
+  width: 84px;
   height: 90px;
   align-self: center;
-  margin-left: 12px;
   margin-top: 40px;
   font-size: 16px;
   color: grey;
+  padding-left: 5px;
 }
 
 .newFolder:hover {
@@ -87,4 +87,15 @@
   margin-bottom: 20px;
   margin-left: 30px;
   text-align: start !important;
+}
+
+@media (max-width: 550px) {
+  .files-and-folders {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    gap: 20px;
+  }
+  .newFolder {
+    font-size: 12px;
+  }
 }

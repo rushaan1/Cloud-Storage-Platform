@@ -20,15 +20,17 @@
           <i class="fa-solid fa-magnifying-glass"></i>
         </div>
       </div>
-
-      <!-- Hide all other elements if mobile search is active -->
+      
       <ng-container *ngIf="!(windowWidth < 715 && mobileSearchActive)">
         <input #uploadInputHidden (change)="onFileSelected($event)" type="file" multiple hidden>
 
         <div (mouseenter)="uploadOptionsVisible=true" (mouseleave)="uploadOptionsVisible=false" class="upload-container">
           <button class="upload">
-            <i class="fa-solid fa-arrow-up"></i>
-            Upload
+            <i *ngIf="windowWidth > 340; else uploadIconForNarrowScreen" class="fa-solid fa-arrow-up"></i>
+            <ng-template #uploadIconForNarrowScreen>
+              <i class="fa-solid fa-upload"></i>
+            </ng-template>
+            <span class="uploadSpanText">Upload</span>
           </button>
           <div [ngClass]="{'upload-options-active':uploadOptionsVisible}" class="upload-options">
             <div (click)="uploadFolder();" class="upload-option uo-1">Upload Folder</div>

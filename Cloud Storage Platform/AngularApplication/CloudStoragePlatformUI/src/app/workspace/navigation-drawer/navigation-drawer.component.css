@@ -21,7 +21,7 @@ pre{
 }
 
 .m-top-cat{
-  padding-bottom: 25px !important;
+  padding-bottom: 25px;
 }
 
 .bottom-category{
@@ -228,4 +228,13 @@ a {
 
 .fa-folder-plus-mini:hover{
   color: unset;
+}
+
+@media (max-height: 584px) {
+  .fa-folder-plus-mini{
+    padding-top: 5px;
+  }
+  .m-top-cat{
+    padding-bottom: 5px;
+  }
 }

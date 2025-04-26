@@ -339,3 +339,24 @@ input.file-name-text-input-red:focus {
   position: absolute;
   left: 60%;
 }
+
+@media (max-width: 550px) {
+  .file-item-icon-large{
+    height: 70px;
+    width: 70px;
+  }
+  .file-name-text-div-large{
+    padding: 0px;
+  }
+  .file-name-text-input-large{
+    padding: 0px;
+  }
+  .file-large{
+    padding: 0px;
+    padding-left: 5px;
+  }
+  .fa-heart-large{
+    top: 6px;
+    right: 17px;
+  }
+}

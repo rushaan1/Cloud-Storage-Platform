@@ -121,6 +121,10 @@
   cursor: pointer;
 }
 
+.uploadSpanText{
+  max-width: fit-content;
+}
+
 .fa-arrow-up {
   margin-right: 10.2px;
 }
@@ -276,10 +280,21 @@ span {
     font-size: 12px;
   }
 }
+@media (max-width: 340px){
+  .uploadSpanText{
+    display: none;
+  }
+  .fa-arrow-up {
+    margin-right: 0px;
+    font-size: 18px;
+  }
+  .upload {
+    height: 34px;
+  }
+}
 
 .search-mobile-icon {
   width: 40px;
-  height: 40px;
   align-items: center;
   justify-content: center;
   background: white;
