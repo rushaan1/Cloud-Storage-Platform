@@ -5,7 +5,7 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
-  Input, OnDestroy,
+  Input,
   OnInit,
   Output,
   ViewChild
@@ -21,10 +21,9 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Utils} from "../../Utils";
 import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 import {FileType} from "../../models/FileType";
-import {distinctUntilChanged, forkJoin, Subject, take, takeUntil} from "rxjs";
+import {forkJoin} from "rxjs";
 import {NetworkStatusService} from "../../services/network-status-service.service";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
-import {map} from "rxjs/operators";
 
 @Component({
   selector: 'file-large-item',
@@ -74,8 +73,7 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.uniqueComponentIdentifierUUID = uuidv4();
     this.originalName = this.FileFolder.fileName;
-    this.name = this.originalName;
-    this.name = Utils.resize(this.name, 32);
+    this.updateNameTruncation();
 
     this.eventService.listen("file options expanded", (uuid:string)=>{
       if (uuid != this.uniqueComponentIdentifierUUID && this.fileOptionsVisible == true)
@@ -176,6 +174,11 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         this.expandOrCollapseOptions();
       }
     }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.updateNameTruncation();
   }
 
   expandOrCollapseOptions(event?:Event) {
@@ -450,4 +453,25 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   protected readonly Utils = Utils;
   protected readonly FileType = FileType;
   protected readonly localStorage = localStorage;
+
+  private updateNameTruncation() {
+    const isListMode = localStorage.getItem('list') === 'Y';
+    const width = window.innerWidth;
+    if (isListMode && width < 950 && width > 382 && this.FileFolder.fileType!=FileType.Folder) {
+      this.name = Utils.resize(this.originalName, 16);
+    }
+    else if (isListMode && width < 382 && this.FileFolder.fileType!=FileType.Folder){
+      this.name = Utils.resize(this.originalName, 12);
+    }
+    else if (width < 766 && width > 365 && this.FileFolder.fileType==FileType.Folder) {
+      this.name = Utils.resize(this.originalName, 22);
+    }
+    else if (width < 385 && this.FileFolder.fileType==FileType.Folder){
+      this.name = Utils.resize(this.originalName, 14);
+    }
+    else{
+      this.name = Utils.resize(this.originalName, 32);
+    }
+    this.cdRef.detectChanges();
+  }
 }

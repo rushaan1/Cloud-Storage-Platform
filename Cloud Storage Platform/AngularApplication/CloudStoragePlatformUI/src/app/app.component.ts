@@ -38,11 +38,13 @@ export class AppComponent implements AfterViewInit {
       this.navDrawer.nativeElement.style.minWidth = "54px";
       this.navDrawer.nativeElement.style.height = "";
       this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 54px)";
+      localStorage.setItem("miniDrawerSet", "Y");
     }
     else{
-      this.navDrawer.nativeElement.style.minWidth = "271px";
+      this.navDrawer.nativeElement.style.minWidth = "282px";
       this.navDrawer.nativeElement.style.height = `${document.documentElement.scrollHeight}px`;
-      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 271px)";
+      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 282px)";
+      localStorage.setItem("miniDrawerSet", "N");
     }
   }
 }

@@ -1,6 +1,6 @@
 import {
   AfterViewChecked,
-  AfterViewInit,
+  AfterViewInit, ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -58,7 +58,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
    */
 
 
-  constructor(public filesState:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FilesAndFoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router){}
+  constructor(public filesState:FilesStateService, public eventService:EventService, private el: ElementRef, private renderer: Renderer2, private foldersService:FilesAndFoldersService, protected breadcrumbService:BreadcrumbService, protected router:Router, protected cd:ChangeDetectorRef){}
 
   ngAfterViewInit(): void {
     this.orderedInfoPanels = [this.uploadProgressNotif.nativeElement, this.selectionInfoPanel.nativeElement, this.deleteConfirmNotif.nativeElement, this.moveNotif.nativeElement];
@@ -74,7 +74,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
   }
 
   @HostListener('window:scroll', ['$event'])
-  onWindowClick() {
+  onWindowScroll(): void {
     this.updateNotificationAlertTxt();
   }
 
@@ -94,6 +94,18 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
     this.filesState.deSelectAll();
   }
 
+  // Helper to find the first scrollable parent
+  private getScrollableParent(element: HTMLElement | null): HTMLElement | null {
+    while (element) {
+      const overflowY = window.getComputedStyle(element).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        return element;
+      }
+      element = element.parentElement;
+    }
+    return null;
+  }
+
   updateNotificationAlertTxt(){
     const infoPanels = document.getElementsByClassName("info-panel");
     const visibleInfoPanels = Array.from(infoPanels).filter(panel => {
@@ -108,7 +120,14 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
         alertTexts[i].textContent = "";
       }
       const alertTxt:HTMLElement|null = this.mostRecentNonStickyNotification.querySelector(".alertTxt");
-      if (visibleInfoPanels.length>0 && document.documentElement.scrollTop>90){
+      let scrollTop = window.scrollY || document.documentElement.scrollTop;
+      if (scrollTop === 0) {
+        const scrollableParent = this.getScrollableParent(this.el.nativeElement.parentElement);
+        if (scrollableParent) {
+          scrollTop = scrollableParent.scrollTop;
+        }
+      }
+      if (visibleInfoPanels.length>0 && scrollTop>90){
         alertTxt!.style.display = "inline";
         alertTxt!.innerText = `+${notificationQuantity} notifications!`;
       }
@@ -118,6 +137,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
           alertTxt!.style.display = "none";
         }
       }
+      this.cd.detectChanges();
     }
   }
 
@@ -127,25 +147,35 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       return (window.getComputedStyle(panel).display !== "none") && (panel.classList.contains("sticky-notif")==true);
     });
 
+    // Dynamically get the height of the panel and breadcrumbs element
+    let panelHeight = 0;
+    let breadcrumbsHeight = 0;
+    const panelElem = document.querySelector('.top-panel');
+    if (panelElem) {
+      panelHeight = (panelElem as HTMLElement).getBoundingClientRect().height;
+    }
+    const breadcrumbsElem = document.querySelector('.breadcrumbs');
+    if (breadcrumbsElem) {
+      breadcrumbsHeight = (breadcrumbsElem as HTMLElement).getBoundingClientRect().height;
+    }
+
+    let offset = panelHeight + breadcrumbsHeight;
+    if (!this.fromViewer) {
+      offset += 43.5;
+    }
+    offset -= 5;
+
+
     if (visibleOrderedStickyInfoPanels.length>0){
-      if (!this.fromViewer){
-        visibleOrderedStickyInfoPanels[0].style.top = `163px`
-      }
-      else{
-        visibleOrderedStickyInfoPanels[0].style.top = `119.5px`;
-      }
+      visibleOrderedStickyInfoPanels[0].style.top = `${offset}px`;
       let cumulativeHeights = 0;
       for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
         let previousInfoPanelHeight:number = parseFloat(
           window.getComputedStyle(visibleOrderedStickyInfoPanels[i - 1]).height
         );
         cumulativeHeights += previousInfoPanelHeight;
-        let offset:number = 119.5;
-        if (!this.fromViewer){
-          offset = 163;
-        }
         visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+offset}px`;
-        console.log(previousInfoPanelHeight);
+        // console.log(previousInfoPanelHeight);
       }
     }
   }
@@ -233,9 +263,9 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       const duplicate = document.getElementsByClassName("divToDetectDuplicateText")[0]
       if (duplicate){
         const regex = /^(.*)\sat.*$/;
-        if (duplicate.textContent!.replace(regex,"$1") == notifText){
-          return;
-        }
+        // if (duplicate.textContent!.replace(regex,"$1") == notifText){
+        //   return;
+        // }
       }
       const notification:HTMLElement = this.createNotificationDiv(notifText);
       this.setLatestAlertNotification(notification);
