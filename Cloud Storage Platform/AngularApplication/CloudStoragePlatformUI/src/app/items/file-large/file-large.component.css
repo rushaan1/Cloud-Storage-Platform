@@ -236,6 +236,7 @@ input.file-name-text-input-red:focus {
 }
 
 .file-name-text-div-list {
+  position: relative;
   text-wrap: nowrap;
   overflow-wrap: anywhere;
   display: inline-block;
@@ -340,6 +341,14 @@ input.file-name-text-input-red:focus {
   left: 60%;
 }
 
+.size-span{
+  display: block;
+  color: gray;
+  font-size: 9px;
+  margin-left: 14.5px;
+  padding: 0px 5px;
+}
+
 @media (max-width: 550px) {
   .file-item-icon-large{
     height: 70px;
@@ -361,6 +370,16 @@ input.file-name-text-input-red:focus {
   }
   #selectFile-large {
     top: 7px;
+  }
+  .file-name-text-div-move-state{
+    font-size: 13px !important;
+  }
+  .file-item-icon-move-state{
+    min-height: 30px;
+    min-width: 30px;
+  }
+  .move-options{
+    font-size: 13px;
   }
 }
 
@@ -386,6 +405,9 @@ input.file-name-text-input-red:focus {
   .file-name-text-input-list{
     width: 60%;
     margin-right: 0;
+    margin-left: 0;
+  }
+  .size-span{
     margin-left: 0;
   }
   .file-name-text-div-list{

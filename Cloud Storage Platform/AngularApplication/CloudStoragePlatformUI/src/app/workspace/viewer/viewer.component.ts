@@ -433,6 +433,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       isTrash: false,
       uncreated: true,
       fileType: FileType.Folder,
+      size: 0,
       thumbnail: null
     };
     this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),folder]);

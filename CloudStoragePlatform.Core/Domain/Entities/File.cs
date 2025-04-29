@@ -35,7 +35,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
                 IsFavorite = IsFavorite,
                 IsTrash = IsTrash, 
                 FileType = FileType,
-                Thumbnail = bytes
+                Thumbnail = bytes,
+                Size = Size
             };
         }
     }

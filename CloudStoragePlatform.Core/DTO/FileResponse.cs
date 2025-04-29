@@ -16,5 +16,6 @@ namespace CloudStoragePlatform.Core.DTO
         public bool? IsTrash { get; set; }
         public FileType FileType { get; set; }
         public byte[]? Thumbnail { get; set; }
+        public float Size { get; set; }
     }
 }

@@ -61,6 +61,7 @@ export class Utils {
         data.isTrash,
         data.fileType as FileType,
         false,
+        data.size,
         data.thumbnail
       );
     } else {
@@ -71,7 +72,8 @@ export class Utils {
         data.isFavorite,
         data.isTrash,
         FileType.Folder,
-        false
+        false,
+        data.size
       );
     }
   }

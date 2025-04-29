@@ -263,9 +263,9 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       const duplicate = document.getElementsByClassName("divToDetectDuplicateText")[0]
       if (duplicate){
         const regex = /^(.*)\sat.*$/;
-        // if (duplicate.textContent!.replace(regex,"$1") == notifText){
-        //   return;
-        // }
+        if (duplicate.textContent!.replace(regex,"$1") == notifText){
+          return;
+        }
       }
       const notification:HTMLElement = this.createNotificationDiv(notifText);
       this.setLatestAlertNotification(notification);

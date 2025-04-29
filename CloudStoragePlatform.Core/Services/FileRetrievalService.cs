@@ -51,6 +51,7 @@ namespace CloudStoragePlatform.Core.Services
             var response = file!.Metadata!.ToMetadataResponse();
             response.CreationDate = file.CreationDate;
             response.ParentFolderName = file.ParentFolder.FolderName;
+            response.Size = file.Size;
             return response;
         }
     }

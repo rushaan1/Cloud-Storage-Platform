@@ -110,14 +110,14 @@ namespace ServiceTests
 
             var folders = new List<Folder>
             {
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "SmallFolder", FolderPath = Path.Combine(initialPath, "Small"), Metadata = new Metadata(){ Size = 1024 } },
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "BigFolder", FolderPath = Path.Combine(initialPath, "Big"), Metadata =  new Metadata(){ Size = 2048 } }
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "SmallFolder", FolderPath = Path.Combine(initialPath, "Small"), Size = 1024.0f, Metadata = new Metadata() },
+                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "BigFolder", FolderPath = Path.Combine(initialPath, "Big"), Size = 2048.0f, Metadata = new Metadata() }
             };
 
             var files = new List<File>
             {
-                new File { FileId = _fixture.Create<Guid>(), FileName = "SmallFile.txt", FilePath = Path.Combine(initialPath, "SmallFile.txt"), Metadata = new Metadata(){ Size = 512 } },
-                new File { FileId = _fixture.Create<Guid>(), FileName = "BigFile.txt", FilePath = Path.Combine(initialPath, "BigFile.txt"), Metadata = new Metadata(){ Size = 4096 } }
+                new File { FileId = _fixture.Create<Guid>(), FileName = "SmallFile.txt", FilePath = Path.Combine(initialPath, "SmallFile.txt"), Size = 512.0f, Metadata = new Metadata() },
+                new File { FileId = _fixture.Create<Guid>(), FileName = "BigFile.txt", FilePath = Path.Combine(initialPath, "BigFile.txt"), Size = 4096.0f, Metadata = new Metadata() }
             };
 
             Folder homeFolder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders, Files = files };

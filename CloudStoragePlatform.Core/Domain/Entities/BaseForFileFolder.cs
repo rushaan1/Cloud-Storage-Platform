@@ -13,7 +13,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public Guid? SharingId { get; set; }
         
         public virtual Sharing? Sharing { get; set; }
-        
+        public float Size { get; set; } = 0;
         public Guid? MetadataId { get; set; }
         
         public virtual Metadata? Metadata { get; set; }

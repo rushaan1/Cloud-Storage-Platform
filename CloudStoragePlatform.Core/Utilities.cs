@@ -75,10 +75,10 @@ namespace CloudStoragePlatform.Core
                     sorted = folders.OrderByDescending(f => f.Metadata?.LastOpened).ToList();
                     break;
                 case SortOrderOptions.SIZE_ASCENDING:
-                    sorted = folders.OrderBy(f => f.Metadata?.Size).ToList();
+                    sorted = folders.OrderBy(f => f.Size).ToList();
                     break;
                 case SortOrderOptions.SIZE_DESCENDING:
-                    sorted = folders.OrderByDescending(f => f.Metadata?.Size).ToList();
+                    sorted = folders.OrderByDescending(f => f.Size).ToList();
                     break;
             }
             return sorted;
@@ -107,10 +107,10 @@ namespace CloudStoragePlatform.Core
                     sorted = files.OrderByDescending(f => f.Metadata?.LastOpened).ToList();
                     break;
                 case SortOrderOptions.SIZE_ASCENDING:
-                    sorted = files.OrderBy(f => f.Metadata?.Size).ToList();
+                    sorted = files.OrderBy(f => f.Size).ToList();
                     break;
                 case SortOrderOptions.SIZE_DESCENDING:
-                    sorted = files.OrderByDescending(f => f.Metadata?.Size).ToList();
+                    sorted = files.OrderByDescending(f => f.Size).ToList();
                     break;
             }
             return sorted;

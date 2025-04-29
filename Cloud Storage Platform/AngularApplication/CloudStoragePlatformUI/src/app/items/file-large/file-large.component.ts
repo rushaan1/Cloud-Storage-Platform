@@ -160,10 +160,6 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
         },1000);
       }
     });
-
-    this.loadingService.loading$.subscribe((loading)=>{
-      // console.log(loading);
-    });
   }
 
   @HostListener('window:click', ['$event'])
@@ -457,10 +453,10 @@ export class FileLargeComponent implements OnInit, AfterViewInit {
   private updateNameTruncation() {
     const isListMode = localStorage.getItem('list') === 'Y';
     const width = window.innerWidth;
-    if (isListMode && width < 950 && width > 382 && this.FileFolder.fileType!=FileType.Folder) {
+    if ((isListMode || this.filesState.getItemsBeingMoved().length!=0) && width < 950 && width > 382 && this.FileFolder.fileType!=FileType.Folder) {
       this.name = Utils.resize(this.originalName, 16);
     }
-    else if (isListMode && width < 382 && this.FileFolder.fileType!=FileType.Folder){
+    else if ((isListMode || this.filesState.getItemsBeingMoved().length!=0) && width < 382 && this.FileFolder.fileType!=FileType.Folder){
       this.name = Utils.resize(this.originalName, 12);
     }
     else if (width < 766 && width > 365 && this.FileFolder.fileType==FileType.Folder) {

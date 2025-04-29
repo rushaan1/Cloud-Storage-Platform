@@ -56,6 +56,7 @@ namespace CloudStoragePlatform.Core.Services
             response.SubFilesCount = folder.Files.Count;
             response.SubFoldersCount = folder.SubFolders.Count;
             response.ParentFolderName = folder.ParentFolder!.FolderName;
+            response.Size = folder.Size;
             return response;
         }
     }

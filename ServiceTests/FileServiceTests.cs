@@ -101,7 +101,11 @@ namespace ServiceTests
             string newFileName = _fixture.Create<string>();
             FileAddRequest? fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(initialPath, newFileName) };
             
-            File file = new File() { FileName = fileAddRequest.FileName, FilePath = fileAddRequest.FilePath };
+            File file = new File() { 
+                FileName = fileAddRequest.FileName, 
+                FilePath = fileAddRequest.FilePath, 
+                Size = 1024.0f 
+            };
 
             _filesRepositoryMock.Setup(f => f.AddFile(It.IsAny<File>()))
                 .ReturnsAsync(file);
@@ -114,6 +118,7 @@ namespace ServiceTests
             fileResponse.FileId.Should().NotBeEmpty();
             fileResponse.FileName.Should().Be(file.FileName);
             fileResponse.FilePath.Should().Be(file.FilePath);
+            fileResponse.Size.Should().Be(1024.0f);
             fileExists.Should().BeTrue();
         }
         #endregion
@@ -574,7 +579,10 @@ namespace ServiceTests
         {
             //Arrange
             Guid guid = _fixture.Create<Guid>();
-            CloudStoragePlatform.Core.Domain.Entities.File file = new CloudStoragePlatform.Core.Domain.Entities.File() { FileId = guid };
+            CloudStoragePlatform.Core.Domain.Entities.File file = new CloudStoragePlatform.Core.Domain.Entities.File() { 
+                FileId = guid,
+                Size = 2048.0f
+            };
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(file);
 
@@ -584,6 +592,7 @@ namespace ServiceTests
             //Assert
             fr.Should().NotBeNull();
             fr.FileId.Should().Be(guid);
+            fr.Size.Should().Be(2048.0f);
         }
         #endregion
 
@@ -610,7 +619,11 @@ namespace ServiceTests
             // Arrange
             string name = _fixture.Create<string>();
             string path = Path.Combine(initialPath, name);
-            CloudStoragePlatform.Core.Domain.Entities.File file = new CloudStoragePlatform.Core.Domain.Entities.File() { FileId = _fixture.Create<Guid>(), FilePath = path };
+            CloudStoragePlatform.Core.Domain.Entities.File file = new CloudStoragePlatform.Core.Domain.Entities.File() { 
+                FileId = _fixture.Create<Guid>(), 
+                FilePath = path,
+                Size = 3072.0f
+            };
             _filesRepositoryMock.Setup(f => f.GetFileByFilePath(It.IsAny<string>()))
                 .ReturnsAsync(file);
             // Act
@@ -620,6 +633,7 @@ namespace ServiceTests
             fr.Should().NotBeNull();
             fr.FileId.Should().Be(file.FileId);
             fr.FilePath.Should().Be(path);
+            fr.Size.Should().Be(3072.0f);
         }
         #endregion
 
@@ -651,7 +665,14 @@ namespace ServiceTests
             {
                 MetadataId = _fixture.Create<Guid>(),
             };
-            File file = new File { FileId = _fixture.Create<Guid>(), FileName = "Abx", FilePath = Path.Combine(initialPath, "Abx"), Metadata = metadata, MetadataId = metadata.MetadataId };
+            File file = new File { 
+                FileId = _fixture.Create<Guid>(), 
+                FileName = "Abx", 
+                FilePath = Path.Combine(initialPath, "Abx"), 
+                Metadata = metadata, 
+                MetadataId = metadata.MetadataId,
+                Size = 1024.0f
+            };
             file.ParentFolder = new Folder() { FolderName = _fixture.Create<string>() };
             metadata.File = file;
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
@@ -663,6 +684,7 @@ namespace ServiceTests
             //Assert
             mr.Should().NotBeNull();
             mr.MetadataId.Should().Be((Guid)file.MetadataId);
+            mr.Size.Should().Be(1024.0f);
         }
         #endregion
         #endregion

@@ -30,7 +30,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
                 FolderName = FolderName,
                 FolderPath = FolderPath,
                 IsFavorite = IsFavorite,
-                IsTrash = IsTrash
+                IsTrash = IsTrash,
+                Size = Size
             };
         }
     }

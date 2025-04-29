@@ -26,6 +26,44 @@ namespace CloudStoragePlatform.Core.Services
             // inject user identifying stuff in constructor and in repository's constructor
         }
 
+        private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
+        {
+            if (folder == null)
+                return;
+
+            // Update with 2 decimal precision
+            folder.Size = (float)Math.Round(folder.Size + sizeInMB, 2);
+            await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Recursively update parent folders
+            if (folder.ParentFolder != null)
+            {
+                await UpdateFolderSizesOnAdd(folder.ParentFolder, sizeInMB);
+            }
+        }
+
+        private async Task UpdateFolderSizesOnDelete(Folder? folder, float sizeInMB)
+        {
+            if (folder == null)
+                return;
+
+            // Update with 2 decimal precision, ensuring it doesn't go below 0
+            folder.Size = (float)Math.Round(Math.Max(0, folder.Size - sizeInMB), 2);
+            await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Recursively update parent folders
+            if (folder.ParentFolder != null)
+            {
+                await UpdateFolderSizesOnDelete(folder.ParentFolder, sizeInMB);
+            }
+        }
+
+        private float ConvertBytesToMegabytes(long bytes)
+        {
+            // Convert bytes to megabytes with 2 decimal precision
+            return (float)Math.Round((float)bytes / (1024 * 1024), 2);
+        }
+
         public async Task<FileResponse> UploadFile(FileAddRequest fileAddRequest, Stream stream)
         {
             string parentFolderPath = Utilities.ReplaceLastOccurance(fileAddRequest.FilePath, @"\" + fileAddRequest.FileName, "");
@@ -42,8 +80,7 @@ namespace CloudStoragePlatform.Core.Services
                     RenameCount = 0,
                     MoveCount = 0,
                     OpenCount = 0,
-                    ShareCount = 0,
-                    Size = 0
+                    ShareCount = 0
                 };
                 Sharing sharing = new Sharing()
                 {
@@ -70,6 +107,8 @@ namespace CloudStoragePlatform.Core.Services
                     fileAddRequest.FilePath = Utilities.ReplaceLastOccurance(fileAddRequest.FilePath, fileAddRequest.FileName, newName);
                     fileAddRequest.FileName = newName;
                 }
+
+                
                 file = new File()
                 {
                     FileId = Guid.NewGuid(),
@@ -82,17 +121,22 @@ namespace CloudStoragePlatform.Core.Services
                     FileType = fileType
                 };
 
+                using (FileStream fs = new FileStream(file.FilePath, FileMode.Create, FileAccess.Write))
+                {
+                    await stream.CopyToAsync(fs);
+                }
+                float fileSizeInMB = (float)Math.Round(GetFileSizeInMB(file.FilePath), 2);
+                file.Size = fileSizeInMB;
+
                 metadata.File = file;
                 sharing.File = file;
                 await _filesRepository.AddFile(file);
+                
                 if (parent != null)
                 {
                     parent.Files.Add(file);
                     await _foldersRepository.UpdateFolder(parent, false, false, false, false, false, true);
-                }
-                using (FileStream fs = new FileStream(file.FilePath, FileMode.Create, FileAccess.Write))
-                {
-                    await stream.CopyToAsync(fs);
+                    await UpdateFolderSizesOnAdd(parent, fileSizeInMB);
                 }
             }
             else
@@ -147,8 +191,24 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
+            
+            // Get the parent folder and file size before deleting
+            Folder? parentFolder = file.ParentFolder;
+            float fileSizeInMB = file.Size;
+            
+            // Delete the file from the file system
             System.IO.File.Delete(file.FilePath);
-            return await _filesRepository.DeleteFile(file);
+            
+            // Delete the file from database
+            bool result = await _filesRepository.DeleteFile(file);
+            
+            // Update sizes of parent folder and its ancestors
+            if (result && parentFolder != null)
+            {
+                await UpdateFolderSizesOnDelete(parentFolder, fileSizeInMB);
+            }
+            
+            return result;
         }
 
         public async Task<FileResponse> MoveFile(Guid fileId, string newParentPath)
@@ -163,7 +223,6 @@ namespace CloudStoragePlatform.Core.Services
                 throw new DirectoryNotFoundException();
             }
 
-
             string previousFilePath = file.FilePath;
             string newFilePathOfFile = Path.Combine(newParentPath, file.FileName);
 
@@ -172,8 +231,12 @@ namespace CloudStoragePlatform.Core.Services
                 throw new DuplicateFileException();
             }
 
-            Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newParentPath);
+            // Store the old parent folder and file size
+            Folder? oldParent = file.ParentFolder;
+            float fileSizeInMB = file.Size;
 
+            // Get new parent folder
+            Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newParentPath);
 
             file.FilePath = newFilePathOfFile;
             file.ParentFolder = newParent!;
@@ -181,6 +244,17 @@ namespace CloudStoragePlatform.Core.Services
             File? finalMainFile = await _filesRepository.UpdateFile(file, true, true, false, false);
             System.IO.File.Move(previousFilePath, newFilePathOfFile);
             await Utilities.UpdateMetadataMove(file, previousFilePath, _filesRepository);
+            
+            // Update folder sizes if the parent folder changes
+            if (oldParent != null && newParent != null && oldParent.FolderId != newParent.FolderId)
+            {
+                // Decrease size from old parent
+                await UpdateFolderSizesOnDelete(oldParent, fileSizeInMB);
+                
+                // Increase size for new parent
+                await UpdateFolderSizesOnAdd(newParent, fileSizeInMB);
+            }
+            
             var response = finalMainFile!.ToFileResponse();
             return response;
         }
@@ -207,6 +281,12 @@ namespace CloudStoragePlatform.Core.Services
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
             System.IO.File.Move(oldFilePath, newFilePath);
             return updatedFile!.ToFileResponse();
+        }
+
+        private float GetFileSizeInMB(string filePath)
+        {
+            var fileInfo = new System.IO.FileInfo(filePath);
+            return ConvertBytesToMegabytes(fileInfo.Length);
         }
     }
 }

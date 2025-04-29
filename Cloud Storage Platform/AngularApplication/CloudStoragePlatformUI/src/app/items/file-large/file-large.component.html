@@ -25,8 +25,9 @@
     </div>
 
     <div [ngClass]="{'file-name-text-div-large':localStorage.getItem('list')!='Y','file-name-text-div-list':localStorage.getItem('list')=='Y'}">
-        <div *ngIf="!this.renaming" [ngClass]="{'file-name-text-input-large':localStorage.getItem('list')!='Y','file-name-text-input-list':localStorage.getItem('list')=='Y'}">{{this.name}}</div>
+        <div  *ngIf="!this.renaming" [ngClass]="{'file-name-text-input-large':localStorage.getItem('list')!='Y','file-name-text-input-list':localStorage.getItem('list')=='Y'}">{{this.name}}</div>
         <input #fileNameInput *ngIf="this.renaming" [formControl]="this.renameFormControl" (blur)="!hoveringOverDestroy ? renameEnter($event) : false" (keydown.enter)="renameEnter($event)" [ngClass]="{'file-name-text-input-large':localStorage.getItem('list')!='Y','file-name-text-input-list':localStorage.getItem('list')=='Y'}" type="text" [value]="this.originalName"/>
+      <span class="size-span">{{FileFolder.size}} MB</span>
     </div>
   <span *ngIf="localStorage.getItem('list')=='Y'" [ngClass]="{'fileTypeSpan-mini-drawer-set':localStorage.getItem('miniDrawerSet')=='Y','fileTypeSpan-mini-drawer-not-set':localStorage.getItem('miniDrawerSet')!='Y'}"  class="fileTypeSpan">{{getFileTypeSpanContent()}}</span>
 </div>

@@ -29,23 +29,22 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         /// <summary>
         /// in MegaBytes
         /// </summary>
-        public long Size { get; set; } = 0;
 
         public FileOrFolderMetadataResponse ToMetadataResponse() 
         {
-            return new FileOrFolderMetadataResponse()
+            var response = new FileOrFolderMetadataResponse()
             {
                 MetadataId = MetadataId,
                 PreviousRenameDate = PreviousRenameDate,
                 RenameCount = RenameCount,
                 PreviousMoveDate = PreviousMoveDate,
                 LastOpened = LastOpened,
-                Size = Size,
                 PreviousPath = PreviousPath,
                 ShareCount = ShareCount,
                 MoveCount = MoveCount,
                 OpenCount = OpenCount,
             };
+            return response;
         }
     }
 }

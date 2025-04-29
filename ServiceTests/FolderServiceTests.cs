@@ -40,7 +40,7 @@ namespace ServiceTests
             _foldersRepositoryMock = new Mock<IFoldersRepository>();
             _filesRepositoryMock = new Mock<IFilesRepository>();
             _foldersModificationService = new FoldersModificationService(_foldersRepositoryMock.Object, _filesRepositoryMock.Object);
-            _foldersRetrievalService = new FoldersRetrievalService(_foldersRepositoryMock.Object, new Mock<Microsoft.Extensions.Configuration.IConfiguration>().Object);
+            _foldersRetrievalService = new FoldersRetrievalService(_foldersRepositoryMock.Object, new Mock<Microsoft.Extensions.Configuration.IConfiguration>().Object, _filesRepositoryMock.Object);
         }
 
         #region FolderModificationService
@@ -90,7 +90,11 @@ namespace ServiceTests
         {
             string newFolderName = _fixture.Create<string>();
             FolderAddRequest? folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(initialPath, newFolderName) };
-            Folder folder = new Folder() { FolderName = folderAddRequest.FolderName, FolderPath = folderAddRequest.FolderPath };
+            Folder folder = new Folder() { 
+                FolderName = folderAddRequest.FolderName, 
+                FolderPath = folderAddRequest.FolderPath,
+                Size = 512.0f
+            };
 
             _foldersRepositoryMock.Setup(f => f.AddFolder(It.IsAny<Folder>()))
                 .ReturnsAsync(folder);
@@ -101,6 +105,7 @@ namespace ServiceTests
             folderResponse.FolderId.Should().NotBeEmpty();
             folderResponse.FolderName.Should().Be(folder.FolderName);
             folderResponse.FolderPath.Should().Be(folder.FolderPath);
+            folderResponse.Size.Should().Be(512.0f);
             folderExists.Should().BeTrue();
         }
         #endregion
@@ -630,7 +635,10 @@ namespace ServiceTests
         {
             //Arrange
             Guid guid = _fixture.Create<Guid>();
-            Folder folder = new Folder() { FolderId = guid };
+            Folder folder = new Folder() { 
+                FolderId = guid,
+                Size = 4096.0f
+            };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
@@ -640,6 +648,7 @@ namespace ServiceTests
             //Assert
             fr.Should().NotBeNull();
             fr.FolderId.Should().Be(guid);
+            fr.Size.Should().Be(4096.0f);
         }
         #endregion
 
@@ -666,7 +675,11 @@ namespace ServiceTests
             // Arrange
             string name = _fixture.Create<string>();
             string path = Path.Combine(initialPath, name);
-            Folder folder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = path };
+            Folder folder = new Folder() { 
+                FolderId = _fixture.Create<Guid>(), 
+                FolderPath = path,
+                Size = 5120.0f
+            };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
                 .ReturnsAsync(folder);
             Directory.CreateDirectory(path);
@@ -680,6 +693,7 @@ namespace ServiceTests
                 fr.Should().NotBeNull();
                 fr.FolderId.Should().Be(folder.FolderId);
                 fr.FolderPath.Should().Be(path);
+                fr.Size.Should().Be(5120.0f);
             }
             finally 
             {
@@ -716,7 +730,15 @@ namespace ServiceTests
             {
                 MetadataId = _fixture.Create<Guid>(),
             };
-            Folder folder = new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abx", FolderPath = Path.Combine(initialPath, "Abx"), ParentFolder=new Folder() { FolderName=_fixture.Create<string>() }, Metadata = metadata, MetadataId = metadata.MetadataId };
+            Folder folder = new Folder { 
+                FolderId = _fixture.Create<Guid>(), 
+                FolderName = "Abx", 
+                FolderPath = Path.Combine(initialPath, "Abx"), 
+                ParentFolder = new Folder() { FolderName = _fixture.Create<string>() }, 
+                Metadata = metadata, 
+                MetadataId = metadata.MetadataId,
+                Size = 2048.0f
+            };
             metadata.Folder = folder;
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
@@ -727,6 +749,7 @@ namespace ServiceTests
             //Assert
             mr.Should().NotBeNull();
             mr.MetadataId.Should().Be((Guid)folder.MetadataId);
+            mr.Size.Should().Be(2048.0f);
         }
         #endregion
         #endregion
