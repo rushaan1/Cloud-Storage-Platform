@@ -6,14 +6,14 @@
 
 
   <div class="dashboard">
-    <div class="top-panel">
+    <div #panel class="top-panel">
       <panel class="panel"></panel>
     </div>
 
     <div #routerContainer class="router-container">
       <router-outlet></router-outlet>
 
-      <div *ngIf="loading" class="overlay">
+      <div #loaderOverlay *ngIf="loading" class="overlay">
         <div class="loader"></div>
       </div>
     </div>

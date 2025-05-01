@@ -42,6 +42,7 @@ namespace CloudStoragePlatform.Web
 
             builder.Services.AddScoped<IBulkRetrievalService, BulkRetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
+            builder.Services.AddSingleton<SSE, SSE>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
             builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
@@ -49,11 +50,9 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddScoped<IFilesRetrievalService, FileRetrievalService>();
             builder.Services.AddScoped<IFilesModificationService, FileModificationService>();
             builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
-            builder.Services.AddScoped<IRecentsRepository, RecentsRepository>();
             builder.Services.AddScoped<ISharingRepository, SharingRepository>();
             builder.Services.AddScoped<IModelBinder, AppendToPath>();
             builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
-            builder.Services.AddSingleton<SSE, SSE>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {

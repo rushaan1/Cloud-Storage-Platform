@@ -40,7 +40,7 @@ namespace ServiceTests
             _output = output;
             _filesRepositoryMock = new Mock<IFilesRepository>();
             _foldersRepositoryMock = new Mock<IFoldersRepository>();
-            _filesModificationService = new FileModificationService(_foldersRepositoryMock.Object, _filesRepositoryMock.Object);
+            _filesModificationService = new FileModificationService(_foldersRepositoryMock.Object, _filesRepositoryMock.Object, new Mock<SSE>().Object);
             _filesRetrievalService = new FileRetrievalService(_filesRepositoryMock.Object, new Mock<Microsoft.Extensions.Configuration.IConfiguration>().Object);
         }
 

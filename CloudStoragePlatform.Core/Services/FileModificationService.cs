@@ -19,10 +19,13 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
-        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository)
+        private readonly SSE _sse;
+
+        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse)
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
+            _sse = sse;
             // inject user identifying stuff in constructor and in repository's constructor
         }
 
@@ -34,6 +37,9 @@ namespace CloudStoragePlatform.Core.Services
             // Update with 2 decimal precision
             folder.Size = (float)Math.Round(folder.Size + sizeInMB, 2);
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Send SSE notification about folder size update
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -50,6 +56,9 @@ namespace CloudStoragePlatform.Core.Services
             // Update with 2 decimal precision, ensuring it doesn't go below 0
             folder.Size = (float)Math.Round(Math.Max(0, folder.Size - sizeInMB), 2);
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Send SSE notification about folder size update
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -178,9 +187,26 @@ namespace CloudStoragePlatform.Core.Services
                 throw new ArgumentException();
             }
 
+            bool wasInTrash = file.IsTrash;
             file.IsTrash = !file.IsTrash;
 
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
+            
+            // Get the parent folder and file size
+            Folder? parentFolder = file.ParentFolder;
+            float fileSizeInMB = file.Size;
+            
+            // If file is being added to trash, subtract size from ancestors
+            if (!wasInTrash && file.IsTrash && parentFolder != null)
+            {
+                await UpdateFolderSizesOnDelete(parentFolder, fileSizeInMB);
+            }
+            // If file is being removed from trash, add size back to ancestors
+            else if (wasInTrash && !file.IsTrash && parentFolder != null)
+            {
+                await UpdateFolderSizesOnAdd(parentFolder, fileSizeInMB);
+            }
+            
             return updatedFile!.ToFileResponse();
         }
 

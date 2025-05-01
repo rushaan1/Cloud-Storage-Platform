@@ -1,4 +1,13 @@
-import {ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import {FilesStateService} from '../../services/StateManagementServices/files-state.service';
 import {EventService} from '../../services/event-service.service';
 import {ActivatedRoute, Router} from "@angular/router";
@@ -142,6 +151,34 @@ export class ViewerComponent implements OnInit, OnDestroy{
               if (this.extractCleanParentPath(processedFile.filePath)==path){
                 this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(), processedFile]);
               }
+            }
+            break;
+          case "size_updated":
+            // Update file size when it changes
+            const fileId = data.content.id;
+            const newSize = data.content.size;
+
+            // Update files in the viewer
+            let allFilesUpdated = false;
+            let filesInState = this.filesState.getFilesInViewer();
+
+            filesInState.forEach((file, index) => {
+              if (file.fileId === fileId) {
+                filesInState[index].size = newSize;
+                allFilesUpdated = true;
+              }
+            });
+
+            if (allFilesUpdated) {
+              // Update state with the modified files
+              this.filesState.setFilesInViewer([...filesInState]);
+
+              // Also update visible files
+              this.visibleFiles.forEach((file, index) => {
+                if (file.fileId === fileId) {
+                  this.visibleFiles[index].size = newSize;
+                }
+              });
             }
             break;
           case "favorite_updated" :

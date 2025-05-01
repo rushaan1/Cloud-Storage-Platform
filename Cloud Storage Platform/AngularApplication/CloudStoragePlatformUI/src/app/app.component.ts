@@ -10,6 +10,7 @@ export class AppComponent implements AfterViewInit {
   @ViewChild("navigationDrawer") navDrawer!: ElementRef<HTMLElement>;
   @ViewChild("loaderOverlay") loaderOverlay!: ElementRef<HTMLElement>;
   @ViewChild("routerContainer") routerContainer!: ElementRef<HTMLElement>;
+  @ViewChild("panel") panel!: ElementRef<HTMLElement>;
   loading = false;
   miniset:boolean = false;
   initialMiniSet:boolean = false;
@@ -24,9 +25,7 @@ export class AppComponent implements AfterViewInit {
         this.miniToggle(this.miniset);
         this.initialMiniSet = true;
       }
-      if (loading){
-        window.scrollTo({behavior: 'instant', top: 0});
-      }
+      this.panel.nativeElement.scrollIntoView({behavior:'instant', block: 'start'});
     });
   }
 

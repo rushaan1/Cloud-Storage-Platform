@@ -1,7 +1,6 @@
 html, body {
   margin: 0;
   padding: 0;
-  overflow-y: hidden;
 }
 
 /*When integrating backend make sure to have dynamic routing with variable route paramters for every fodler*/

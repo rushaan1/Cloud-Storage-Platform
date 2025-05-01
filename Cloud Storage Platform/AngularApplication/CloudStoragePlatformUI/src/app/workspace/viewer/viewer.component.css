@@ -93,13 +93,16 @@
 @media (max-width: 550px) {
   .files-and-folders-in-large-mode {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    gap: 1px;
   }
   .newFolder {
     font-size: 12px;
   }
   .file-large-item-from-viewer {
     margin-left: unset;
+  }
+  .move-state-files{
+    justify-content: center;
   }
 }

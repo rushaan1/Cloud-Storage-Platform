@@ -146,6 +146,38 @@ namespace CloudStoragePlatform.Core.Services
             return GetResponse(folders, files, sortOptions);
         } //TODO Unit test this service
 
+        public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllRecents()
+        {
+            // Get all folders with LastOpened not null
+            List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.Metadata != null && f.Metadata.LastOpened != null);
+            
+            // Get all files with LastOpened not null
+            List<File> files = await _filesRepository.GetFilteredFiles(f => f.Metadata != null && f.Metadata.LastOpened != null);
+            
+            // Combine and sort by LastOpened
+            var combinedItems = new List<object>();
+            combinedItems.AddRange(folders.Cast<object>());
+            combinedItems.AddRange(files.Cast<object>());
+            
+            // Sort all items by LastOpened in descending order and take top 30
+            var recentItems = combinedItems
+                .OrderByDescending(item => item switch
+                {
+                    Folder folder => folder.Metadata?.LastOpened,
+                    File file => file.Metadata?.LastOpened,
+                    _ => DateTime.MinValue
+                })
+                .Take(30)
+                .ToList();
+            
+            // Split back into folders and files
+            List<Folder> recentFolders = recentItems.OfType<Folder>().ToList();
+            List<File> recentFiles = recentItems.OfType<File>().ToList();
+            
+            // Use existing GetResponse method with LASTOPENED_DESCENDING
+            return GetResponse(recentFolders, recentFiles, SortOrderOptions.LASTOPENED_DESCENDING);
+        }
+
         private (List<FolderResponse> Folders, List<FileResponse> Files) GetResponse(List<Folder> folders, List<File> files, SortOrderOptions sortOptions)
         {
             List<Folder> sortedFolders = Utilities.Sort(folders, sortOptions);

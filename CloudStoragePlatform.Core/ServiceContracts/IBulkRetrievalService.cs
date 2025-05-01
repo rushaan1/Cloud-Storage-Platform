@@ -17,5 +17,6 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllInHome(SortOrderOptions sortOptions);
         Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllTrashes(SortOrderOptions sortOptions);
         Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllFilteredChildren(string searchString, SortOrderOptions sortOptions);
+        Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllRecents();
     }
 }

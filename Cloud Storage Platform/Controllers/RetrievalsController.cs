@@ -213,5 +213,13 @@ namespace Cloud_Storage_Platform.Controllers
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllTrashes(sortOrder);
             return new BulkResponse { folders = res.folders, files = res.files };
         }
+
+        [HttpGet]
+        [Route("getAllRecents")]
+        public async Task<ActionResult<BulkResponse>> GetAllRecents()
+        {
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllRecents();
+            return new BulkResponse { folders = res.folders, files = res.files };
+        }
     }
 }

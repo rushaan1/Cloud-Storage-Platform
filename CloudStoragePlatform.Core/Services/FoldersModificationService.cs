@@ -17,10 +17,12 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
-        public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository) 
+        private readonly SSE _sse;
+        public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse) 
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
+            _sse = sse;
             // inject user identifying stuff in constructor and in repository's constructor
         }
         private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
@@ -31,6 +33,9 @@ namespace CloudStoragePlatform.Core.Services
             // Update with 2 decimal precision
             folder.Size = (float)Math.Round(folder.Size + sizeInMB, 2);
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Send SSE notification about folder size update
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -47,6 +52,9 @@ namespace CloudStoragePlatform.Core.Services
             // Update with 2 decimal precision, ensuring it doesn't go below 0
             folder.Size = (float)Math.Round(Math.Max(0, folder.Size - sizeInMB), 2);
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Send SSE notification about folder size update
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -74,6 +82,9 @@ namespace CloudStoragePlatform.Core.Services
             // Update the folder's size with 2 decimal precision
             folder.Size = (float)Math.Round(totalSize, 2);
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+            
+            // Send SSE notification for updated folder size
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
             
             return folder.Size;
         }
@@ -181,6 +192,8 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
+            
+            bool wasInTrash = folder.IsTrash;
             if (folder.IsTrash)
             {
                 folder.IsTrash = false;
@@ -191,6 +204,20 @@ namespace CloudStoragePlatform.Core.Services
             }
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             
+            // Get the parent folder and folder size
+            Folder? parentFolder = folder.ParentFolder;
+            float folderSizeInMB = folder.Size;
+            
+            // If folder is being added to trash, subtract size from ancestors
+            if (!wasInTrash && folder.IsTrash && parentFolder != null)
+            {
+                await UpdateFolderSizesOnDelete(parentFolder, folderSizeInMB);
+            }
+            // If folder is being removed from trash, add size back to ancestors
+            else if (wasInTrash && !folder.IsTrash && parentFolder != null)
+            {
+                await UpdateFolderSizesOnAdd(parentFolder, folderSizeInMB);
+            }
             
             return updatedFolder!.ToFolderResponse();
         }
@@ -297,7 +324,7 @@ namespace CloudStoragePlatform.Core.Services
             if (Directory.Exists(newp)) 
             {
                 throw new DuplicateFolderException();
-            }
+            }        
             string oldp = folder!.FolderPath;
             folder.FolderName = folderRenameRequest.newName;
             folder.FolderPath = newp;
