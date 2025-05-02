@@ -336,6 +336,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
               this.loadHomeFolder();
               break;
             case "recents":
+              this.loadRecentsFolders();
               this.crumbs = ["Recents"];
               break;
             case "favorites":
@@ -448,6 +449,23 @@ export class ViewerComponent implements OnInit, OnDestroy{
       complete: () => {
         this.loaderService.loadingEnd();
         this.handleEmptyTxt();
+      }
+    });
+  }
+
+  loadRecentsFolders() {
+    // API
+    this.foldersService.getAllRecents().subscribe({
+      next: (response) => {
+        this.filesState.setFilesInViewer(response);
+        this.filterOutFoldersBeingMoved();
+      },
+      error: (error) => {
+        this.loaderService.loadingEnd();
+      },
+      complete: () => {
+        this.loaderService.loadingEnd();
+        this.handleEmptyTxt("No recent files or folders to show");
       }
     });
   }

@@ -82,6 +82,10 @@ public getAllTrashFolders(): Observable<File[]> {
   return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllTrashes`, { params });
 }
 
+public getAllRecents(): Observable<File[]> {
+  return this.httpClient.get<File[]>(`${RETRIEVAL_BASE_URL}/getAllRecents`);
+}
+
 public getMetadata(id: string, isFolder: boolean): Observable<Metadata> {
   Utils.handleStringInvalidError(id);
   let params = new HttpParams().set("id", id).set("isFolder", isFolder);

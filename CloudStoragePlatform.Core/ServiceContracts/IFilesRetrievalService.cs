@@ -11,6 +11,7 @@ namespace CloudStoragePlatform.Core.ServiceContracts
     public interface IFilesRetrievalService
     {
         Task<FileResponse?> GetFileByFileId(Guid id);
+        Task<FileStream> GetFilePreview(string filePath);
         Task<FileResponse?> GetFileByFilePath(string path);
         Task<FileOrFolderMetadataResponse> GetMetadata(Guid fileId);
     }

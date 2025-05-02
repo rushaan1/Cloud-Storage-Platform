@@ -28,10 +28,6 @@ namespace Cloud_Storage_Platform.Controllers
         [HttpGet("filePreview")]
         public async Task<IActionResult> GetFileForPreview(string filePath)
         {
-            if (!System.IO.File.Exists(filePath))
-            {
-                return NotFound("File not found");
-            }
             // TODO After Azure integration ensure file being opened's metadata is being updated
 
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
@@ -55,7 +51,7 @@ namespace Cloud_Storage_Platform.Controllers
                 return BadRequest("Unsupported file type");
             }
 
-            var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
+            FileStream stream = await _filesRetrievalService.GetFilePreview(filePath);
             Response.Headers["X-Accel-Buffering"] = "no";
             return File(stream, mimeType, true);
         }
