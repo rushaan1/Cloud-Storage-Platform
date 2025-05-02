@@ -93,6 +93,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       localStorage.setItem('list', 'Y');
     }
     this.cd.detectChanges();
+    this.eventService.emit("list-style-changed", localStorage.getItem('list'));
   }
 
   searchClick(){

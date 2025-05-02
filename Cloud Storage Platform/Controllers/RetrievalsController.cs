@@ -217,5 +217,19 @@ namespace Cloud_Storage_Platform.Controllers
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllRecents();
             return new BulkResponse { folders = res.folders, files = res.files };
         }
+
+        [HttpGet]
+        [Route("getAllMediaFiles")]
+        public async Task<ActionResult<BulkResponse>> GetAllMediaFiles(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
+        {
+            (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllMediaFiles(sortOrder);
+            
+            if (res.files.Count == 0)
+            {
+                return NotFound();
+            }
+            
+            return new BulkResponse { folders = res.folders, files = res.files };
+        }
     }
 }

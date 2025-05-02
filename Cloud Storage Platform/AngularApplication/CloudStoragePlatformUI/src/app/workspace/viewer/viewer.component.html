@@ -8,9 +8,9 @@
   <div *ngIf="emptyFolderTxtActive" class="topTxt">{{emptyTxt}}</div>
   <div *ngIf="!emptyFolderTxtActive && document.getElementsByClassName('file-being-displayed').length==0 && guidsHiddenDueToFileFilter.length!=0" class="topTxt">No files match the applied filters.</div>
   <div [ngClass]="{'files-and-folders-in-large-mode':localStorage.getItem('list')!='Y' && filesState.getItemsBeingMoved().length==0, 'move-state-files':filesState.getItemsBeingMoved().length>0}" *ngIf="fileBeingPreviewd==null" class="files-and-folders">
-    <file-large-item *ngFor="let f of visibleFiles; index as i" [ngClass]="{'file-move-state-width-override':filesState.getItemsBeingMoved().length>0, 'w-100':localStorage.getItem('list')=='Y'}" [FileFolder]="f" [type]="f.fileType"
+    <file-large-item *ngFor="let f of visibleFiles; index as i" [ngStyle]="{'display':guidsHiddenDueToFileFilter.includes(f.fileId) ? 'none':'inline-block'}" [ngClass]="{'file-move-state-width-override':filesState.getItemsBeingMoved().length>0, 'w-100':localStorage.getItem('list')=='Y'}" [FileFolder]="f" [type]="f.fileType"
                      class="file-large-item-from-viewer" (hiddenDueToFileFilter)="fileFilterUpdates(f, $event);" (destroy)="this.visibleFiles.splice(i,1)"></file-large-item>
-    <div *ngIf="localStorage.getItem('list') != 'Y' && !anyFolderUncreated && crumbs[0]=='home' && filesState.getItemsBeingMoved().length==0 && guidsHiddenDueToFileFilter.length == 0 && !loaderService.getLoadingStatus()" (click)="this.createNewFolder()" class="newFolder">
+    <div *ngIf="localStorage.getItem('list') != 'Y' && !anyFolderUncreated && crumbs[0]=='home' && filesState.getItemsBeingMoved().length==0 && guidsHiddenDueToFileFilter.length == 0 && !loaderService.getLoadingStatus()" (click)="this.createNewFolder()" [ngStyle]="{'margin-left': visibleFiles.length === 0 ? '10px' : '0px'}" class="newFolder">
       <i class="fa-solid fa-folder-plus"></i>
       <div>Create folder</div>
     </div>

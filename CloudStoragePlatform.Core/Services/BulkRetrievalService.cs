@@ -157,6 +157,15 @@ namespace CloudStoragePlatform.Core.Services
             return GetResponse(folders, files, SortOrderOptions.LASTOPENED_DESCENDING);
         }
 
+        public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllMediaFiles(SortOrderOptions sortOptions)
+        {
+            // Get all files that don't have Document file type
+            List<File> files = await _filesRepository.GetFilteredFiles(f => f.FileType != FileType.Document);
+            
+            // We return an empty list of folders since we're only interested in non-document files
+            return GetResponse(new List<Folder>(), files, sortOptions);
+        }
+
         private (List<FolderResponse> Folders, List<FileResponse> Files) GetResponse(List<Folder> folders, List<File> files, SortOrderOptions sortOptions)
         {
             List<Folder> sortedFolders = Utilities.Sort(folders, sortOptions);

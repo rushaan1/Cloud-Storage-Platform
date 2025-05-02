@@ -68,7 +68,7 @@
 
 .breadcrumbs-topmost-parent {
   position: sticky;
-  top: 60px;
+  top: 64px;
   max-width: 100%;
   background-color: #F5F5F5;
   display: block;
@@ -93,8 +93,8 @@
 @media (max-width: 550px) {
   .files-and-folders-in-large-mode {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-    gap: 1px;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 10px;
   }
   .newFolder {
     font-size: 12px;

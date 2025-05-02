@@ -24,6 +24,10 @@
 
   <ul class="category top-category maindrawer-top">
     <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
+        [routerLink]="['/filter/gallery']"><a [routerLinkActive]="['active']"><i
+      [routerLinkActive]="['active']" class="fa-solid fa-icons"></i>Gallery</a></li>
+
+    <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
         [routerLink]="['/filter/recents']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-regular fa-clock"></i>Recents</a></li>
 
@@ -71,6 +75,10 @@
     </div>
     <ul class="category top-category m-top-cat">
       <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
+          [routerLink]="['/filter/gallery']"><a [routerLinkActive]="['active']"><i
+        [routerLinkActive]="['active']" class="fa-solid fa-icons"></i></a></li>
+
+      <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
           [routerLink]="['/filter/recents']"><a [routerLinkActive]="['active']"><i
         [routerLinkActive]="['active']" class="fa-regular fa-clock"></i></a></li>
 
@@ -93,7 +101,7 @@
 
 
     <ul *ngIf="filesState.getItemsBeingMoved().length==0" class="category bottom-category m-bottom-cat">
-      <li (click)="typeItemSelectedMini($event,'Image', 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
+      <li (click)="typeItemSelectedMini($event,'Images', 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Images" id="Images"
           style="padding-left: 0;"><a><i class="fa-regular fa-image"></i></a></li>
       <li (click)="typeItemSelectedMini($event,'Audio', 1)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
@@ -102,7 +110,7 @@
       <li (click)="typeItemSelectedMini($event,'Video', 2)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Video" id="Video"
           style="padding-left: 0;"><a><i class="fa-solid fa-video"></i></a></li>
-      <li (click)="typeItemSelectedMini($event,'Document', 3)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
+      <li (click)="typeItemSelectedMini($event,'Documents', 3)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Documents" id="Documents"
           style="padding-left: 0;"><a><i class="fa-solid fa-file"></i></a></li>
       <li (click)="typeItemSelectedMini($event,'GIF', 4)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"

@@ -230,11 +230,18 @@ a {
   color: unset;
 }
 
-@media (max-height: 584px) {
+@media (max-height: 654px) {
   .fa-folder-plus-mini{
     padding-top: 5px;
   }
   .m-top-cat{
-    padding-bottom: 5px;
+    padding-bottom: 0;
+    padding-top: 0;
+  }
+}
+
+@media (max-height: 578px) {
+  li{
+    padding-top: 1vh;
   }
 }

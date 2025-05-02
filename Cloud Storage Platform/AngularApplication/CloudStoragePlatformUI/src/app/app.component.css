@@ -1,11 +1,10 @@
 html, body {
   margin: 0;
   padding: 0;
+  background-color: #F5F5F5;
 }
 
-/*When integrating backend make sure to have dynamic routing with variable route paramters for every fodler*/
 .navigation-drawer {
-  /*TODO WHEN ADDING RESPONSIVENESS remove min-width with media query for mobile */
   transition: min-width 1s ease;
   z-index: 2;
   background-color: #F5F5F5;
@@ -14,8 +13,6 @@ html, body {
 .content {
   display: flex;
   height: 100%;
-  /*max-width: 99.5%;*/
-  /*overflow-x: hidden;*/
 }
 
 .top-panel {

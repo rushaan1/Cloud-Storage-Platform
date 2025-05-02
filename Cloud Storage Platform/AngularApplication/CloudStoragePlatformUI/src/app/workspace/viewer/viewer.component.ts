@@ -2,7 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ElementRef,
+  ElementRef, HostListener,
   NgZone,
   OnDestroy,
   OnInit,
@@ -134,6 +134,15 @@ export class ViewerComponent implements OnInit, OnDestroy{
     this.subscriptions.push(this.filesState.uncreatedFolderExists$.subscribe(uncreated => {
       this.anyFolderUncreated = uncreated;
     }));
+
+    // Listen for list style changes
+    this.subscriptions.push(this.eventService.listen("list-style-changed", (val) => {
+      this.handleEmptyTxt();
+      if (this.crumbs[0].toLowerCase()=="home" && val!='Y'){
+        this.emptyFolderTxtActive = false;
+      }
+    }));
+
     this.sse = new EventSource('https://localhost:7219/api/Modifications/sse');
     this.sse.onmessage = (event) =>{
       this.ngZone.run(()=>{
@@ -284,6 +293,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
         if (this.crumbs[0].toLowerCase()!="home"){
           this.handleEmptyTxt();
         }
+        else if (localStorage.getItem("list")=="Y"){
+          this.handleEmptyTxt();
+        }
       });
     }
   }
@@ -335,6 +347,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
             case "home":
               this.loadHomeFolder();
               break;
+            case "gallery":
+              this.loadMediaFiles();
+              this.crumbs = ["Gallery"];
+              break;
             case "recents":
               this.loadRecentsFolders();
               this.crumbs = ["Recents"];
@@ -368,6 +384,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
             },
             complete: () => {
               this.loaderService.loadingEnd();
+              if (localStorage.getItem("list")=="Y"){
+                this.handleEmptyTxt();
+              }
             }
           });
         }
@@ -415,6 +434,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
       },
       complete: () => {
         this.loaderService.loadingEnd();
+        if (localStorage.getItem("list")=="Y"){
+          this.handleEmptyTxt();
+        }
       }
     });
   }
@@ -466,6 +488,23 @@ export class ViewerComponent implements OnInit, OnDestroy{
       complete: () => {
         this.loaderService.loadingEnd();
         this.handleEmptyTxt("No recent files or folders to show");
+      }
+    });
+  }
+
+  loadMediaFiles() {
+    // API
+    this.foldersService.getAllMediaFiles().subscribe({
+      next: (response) => {
+        this.filesState.setFilesInViewer(response);
+        this.filterOutFoldersBeingMoved();
+      },
+      error: (error) => {
+        this.loaderService.loadingEnd();
+      },
+      complete: () => {
+        this.loaderService.loadingEnd();
+        this.handleEmptyTxt("No media files to show");
       }
     });
   }
