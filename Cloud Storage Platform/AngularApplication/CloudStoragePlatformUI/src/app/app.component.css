@@ -6,7 +6,7 @@ html, body {
 
 .navigation-drawer {
   transition: min-width 1s ease;
-  z-index: 2;
+  z-index: 18;
   background-color: #F5F5F5;
 }
 
@@ -72,10 +72,4 @@ html, body {
   100% {
     transform: rotate(360deg);
   }
-}
-
-@media (max-width: 1095px) {
-  /*.navigation-drawer {*/
-  /*  min-width: unset !important;*/
-  /*}*/
 }

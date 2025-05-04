@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FileLargeComponent } from './file-large/file-large.component';
-import { FileListComponent } from './file-list/file-list.component';
+import { FileItemComponent } from './file-item/file-item.component';
 import { WorkspaceModule } from '../workspace/workspace.module';
 import {ReactiveFormsModule} from "@angular/forms";
 import {ResponseInterceptor} from "../services/ApiServices/response.interceptor";
@@ -13,8 +12,7 @@ import {NotificationCenterComponent} from "../notification-center/notification-c
 
 @NgModule({
   declarations: [
-    FileLargeComponent,
-    FileListComponent,
+    FileItemComponent,
     InfoComponent,
     BreadcrumbsComponent
   ],
@@ -31,8 +29,7 @@ import {NotificationCenterComponent} from "../notification-center/notification-c
     NotificationCenterComponent
   ],
   exports:[
-    FileLargeComponent,
-    FileListComponent,
+    FileItemComponent,
     BreadcrumbsComponent
   ]
 })

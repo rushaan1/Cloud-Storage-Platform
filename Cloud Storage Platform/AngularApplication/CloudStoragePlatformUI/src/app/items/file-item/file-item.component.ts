@@ -26,11 +26,11 @@ import {NetworkStatusService} from "../../services/network-status-service.servic
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 
 @Component({
-  selector: 'file-large-item',
-  templateUrl: './file-large.component.html',
-  styleUrl: './file-large.component.css'
+  selector: 'file-item',
+  templateUrl: './file-item.component.html',
+  styleUrl: './file-item.component.css'
 })
-export class FileLargeComponent implements OnInit, AfterViewInit {
+export class FileItemComponent implements OnInit, AfterViewInit {
   /*
   * Important: BaseFileInterface contains all properties contained by Folders and every single one of those properties are also contained by File but File contains additional properties.
   *            File term is sometimes used to refer to Folder, especially in Frontend code (questionable practice)

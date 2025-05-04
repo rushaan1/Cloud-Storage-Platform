@@ -32,17 +32,16 @@ export class AppComponent implements AfterViewInit {
 
   miniToggle(event:boolean){
     this.miniset = event;
-    this.navDrawer.nativeElement.style.width = this.miniset ? "50px" : "321px";
     if (this.miniset){
-      this.navDrawer.nativeElement.style.minWidth = "54px";
+      this.navDrawer.nativeElement.style.minWidth = "50px";
       this.navDrawer.nativeElement.style.height = "";
-      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 54px)";
+      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 50px)";
       localStorage.setItem("miniDrawerSet", "Y");
     }
     else{
-      this.navDrawer.nativeElement.style.minWidth = "282px";
+      this.navDrawer.nativeElement.style.minWidth = "270px";
       this.navDrawer.nativeElement.style.height = `${document.documentElement.scrollHeight}px`;
-      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 282px)";
+      this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 270px)";
       localStorage.setItem("miniDrawerSet", "N");
     }
   }

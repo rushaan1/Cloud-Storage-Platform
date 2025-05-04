@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { WorkspaceModule } from './workspace/workspace.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
+import {AccountModule} from "./account/account.module";
 
 @NgModule({
   declarations: [
@@ -13,7 +14,8 @@ import { NotificationCenterComponent } from './notification-center/notification-
   imports: [
     BrowserModule,
     AppRoutingModule,
-    WorkspaceModule
+    WorkspaceModule,
+    AccountModule
   ],
   providers: [],
   bootstrap: [AppComponent]
