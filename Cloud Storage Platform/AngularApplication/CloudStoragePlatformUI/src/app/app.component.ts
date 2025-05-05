@@ -1,12 +1,14 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {LoadingService} from "./services/StateManagementServices/loading.service";
+import {NavigationEnd, Router} from "@angular/router";
+import {filter} from "rxjs/operators";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnInit {
   @ViewChild("navigationDrawer") navDrawer!: ElementRef<HTMLElement>;
   @ViewChild("loaderOverlay") loaderOverlay!: ElementRef<HTMLElement>;
   @ViewChild("routerContainer") routerContainer!: ElementRef<HTMLElement>;
@@ -15,23 +17,55 @@ export class AppComponent implements AfterViewInit {
   miniset:boolean = false;
   initialMiniSet:boolean = false;
   title = 'CloudStoragePlatformUI';
+  isAuthPage = false;
+  private lastUrl = '';
 
-  constructor(private loadingService:LoadingService) {}
+  constructor(
+    private loadingService: LoadingService,
+    private router: Router,
+    private cd: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      const wasAuthPage = this.isAuthPage;
+      this.isAuthPage = event.url.includes('/account/login') || event.url.includes('/account/register');
+      this.lastUrl = event.url;
+
+      // Only apply miniToggle when entering non-auth pages, not when leaving them
+      if (!this.isAuthPage && (wasAuthPage !== this.isAuthPage)) {
+        // Wait for navDrawer to be rendered after *ngIf condition changes
+        setTimeout(() => {
+          this.miniToggle(this.miniset);
+        }, 0);
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.loadingService.loading$.subscribe(loading => {
       this.loading = loading;
-      if (!this.initialMiniSet){
+      if (!this.initialMiniSet && !this.isAuthPage){
         this.miniToggle(this.miniset);
         this.initialMiniSet = true;
       }
-      this.panel.nativeElement.scrollIntoView({behavior:'instant', block: 'start'});
+
+      if (this.panel && this.panel.nativeElement) {
+        this.panel.nativeElement.scrollIntoView({behavior:'instant', block: 'start'});
+      }
     });
   }
 
-
   miniToggle(event:boolean){
     this.miniset = event;
+
+    // Skip this method entirely if we're on an auth page or if elements are undefined
+    if (this.isAuthPage || !this.navDrawer || !this.navDrawer.nativeElement || !this.routerContainer || !this.routerContainer.nativeElement) {
+      return;
+    }
+
     if (this.miniset){
       this.navDrawer.nativeElement.style.minWidth = "50px";
       this.navDrawer.nativeElement.style.height = "";
@@ -44,5 +78,6 @@ export class AppComponent implements AfterViewInit {
       this.routerContainer.nativeElement.style.maxWidth = "calc(100vw - 270px)";
       localStorage.setItem("miniDrawerSet", "N");
     }
+    this.cd.detectChanges();
   }
 }

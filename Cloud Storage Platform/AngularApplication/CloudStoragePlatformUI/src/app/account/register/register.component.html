@@ -1,1 +1,113 @@
-<p>register works!</p>
+<div class="auth-container">
+  <div class="background-image"></div>
+  <div class="auth-content">
+    <div class="auth-form-container">
+      <h2>Register</h2>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            class="form-control" 
+            placeholder="Enter your email address">
+          <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+            <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+            <span *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            formControlName="username" 
+            class="form-control" 
+            placeholder="Choose a username">
+          <div class="error-message" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+            <span *ngIf="registerForm.get('username')?.errors?.['required']">Username is required</span>
+            <span *ngIf="registerForm.get('username')?.errors?.['minlength']">Username must be at least 3 characters</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="country">Country</label>
+          <select 
+            id="country" 
+            formControlName="country" 
+            class="form-control">
+            <option value="" disabled selected>Select your country</option>
+            <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+          </select>
+          <div class="error-message" *ngIf="registerForm.get('country')?.invalid && registerForm.get('country')?.touched">
+            <span *ngIf="registerForm.get('country')?.errors?.['required']">Country is required</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="address">Address (Optional)</label>
+          <input 
+            type="text" 
+            id="address" 
+            formControlName="address" 
+            class="form-control" 
+            placeholder="Enter your address">
+        </div>
+        
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number (Optional)</label>
+          <input 
+            type="tel" 
+            id="phoneNumber" 
+            formControlName="phoneNumber" 
+            class="form-control" 
+            placeholder="Enter your phone number">
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password" 
+            class="form-control" 
+            placeholder="Create a password">
+          <div class="error-message" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+            <span *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</span>
+            <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            formControlName="confirmPassword" 
+            class="form-control" 
+            placeholder="Confirm your password">
+          <div class="error-message" *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+            <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Please confirm your password</span>
+            <span *ngIf="registerForm.get('confirmPassword')?.errors?.['passwordMismatch']">Passwords do not match</span>
+          </div>
+        </div>
+        
+        <div class="form-group checkbox">
+          <input 
+            type="checkbox" 
+            id="rememberMe" 
+            formControlName="rememberMe">
+          <label for="rememberMe">Remember me</label>
+        </div>
+        
+        <button type="submit" class="submit-btn" [disabled]="registerForm.invalid">Register</button>
+        
+        <div class="form-links">
+          <a routerLink="/account/login">Already have an account? Login</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

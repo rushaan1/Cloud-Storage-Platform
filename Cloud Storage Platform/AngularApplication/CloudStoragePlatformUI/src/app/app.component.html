@@ -1,16 +1,16 @@
 <div class="content">
 
-  <div #navigationDrawer class="navigation-drawer">
+  <div #navigationDrawer class="navigation-drawer" *ngIf="!isAuthPage">
     <drawer class="drawer-component" (miniSet)="miniToggle($event)"></drawer>
   </div>
 
 
   <div class="dashboard">
-    <div #panel class="top-panel">
+    <div #panel class="top-panel" *ngIf="!isAuthPage">
       <panel class="panel"></panel>
     </div>
 
-    <div #routerContainer class="router-container">
+    <div #routerContainer class="router-container" [ngClass]="{'full-width': isAuthPage}">
       <router-outlet></router-outlet>
 
       <div #loaderOverlay *ngIf="loading" class="overlay">
