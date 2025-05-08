@@ -4,17 +4,16 @@
   width: 100%;
   position: relative;
   overflow: hidden;
+  color: #8B6B44;
+  font-family: sans-serif;
 }
 
 .background-image {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/assets/storage-bg.png');
+  background-image: url('../login picc.png');
   background-size: cover;
-  background-position: center;
   z-index: -1;
 }
 
@@ -27,40 +26,45 @@
 
 .auth-form-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin: 1rem;
+  padding: 2rem 2rem 1.5rem 2rem;
+  margin: 1.5rem;
+  border: 2px solid #f7e2c1;
+  border-radius: 12px;
   overflow-y: auto;
-  max-height: 90vh;
+  max-height: 85vh;
 }
 
 h2 {
-  text-align: center;
+  text-align: start;
   margin-bottom: 1.5rem;
-  color: #8B6B44;
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 2rem;
 }
 
 .form-group {
-  margin-bottom: 1.2rem;
+  margin-bottom: 1rem;
 }
 
 label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #666;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.6rem;
+  border: 2px solid #f7e2c1;
+  border-radius: 12px;
   box-sizing: border-box;
   font-size: 0.9rem;
+}
+
+input:focus-visible, select:focus-visible {
+  border: 2px solid #f3cc8f;
+  border-radius: 12px;
+  outline: none;
 }
 
 .checkbox {
@@ -70,6 +74,11 @@ label {
 
 .checkbox input {
   margin-right: 0.5rem;
+  border: 2px solid #8B6B44;
+  border-radius: 12px;
+  accent-color: #8B6B44;
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
 .checkbox label {
@@ -122,13 +131,25 @@ label {
 }
 
 /* Responsive styles */
-@media (max-width: 768px) {
+@media (max-width: 1250px) {
   .auth-content {
     justify-content: center;
   }
-  
+
   .auth-form-container {
-    margin: 1rem auto;
+    margin: 1.5rem !important;
+    max-height: 80vh;
+  }
+
+  .background-image {
+    background-image: url('../auth bg2.png');
+  }
+}
+
+@media (min-width: 769px) and (max-width: 991px) {
+  .auth-form-container {
+    margin-right: 5%;
+    max-height: 80vh;
   }
 }
 
