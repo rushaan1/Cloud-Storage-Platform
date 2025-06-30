@@ -41,8 +41,10 @@
       </div>
     </div>
     <div class="sharing-info-content info-container">
-      <div class="share-txt share-tab-margin">This {{folderOrFileTxt}} is not currently being shared.</div>
-      <button class="share-tab-margin btn share-btn">Create a shareable URL</button>
+      <div class="share-flex-holder">
+        <div class="share-txt">This {{folderOrFileTxt}} is not currently being shared.</div>
+        <button class="share-tab-margin btn share-btn">Create a shareable URL</button>
+      </div>
     </div>
     <div class="full-metadata-content info-container">
       <div class="metadata-div">Path: {{Utils.constructFilePathForApi(Utils.cleanPath(f.filePath))}}</div>
