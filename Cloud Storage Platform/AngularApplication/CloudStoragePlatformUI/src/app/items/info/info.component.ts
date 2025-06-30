@@ -9,6 +9,7 @@ import {FilesStateService} from "../../services/StateManagementServices/files-st
 import {FileType} from "../../models/FileType";
 import {EventService} from "../../services/event-service.service";
 import {NetworkStatusService} from "../../services/network-status-service.service";
+import {BreadcrumbService} from "../../services/StateManagementServices/breadcrumb.service";
 
 @Component({
   selector: 'info',
@@ -31,7 +32,7 @@ export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
   folderOrFileTxt = "";
   eventSource!:EventSource;
 
-  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService, protected  eventService:EventService, private ngZone:NgZone, private networkStatus:NetworkStatusService) {}
+  constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService, protected  eventService:EventService, private ngZone:NgZone, private networkStatus:NetworkStatusService, protected bcService:BreadcrumbService) {}
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id");
@@ -42,7 +43,7 @@ export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
       const appUrl = this.router.url.split("?")[0].split("/");
       this.isFolder = appUrl[appUrl.length-2]=="foldermetadata";
       this.folderOrFileTxt = this.isFolder ? "Folder" : "File";
-
+      this.bcService.setBreadcrumbs(['']); // if its loaded from viewer, bc was home which flipped the condition for create new folder button, this is fine for now atleast
       forkJoin({
         folder: this.foldersService.getFileOrFolderById(id, this.isFolder),
         metadata: this.foldersService.getMetadata(id, this.isFolder),

@@ -13,11 +13,11 @@
         <div class="bg"></div>
       </div>
     </div>
-    <div class="space">5GB of 10GB used.</div>
+    <div [ngStyle]="{'margin-bottom':createFolderCheck() ? 'unset' : '20px'}" class="space">5GB of 10GB used.</div>
   </div>
   <!-- Create a horizontal button with an i element in the left side and Create new folder text on the right side !-->
 
-  <div *ngIf="!anyItemRenaming && breadCrumbs[0]=='home' && filesState.getItemsBeingMoved().length==0" (click)="createFolderClick()" class="new-folder-button">
+  <div *ngIf="createFolderCheck()" (click)="createFolderClick()" class="new-folder-button">
     <i class="fa-solid fa-folder-plus"></i>
     <div>Create new folder</div>
   </div>

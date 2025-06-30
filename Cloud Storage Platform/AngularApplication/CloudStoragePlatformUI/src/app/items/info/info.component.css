@@ -120,6 +120,11 @@
   background-size: cover;
 }
 
+.Audio {
+  background: url('../item-icons/audio-icon.png');
+  background-size: cover;
+}
+
 .breadcrumbs-topmost-parent {
   position: sticky;
   max-width: 100%;
@@ -143,7 +148,7 @@
 
 @media (max-width: 1200px) {
   .tabs{
-    top: 90px;
+    top: 110px;
   }
   .icon{
     height: 120px;

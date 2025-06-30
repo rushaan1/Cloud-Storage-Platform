@@ -55,6 +55,11 @@
   background-size: cover;
 }
 
+.Audio {
+  background: url('../item-icons/audio-icon.png');
+  background-size: cover;
+}
+
 .file-large {
   padding: 15px;
   position: relative;

@@ -17,6 +17,7 @@
 .fa-square-xmark {
   font-size: 20px;
   cursor: pointer;
+  margin-left: 4px;
 }
 
 .sticky-notif {

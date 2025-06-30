@@ -123,9 +123,9 @@ namespace CloudStoragePlatform.Core.Services
 
         public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllFilteredChildren(string searchString, SortOrderOptions sortOptions)
         {
-            List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.FolderName.Contains(searchString));
+            List<Folder> folders = await _foldersRepository.GetFilteredFolders(f => f.FolderName.ToLower().Contains(searchString.ToLower()));
 
-            List<File> files = await _filesRepository.GetFilteredFiles(f => f.FileName.Contains(searchString));
+            List<File> files = await _filesRepository.GetFilteredFiles(f => f.FileName.ToLower().Contains(searchString.ToLower()));
             return GetResponse(folders, files, sortOptions);
         }
 

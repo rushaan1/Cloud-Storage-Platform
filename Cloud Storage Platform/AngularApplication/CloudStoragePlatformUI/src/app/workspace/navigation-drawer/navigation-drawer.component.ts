@@ -248,4 +248,9 @@ export class NavigationDrawerComponent implements OnInit {
   createFolderClick(){
     this.eventService.emit('create new folder');
   }
+
+  createFolderCheck(){
+    // checks if folder can be created right now
+    return !this.anyItemRenaming && this.breadCrumbs[0]=='home' && this.filesState.getItemsBeingMoved().length==0;
+  }
 }

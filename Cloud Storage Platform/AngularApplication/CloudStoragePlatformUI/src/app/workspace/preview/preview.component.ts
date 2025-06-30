@@ -44,6 +44,13 @@ export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
     });
   }
 
+  download(){
+    let url = "https://localhost:7219/api/Retrievals/download";
+    url = url+"?fileIds="+this.file.fileId;
+    url += "&name="+this.file.fileName;
+    window.open(url, "_blank");
+  }
+
   ngOnInit(): void {
     this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl('https://localhost:7219/api/Retrievals/filePreview?filePath=' + this.file.filePath);
   }

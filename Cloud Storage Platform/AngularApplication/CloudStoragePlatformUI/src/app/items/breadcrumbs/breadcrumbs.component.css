@@ -60,7 +60,6 @@
 @media (max-width: 900px) {
   .breadcrumbs {
     font-size: 24px;
-    height: unset;
   }
   .margin-right{
     margin-right: 25px;
@@ -70,7 +69,6 @@
 @media (max-width: 600px) {
   .breadcrumbs {
     font-size: 20px;
-    height: unset;
   }
   .margin-right{
     margin-right: 0px;
