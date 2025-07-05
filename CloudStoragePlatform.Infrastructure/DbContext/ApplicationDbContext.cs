@@ -1,4 +1,6 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.IdentityEntites;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CloudStoragePlatform.Infrastructure.DbContext
 {
-    public class ApplicationDbContext : Microsoft.EntityFrameworkCore.DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         public DbSet<Folder> Folders { get; set; }
         public DbSet<Core.Domain.Entities.File> Files { get; set; }
