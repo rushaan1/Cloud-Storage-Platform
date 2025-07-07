@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Cloud_Storage_Platform</RootNamespace>
+    <UserSecretsId>81e4f338-6125-48b5-96ee-d85bb2da957c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -58,7 +58,8 @@ export class ViewerComponent implements OnInit, OnDestroy{
     private networkStatusService:NetworkStatusService) {}
 
   ngOnInit(): void {
-    this.filesState.setUncreatedFolderExists(false)
+    this.filesState.setUncreatedFolderExists(false);
+    // this.foldersService.test();
     this.subscriptions.push(this.networkStatusService.getStatus().pipe(skip(1)).subscribe(status => {
       if (status) {
         this.eventService.emit("reload viewer list");
@@ -143,161 +144,165 @@ export class ViewerComponent implements OnInit, OnDestroy{
       }
     }));
 
-    this.sse = new EventSource('https://localhost:7219/api/Modifications/sse');
-    this.sse.onmessage = (event) =>{
-      this.ngZone.run(()=>{
-        const data = JSON.parse(event.data);
-        console.log(data);
+    this.foldersService.ssetoken().subscribe({
+      next: (res) => {
+        this.sse = new EventSource('https://localhost:7219/api/Modifications/sse?token=' + res.sseToken);
+        this.sse.onmessage = (event) =>{
+          this.ngZone.run(()=>{
+            const data = JSON.parse(event.data);
+            console.log(data);
 
-        const path:string = decodeURIComponent(Utils.constructFilePathForApi(this.crumbs));
-        switch (data.eventType){
-          case "added":
-            if (this.crumbs[0]!="home"){
-              return;
-            }
-            for (let i = 0; i<data.content.res.length; i++){
-              const processedFile = Utils.processFileModel(data.content.res[i]);
-              if (this.extractCleanParentPath(processedFile.filePath)==path){
-                this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(), processedFile]);
-              }
-            }
-            break;
-          case "size_updated":
-            // Update file size when it changes
-            const fileId = data.content.id;
-            const newSize = data.content.size;
-
-            // Update files in the viewer
-            let allFilesUpdated = false;
-            let filesInState = this.filesState.getFilesInViewer();
-
-            filesInState.forEach((file, index) => {
-              if (file.fileId === fileId) {
-                filesInState[index].size = newSize;
-                allFilesUpdated = true;
-              }
-            });
-
-            if (allFilesUpdated) {
-              // Update state with the modified files
-              this.filesState.setFilesInViewer([...filesInState]);
-
-              // Also update visible files
-              this.visibleFiles.forEach((file, index) => {
-                if (file.fileId === fileId) {
-                  this.visibleFiles[index].size = newSize;
+            const path:string = decodeURIComponent(Utils.constructFilePathForApi(this.crumbs));
+            switch (data.eventType){
+              case "added":
+                if (this.crumbs[0]!="home"){
+                  return;
                 }
-              });
-            }
-            break;
-          case "favorite_updated" :
-            let updated = false;
-            let allFiles = this.filesState.getFilesInViewer();
-            allFiles.forEach((f,i)=>{
-              if (f.fileId==data.content.id as string){
-                allFiles[i].isFavorite = data.content.res.isFavorite as boolean;
-                this.filesState.setFilesInViewer(allFiles);
-                const j = this.visibleFiles.findIndex((f2)=>{return f.fileId==f2.fileId});
-                this.visibleFiles[j].isFavorite = this.visibleFiles[i].isFavorite;
-                updated = true
-              }
-            });
-            if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
-              const processedFile = Utils.processFileModel(data.content.res);
-              this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),processedFile]);
-              return;
-            }
-            break;
-          case "trash_updated":
-            const items:File[] = [];
-            let allFiles2 = this.filesState.getFilesInViewer();
-            for (let i = 0; i<data.content.updatedFolders.length; i++){
-              const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
-              items.push(processedFile);
-              const ind = allFiles2.findIndex((f)=>{return f.fileId==processedFile.fileId});
-              if (ind != -1){
-                allFiles2[ind].isTrash = processedFile.isTrash;
-              }
-            }
-            for (let i = 0; i<data.content.updatedFiles.length; i++){
-              const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
-              items.push(processedFile);
-              const ind = allFiles2.findIndex((f,i)=>{return f.fileId==processedFile.fileId});
-              if (ind != -1){
-                allFiles2[ind].isTrash = processedFile.isTrash;
-              }
-            }
-
-            for (let i = 0; i<items.length; i++){
-              if (!this.containsId(items[i].fileId)){
-                // if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
-                //   this.visibleFiles.push(items[i]);
-                // }
-                if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
-                  allFiles2.push(items[i]);
+                for (let i = 0; i<data.content.res.length; i++){
+                  const processedFile = Utils.processFileModel(data.content.res[i]);
+                  if (this.extractCleanParentPath(processedFile.filePath)==path){
+                    this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(), processedFile]);
+                  }
                 }
-              }
-              else{
-                // this.visibleFiles = this.visibleFiles.filter((f)=>{
-                //   return f.fileId != items[i].fileId;
-                // });
-                if (this.crumbs[0] == "Trash"){
-                  allFiles2 = allFiles2.filter(f=>{
-                    return f.fileId != items[i].fileId;
+                break;
+              case "size_updated":
+                // Update file size when it changes
+                const fileId = data.content.id;
+                const newSize = data.content.size;
+
+                // Update files in the viewer
+                let allFilesUpdated = false;
+                let filesInState = this.filesState.getFilesInViewer();
+
+                filesInState.forEach((file, index) => {
+                  if (file.fileId === fileId) {
+                    filesInState[index].size = newSize;
+                    allFilesUpdated = true;
+                  }
+                });
+
+                if (allFilesUpdated) {
+                  // Update state with the modified files
+                  this.filesState.setFilesInViewer([...filesInState]);
+
+                  // Also update visible files
+                  this.visibleFiles.forEach((file, index) => {
+                    if (file.fileId === fileId) {
+                      this.visibleFiles[index].size = newSize;
+                    }
                   });
                 }
-              }
-              this.filesState.setFilesInViewer(allFiles2);
-            }
-            break;
-          case "deleted":
-            for (let i = 0; i<data.content.ids.length; i++){
-              this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => {
-                return file.fileId != data.content.ids[i];
-              }));
-            }
-            break;
-          case "renamed":
-            this.filesState.getFilesInViewer().forEach((f,i)=>{
-              if (this.renameFocus){
-                const queryParams = { ...this.route.snapshot.queryParams };
-                delete queryParams["renameFocus"];
-                this.router.navigate([], {
-                  relativeTo: this.route,
-                  queryParams: queryParams,
-                  replaceUrl: true,
-                }).then(()=>{
-                  if (f.fileId==data.content.id as string) {
+                break;
+              case "favorite_updated" :
+                let updated = false;
+                let allFiles = this.filesState.getFilesInViewer();
+                allFiles.forEach((f,i)=>{
+                  if (f.fileId==data.content.id as string){
+                    allFiles[i].isFavorite = data.content.res.isFavorite as boolean;
+                    this.filesState.setFilesInViewer(allFiles);
+                    const j = this.visibleFiles.findIndex((f2)=>{return f.fileId==f2.fileId});
+                    this.visibleFiles[j].isFavorite = this.visibleFiles[i].isFavorite;
+                    updated = true
+                  }
+                });
+                if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
+                  const processedFile = Utils.processFileModel(data.content.res);
+                  this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),processedFile]);
+                  return;
+                }
+                break;
+              case "trash_updated":
+                const items:File[] = [];
+                let allFiles2 = this.filesState.getFilesInViewer();
+                for (let i = 0; i<data.content.updatedFolders.length; i++){
+                  const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
+                  items.push(processedFile);
+                  const ind = allFiles2.findIndex((f)=>{return f.fileId==processedFile.fileId});
+                  if (ind != -1){
+                    allFiles2[ind].isTrash = processedFile.isTrash;
+                  }
+                }
+                for (let i = 0; i<data.content.updatedFiles.length; i++){
+                  const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
+                  items.push(processedFile);
+                  const ind = allFiles2.findIndex((f,i)=>{return f.fileId==processedFile.fileId});
+                  if (ind != -1){
+                    allFiles2[ind].isTrash = processedFile.isTrash;
+                  }
+                }
+
+                for (let i = 0; i<items.length; i++){
+                  if (!this.containsId(items[i].fileId)){
+                    // if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
+                    //   this.visibleFiles.push(items[i]);
+                    // }
+                    if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
+                      allFiles2.push(items[i]);
+                    }
+                  }
+                  else{
+                    // this.visibleFiles = this.visibleFiles.filter((f)=>{
+                    //   return f.fileId != items[i].fileId;
+                    // });
+                    if (this.crumbs[0] == "Trash"){
+                      allFiles2 = allFiles2.filter(f=>{
+                        return f.fileId != items[i].fileId;
+                      });
+                    }
+                  }
+                  this.filesState.setFilesInViewer(allFiles2);
+                }
+                break;
+              case "deleted":
+                for (let i = 0; i<data.content.ids.length; i++){
+                  this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => {
+                    return file.fileId != data.content.ids[i];
+                  }));
+                }
+                break;
+              case "renamed":
+                this.filesState.getFilesInViewer().forEach((f,i)=>{
+                  if (this.renameFocus){
+                    const queryParams = { ...this.route.snapshot.queryParams };
+                    delete queryParams["renameFocus"];
+                    this.router.navigate([], {
+                      relativeTo: this.route,
+                      queryParams: queryParams,
+                      replaceUrl: true,
+                    }).then(()=>{
+                      if (f.fileId==data.content.id as string) {
+                        this.renameUpdation(f, data, i);
+                      }
+                    });
+                  }
+                  else{
                     this.renameUpdation(f, data, i);
                   }
                 });
-              }
-              else{
-                this.renameUpdation(f, data, i);
-              }
-            });
-            break;
-          case "moved":
-            for (let i = 0; i<data.content.length; i++){
-              if (this.containsId(data.content[i].id)){
-                if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
-                  this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => { return data.content[i].id != file.fileId }));
+                break;
+              case "moved":
+                for (let i = 0; i<data.content.length; i++){
+                  if (this.containsId(data.content[i].id)){
+                    if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                      this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => { return data.content[i].id != file.fileId }));
+                    }
+                  }
+                  else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                    this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),Utils.processFileModel(data.content[i].res)]);
+                  }
                 }
-              }
-              else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
-                this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),Utils.processFileModel(data.content[i].res)]);
-              }
             }
+            this.cdRef.detectChanges();
+            if (this.crumbs[0].toLowerCase()!="home"){
+              this.handleEmptyTxt();
+            }
+            else if (localStorage.getItem("list")=="Y"){
+              this.handleEmptyTxt();
+            }
+          });
         }
-        this.cdRef.detectChanges();
-        if (this.crumbs[0].toLowerCase()!="home"){
-          this.handleEmptyTxt();
-        }
-        else if (localStorage.getItem("list")=="Y"){
-          this.handleEmptyTxt();
-        }
-      });
-    }
+      }
+    });
   }
 
   filterOutFoldersBeingMoved(){

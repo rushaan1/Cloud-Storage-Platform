@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,10 +19,8 @@ namespace CloudStoragePlatform.Core.DTO.AuthDTO
         [Remote(action: "IsEmailAlreadyRegistered", controller: "Account", ErrorMessage = "Email is already registered")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Phone number can't be blank")]
-        [Phone]
-        [Remote(action: "IsEmailAlreadyRegistered", controller: "Account", ErrorMessage = "Email is already registered")]
-        public string PhoneNumber { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        public string Country { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password can't be blank")]
         public string Password { get; set; } = string.Empty;

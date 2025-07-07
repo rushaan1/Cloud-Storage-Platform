@@ -1,14 +1,21 @@
 using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core;
+using CloudStoragePlatform.Core.Domain.IdentityEntites;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Core.Services;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using CloudStoragePlatform.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
 
 namespace CloudStoragePlatform.Web
@@ -28,15 +35,21 @@ namespace CloudStoragePlatform.Web
                 Directory.CreateDirectory(Path.Combine(defaultDirectory, "home"));
             }
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options => 
+            {
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+            builder.Services.AddTransient<IJwtService, JwtService>();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAngularLocalhost",
                     builder =>
                     {
-                        builder.WithOrigins("http://localhost:4200", "http://192.168.29.161:4200")
-                               .AllowAnyMethod() 
-                               .AllowAnyHeader();
+                        builder.WithOrigins("https://localhost:4200", "https://192.168.29.161:4200")
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .AllowCredentials();
                     });
             });
 
@@ -67,6 +80,49 @@ namespace CloudStoragePlatform.Web
                 opts.AllowSynchronousIO = true;
             });
 
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+            {
+                options.Password.RequiredLength = 5;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireDigit = false;
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders()
+                .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
+                .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            // Read JWT from cookie
+                            context.Token = context.Request.Cookies["access_token"];
+                            return Task.CompletedTask;
+                        }
+                    };
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateAudience = true,
+                        ValidateIssuer = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtCloudStorageWebApi"]))
+                    };
+                });
+
+            builder.Services.AddAuthorization(options => { });
+
+
             var app = builder.Build();
             app.UseStaticFiles();
 
@@ -78,6 +134,7 @@ namespace CloudStoragePlatform.Web
             }
             app.UseRouting();
             app.UseCors("AllowAngularLocalhost");
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
             app.Use(async (context, next) =>

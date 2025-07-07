@@ -4,6 +4,7 @@ using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CloudStoragePlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250706112553_IdentityUpdate")]
+    partial class IdentityUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,7 +130,7 @@ namespace CloudStoragePlatform.Infrastructure.Migrations
                         new
                         {
                             FolderId = new Guid("9e2abd0a-94ac-43e2-a212-9dc9f7590447"),
-                            CreationDate = new DateTime(2025, 7, 7, 0, 5, 59, 815, DateTimeKind.Local).AddTicks(8828),
+                            CreationDate = new DateTime(2025, 7, 6, 16, 55, 53, 157, DateTimeKind.Local).AddTicks(4871),
                             FolderName = "home",
                             FolderPath = "C:\\CloudStoragePlatform\\home",
                             IsFavorite = false,
@@ -234,9 +236,6 @@ namespace CloudStoragePlatform.Infrastructure.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")

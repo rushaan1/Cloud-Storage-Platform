@@ -12,5 +12,6 @@ namespace CloudStoragePlatform.Core.Domain.IdentityEntites
         public string? PersonName { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime RefreshTokenExpirationDateTime { get; set; }
+        public string? Country { get; set; }
     }
 }

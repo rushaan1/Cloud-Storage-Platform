@@ -72,7 +72,10 @@
               "buildTarget": "CloudStoragePlatformUI:build:production"
             },
             "development": {
-              "buildTarget": "CloudStoragePlatformUI:build:development"
+              "buildTarget": "CloudStoragePlatformUI:build:development",
+              "ssl": true,
+              "sslKey": "C:\\Users\\rusha\\mkcert\\localhost-key.pem",
+              "sslCert": "C:\\Users\\rusha\\mkcert\\localhost.pem"
             }
           },
           "defaultConfiguration": "development"

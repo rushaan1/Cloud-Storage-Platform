@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { AccountService, RegisterDTO } from '../../services/ApiServices/account.service';
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-register',
@@ -9,19 +11,18 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors }
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
   countries: string[] = [
-    'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany', 
-    'France', 'Spain', 'Italy', 'Japan', 'China', 'India', 'Brazil', 
+    'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany',
+    'France', 'Spain', 'Italy', 'Japan', 'China', 'India', 'Brazil',
     'Mexico', 'Russia', 'South Africa'
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private router:Router) {}
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       username: ['', [Validators.required, Validators.minLength(3)]],
       country: ['', Validators.required],
-      address: [''],
       phoneNumber: [''],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
@@ -42,8 +43,24 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(): void {
     if (this.registerForm.valid) {
-      console.log('Register form submitted', this.registerForm.value);
-      // Handle form submission
+      const formValue = this.registerForm.value;
+      const registerDTO: RegisterDTO = {
+        email: formValue.email,
+        password: formValue.password,
+        confirmPassword: formValue.confirmPassword,
+        personName: formValue.username,
+        country: formValue.country,
+        phoneNumber: formValue.phoneNumber
+      };
+      this.accountService.register(registerDTO).subscribe({
+        next: (res) => {
+          // this.router.navigate(['filter','home']);
+          console.log(res);
+        },
+        error: (err) => {
+          console.error('Registration error', err);
+        }
+      });
     }
   }
 }

@@ -58,35 +58,40 @@ export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
       });
     });
 
-    this.eventSource = new EventSource("https://localhost:7219/api/Modifications/sse");
-    this.eventSource.onmessage = (event) => {
-      this.ngZone.run(()=>{
-        const data = JSON.parse(event.data);
-        console.log(data);
-        switch (data.eventType) {
-          case "favorite_updated" :
-            if (this.f.fileId==data.content.id as string){
-              this.f.isFavorite = data.content.res.isFavorite as boolean;
-              this.updateFavAndTrashTxts();
+    this.foldersService.ssetoken().subscribe({
+      next: (res) => {
+        this.eventSource = new EventSource("https://localhost:7219/api/Modifications/sse?token="+res.sseToken);
+        this.eventSource.onmessage = (event) => {
+          this.ngZone.run(()=>{
+            const data = JSON.parse(event.data);
+            console.log(data);
+            switch (data.eventType) {
+              case "favorite_updated" :
+                if (this.f.fileId==data.content.id as string){
+                  this.f.isFavorite = data.content.res.isFavorite as boolean;
+                  this.updateFavAndTrashTxts();
+                }
+                break;
+              case "trash_updated":
+                for (let i = 0; i<data.content.updatedFolders.length; i++){
+                  if (this.f.fileId==data.content.updatedFolders[i].folderId as string){
+                    this.f.isTrash = data.content.updatedFolders[i].isTrash as boolean;
+                    this.updateFavAndTrashTxts();
+                  }
+                }
+                for (let i = 0; i<data.content.updatedFiles.length; i++){
+                  if (this.f.fileId==data.content.updatedFiles[i].fileId as string){
+                    this.f.isTrash = data.content.updatedFiles[i].isTrash as boolean;
+                    this.updateFavAndTrashTxts();
+                  }
+                }
+                break;
             }
-            break;
-          case "trash_updated":
-            for (let i = 0; i<data.content.updatedFolders.length; i++){
-              if (this.f.fileId==data.content.updatedFolders[i].folderId as string){
-                this.f.isTrash = data.content.updatedFolders[i].isTrash as boolean;
-                this.updateFavAndTrashTxts();
-              }
-            }
-            for (let i = 0; i<data.content.updatedFiles.length; i++){
-              if (this.f.fileId==data.content.updatedFiles[i].fileId as string){
-                this.f.isTrash = data.content.updatedFiles[i].isTrash as boolean;
-                this.updateFavAndTrashTxts();
-              }
-            }
-            break;
-        }
-      });
-    };
+          });
+        };
+      }
+    });
+
   }
 
   ngAfterViewInit() {

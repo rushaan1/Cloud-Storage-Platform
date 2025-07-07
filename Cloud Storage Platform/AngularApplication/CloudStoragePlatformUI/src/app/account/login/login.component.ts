@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AccountService, LoginDTO } from '../../services/ApiServices/account.service';
 
 @Component({
   selector: 'app-login',
@@ -9,7 +10,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -21,8 +22,19 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      console.log('Login form submitted', this.loginForm.value);
-      // Handle form submission
+      const formValue = this.loginForm.value;
+      const loginDTO: LoginDTO = {
+        email: formValue.email,
+        password: formValue.password
+      };
+      this.accountService.login(loginDTO).subscribe({
+        next: (res) => {
+          console.log('Login successful', res);
+        },
+        error: (err) => {
+          console.error('Login error', err);
+        }
+      });
     }
   }
 }

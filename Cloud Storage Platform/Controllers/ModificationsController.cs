@@ -3,6 +3,7 @@ using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.ServiceContracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -251,9 +252,28 @@ namespace Cloud_Storage_Platform.Controllers
             return NoContent();
         }
 
-        [HttpGet("sse")]
-        public async Task ServerSentEvents()
+        [HttpGet("sseauth")]
+        public async Task<IActionResult> SSEAuth() 
         {
+            var token = Guid.NewGuid().ToString();
+            SseTokenStore.Save(token, User.Identity.Name, TimeSpan.FromMinutes(1));
+
+            return Ok(new { sseToken = token });
+        }
+
+        // Instead of directly establishing SSE connection a http req for auth above is needed because firefox browser does not support sending cookies along with sse request so auth cannot be done automatically
+
+        [HttpGet("sse")]
+        [AllowAnonymous]
+        public async Task ServerSentEvents([FromQuery] string token)
+        {
+            var userId = SseTokenStore.GetAndRemove(token);
+            if (userId == null)
+            {
+                Response.StatusCode = 403;
+                return;
+            }
+
             Response.Headers.Add("Content-Type", "text/event-stream");
             Response.Headers.Add("Cache-Control", "no-cache");
 

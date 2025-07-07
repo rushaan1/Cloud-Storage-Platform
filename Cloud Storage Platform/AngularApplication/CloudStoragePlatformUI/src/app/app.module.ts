@@ -6,6 +6,8 @@ import { AppComponent } from './app.component';
 import { WorkspaceModule } from './workspace/workspace.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
 import {AccountModule} from "./account/account.module";
+import {HTTP_INTERCEPTORS} from "@angular/common/http";
+import {WithCredentialsInterceptor} from "./services/ApiServices/with-credentials.interceptor";
 
 @NgModule({
   declarations: [
@@ -17,7 +19,9 @@ import {AccountModule} from "./account/account.module";
     WorkspaceModule,
     AccountModule
   ],
-  providers: [],
+  providers: [
+    {provide: HTTP_INTERCEPTORS, useClass: WithCredentialsInterceptor, multi: true}
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

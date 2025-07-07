@@ -103,6 +103,10 @@ public getMetadata(id: string, isFolder: boolean): Observable<Metadata> {
 
 // MODIFICATION endpoints
 
+  public ssetoken():Observable<any> {
+    return this.httpClient.get<any>(`${MODIFICATION_BASE_URL}/sseauth`);
+  }
+
 public addFolder(folderName: string, folderPath: string): Observable<any> {
   Utils.handleStringInvalidError(folderName);
   Utils.handleStringInvalidError(folderPath);
