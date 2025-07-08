@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AccountService, RegisterDTO } from '../../services/ApiServices/account.service';
 import {Router} from "@angular/router";
+import {TokenMonitorService} from "../../services/ApiServices/token-monitor.service";
 
 @Component({
   selector: 'app-register',
@@ -16,7 +17,7 @@ export class RegisterComponent implements OnInit {
     'Mexico', 'Russia', 'South Africa'
   ];
 
-  constructor(private fb: FormBuilder, private accountService: AccountService, private router:Router) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private router:Router, private tokenMonitor:TokenMonitorService) {}
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
@@ -56,6 +57,7 @@ export class RegisterComponent implements OnInit {
         next: (res) => {
           // this.router.navigate(['filter','home']);
           console.log(res);
+          this.tokenMonitor.startMonitoring();
         },
         error: (err) => {
           console.error('Registration error', err);

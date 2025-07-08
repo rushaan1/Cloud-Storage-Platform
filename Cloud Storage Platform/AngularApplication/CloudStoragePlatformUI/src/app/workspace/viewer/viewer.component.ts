@@ -311,7 +311,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    this.sse.close();
+    if (this.sse){
+      this.sse.close();
+    }
   }
 
   containsId(id:string){

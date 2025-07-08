@@ -18,15 +18,13 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IJwtService _jwtService;
-        private readonly IWebHostEnvironment _webHost;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager, IJwtService jwtService, IWebHostEnvironment webHost)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager, IJwtService jwtService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _jwtService = jwtService;
-            _webHost = webHost;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool httponly = true)
@@ -75,7 +73,8 @@ namespace Cloud_Storage_Platform.Controllers
 
                 SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
                 SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
-                SetCookie("jwt_expiry", authenticationResponse.Expiration.ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
 
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
@@ -124,8 +123,9 @@ namespace Cloud_Storage_Platform.Controllers
 
                 SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
                 SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
-                SetCookie("jwt_expiry", authenticationResponse.Expiration.ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
-
+                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+                
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
             else
@@ -179,8 +179,9 @@ namespace Cloud_Storage_Platform.Controllers
 
             SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
             SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
-            SetCookie("jwt_expiry", authenticationResponse.Expiration.ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
-
+            SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+            SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+            Console.WriteLine("Refreshed!");
             return Ok();
         }
     }

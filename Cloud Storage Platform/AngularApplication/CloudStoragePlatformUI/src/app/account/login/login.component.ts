@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AccountService, LoginDTO } from '../../services/ApiServices/account.service';
+import {TokenMonitorService} from "../../services/ApiServices/token-monitor.service";
 
 @Component({
   selector: 'app-login',
@@ -10,7 +11,7 @@ import { AccountService, LoginDTO } from '../../services/ApiServices/account.ser
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private accountService: AccountService) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -30,6 +31,7 @@ export class LoginComponent implements OnInit {
       this.accountService.login(loginDTO).subscribe({
         next: (res) => {
           console.log('Login successful', res);
+          this.tokenMonitor.startMonitoring();
         },
         error: (err) => {
           console.error('Login error', err);

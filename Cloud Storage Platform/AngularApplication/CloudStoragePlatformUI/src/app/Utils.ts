@@ -99,19 +99,15 @@ export class Utils {
   }
 
   public static getCookie(name: string): string | null {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? decodeURIComponent(match[2]) : null;
-  }
-
-  public static decodeJwt(token: string): any {
-    if (!token) return null;
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    try {
-      return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-    } catch {
-      return null;
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i].trim();
+      if (c.startsWith(nameEQ)) {
+        return decodeURIComponent(c.substring(nameEQ.length));
+      }
     }
+    return null;
   }
 
 }

@@ -195,6 +195,8 @@ export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
   protected readonly FileType = FileType;
 
   ngOnDestroy(): void {
-    this.eventSource.close();
+    if (this.eventSource){
+      this.eventSource.close();
+    }
   }
 }

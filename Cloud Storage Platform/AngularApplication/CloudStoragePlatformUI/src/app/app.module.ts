@@ -7,7 +7,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
 import {AccountModule} from "./account/account.module";
 import {HTTP_INTERCEPTORS} from "@angular/common/http";
-import {WithCredentialsInterceptor} from "./services/ApiServices/with-credentials.interceptor";
+import {RequestInterceptor} from "./services/ApiServices/request-interceptor.service";
 
 @NgModule({
   declarations: [
@@ -20,7 +20,7 @@ import {WithCredentialsInterceptor} from "./services/ApiServices/with-credential
     AccountModule
   ],
   providers: [
-    {provide: HTTP_INTERCEPTORS, useClass: WithCredentialsInterceptor, multi: true}
+    {provide: HTTP_INTERCEPTORS, useClass: RequestInterceptor, multi: true}
   ],
   bootstrap: [AppComponent]
 })

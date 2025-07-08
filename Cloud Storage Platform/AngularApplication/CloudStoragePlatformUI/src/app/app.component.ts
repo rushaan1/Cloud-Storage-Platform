@@ -2,6 +2,7 @@ import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChi
 import {LoadingService} from "./services/StateManagementServices/loading.service";
 import {NavigationEnd, Router} from "@angular/router";
 import {filter} from "rxjs/operators";
+import {TokenMonitorService} from "./services/ApiServices/token-monitor.service";
 
 @Component({
   selector: 'app-root',
@@ -23,10 +24,12 @@ export class AppComponent implements AfterViewInit, OnInit {
   constructor(
     private loadingService: LoadingService,
     private router: Router,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private tokenMonitor: TokenMonitorService
   ) {}
 
   ngOnInit(): void {
+    this.tokenMonitor.startMonitoring();
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
