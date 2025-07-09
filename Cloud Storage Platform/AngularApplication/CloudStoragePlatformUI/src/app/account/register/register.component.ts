@@ -51,7 +51,8 @@ export class RegisterComponent implements OnInit {
         confirmPassword: formValue.confirmPassword,
         personName: formValue.username,
         country: formValue.country,
-        phoneNumber: formValue.phoneNumber
+        phoneNumber: formValue.phoneNumber,
+        rememberMe: formValue.rememberMe
       };
       this.accountService.register(registerDTO).subscribe({
         next: (res) => {

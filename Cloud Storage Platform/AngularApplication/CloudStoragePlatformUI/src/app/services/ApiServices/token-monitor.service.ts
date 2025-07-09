@@ -50,7 +50,7 @@ export class TokenMonitorService {
       return;
     }
     const now = Math.floor(Date.now() / 1000);
-    const refreshTime = (expiry - 360) - now; // 6 minutes before expiry
+    const refreshTime = (expiry - 15) - now; // 6 minutes before expiry
     if (refreshTime <= 0 || expiry > refreshTokenExpiry) {
       // refresh 6 mins before JWT's expiry or if the refresh token itself is expiring before JWT because each refresh returns new JWT & new refresh token with new expiries
       this.safeRefresh();

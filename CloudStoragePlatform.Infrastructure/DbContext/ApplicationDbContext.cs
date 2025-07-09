@@ -16,6 +16,7 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
         public DbSet<Core.Domain.Entities.File> Files { get; set; }
         public DbSet<Sharing> Shares { get; set; }
         public DbSet<Metadata> MetaDatasets { get; set; }
+        public DbSet<UserSession> UserSessions { get; set; }
         public ApplicationDbContext(DbContextOptions options) : base(options) {}
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -32,6 +33,7 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
             modelBuilder.Entity<Core.Domain.Entities.File>().ToTable("Files");
             modelBuilder.Entity<Sharing>().ToTable("Shares");
             modelBuilder.Entity<Metadata>().ToTable("Metadatasets");
+            modelBuilder.Entity<UserSession>().ToTable("UserSessions");
 
             modelBuilder.Entity<Folder>()
                 .HasOne(f => f.ParentFolder)
@@ -69,7 +71,11 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
                 .HasForeignKey<Core.Domain.Entities.File>(f => f.SharingId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u=>u.Sessions)
+                .WithOne(s=>s.User)
+                .HasForeignKey(s=>s.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<Folder>().HasData(new Folder()

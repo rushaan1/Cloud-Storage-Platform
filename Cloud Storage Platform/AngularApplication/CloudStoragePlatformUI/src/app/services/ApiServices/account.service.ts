@@ -9,11 +9,13 @@ export interface RegisterDTO {
   personName: string;
   country: string;
   phoneNumber?: string;
+  rememberMe: boolean;
 }
 
 export interface LoginDTO {
   email: string;
   password: string;
+  rememberMe: boolean;
 }
 
 export interface RegenerateTokenModel {

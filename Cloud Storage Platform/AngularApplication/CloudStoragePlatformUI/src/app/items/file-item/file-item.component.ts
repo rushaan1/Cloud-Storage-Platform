@@ -309,6 +309,7 @@ export class FileItemComponent implements OnInit, AfterViewInit {
       }
       return;
     }
+    if (this.FileFolder.uncreated){return;}
     if (this.FileFolder.fileType == FileType.Folder) {
       this.router.navigate(["folder", ...Utils.cleanPath(this.FileFolder.filePath)]);
     }

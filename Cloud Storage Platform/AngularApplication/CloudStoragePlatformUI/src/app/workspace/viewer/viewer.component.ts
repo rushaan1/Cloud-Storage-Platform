@@ -573,6 +573,11 @@ export class ViewerComponent implements OnInit, OnDestroy{
     event ? this.guidsHiddenDueToFileFilter.push(f.fileId) : this.guidsHiddenDueToFileFilter = this.guidsHiddenDueToFileFilter.filter((id) => id != f.fileId)
   }
 
+  removeFile(i:number){
+    this.visibleFiles.splice(i,1);
+    this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(f=>!f.uncreated));
+  }
+
   protected readonly Utils = Utils;
   protected readonly document = document;
   protected readonly localStorage = localStorage;

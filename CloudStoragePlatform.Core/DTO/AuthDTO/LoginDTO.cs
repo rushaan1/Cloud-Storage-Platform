@@ -15,5 +15,7 @@ namespace CloudStoragePlatform.Core.DTO.AuthDTO
 
         [Required(ErrorMessage = "Password can't be blank")]
         public string Password { get; set; } = string.Empty;
+
+        public bool RememberMe { get; set; } = false;
     }
 }

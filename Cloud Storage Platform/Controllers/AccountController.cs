@@ -1,6 +1,10 @@
-﻿using CloudStoragePlatform.Core.Domain.IdentityEntites;
+﻿using Castle.Core.Internal;
+using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.IdentityEntites;
+using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO.AuthDTO;
 using CloudStoragePlatform.Core.ServiceContracts;
+using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -16,15 +20,15 @@ namespace Cloud_Storage_Platform.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IJwtService _jwtService;
+        private readonly IUserSessionsRepository _userSessionsRepository;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager, IJwtService jwtService)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _roleManager = roleManager;
             _jwtService = jwtService;
+            _userSessionsRepository = userSessionsRepository;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool httponly = true)
@@ -63,13 +67,19 @@ namespace Cloud_Storage_Platform.Controllers
             IdentityResult result = await _userManager.CreateAsync(user, registerDTO.Password);
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, isPersistent: true);
+                await _signInManager.SignInAsync(user, isPersistent: registerDTO.RememberMe);
 
                 AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user);
 
-                user.RefreshToken = authenticationResponse.RefreshToken;
-                user.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
-                await _userManager.UpdateAsync(user);
+                var session = new UserSession()
+                {
+                    RefreshToken = authenticationResponse!.RefreshToken!,
+                    RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime,
+                    ApplicationUserId = user.Id,
+                    User = user
+                };
+                await _userSessionsRepository.AddSessionAsync(session);
+                await _userSessionsRepository.SaveChangesAsync();
 
                 SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
                 SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
@@ -109,7 +119,7 @@ namespace Cloud_Storage_Platform.Controllers
                 return Problem(errorMsg);
             }
 
-            var result = await _signInManager.PasswordSignInAsync(loginDTO.Email, loginDTO.Password, isPersistent: true, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(loginDTO.Email, loginDTO.Password, isPersistent: loginDTO.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
@@ -117,9 +127,23 @@ namespace Cloud_Storage_Platform.Controllers
 
                 AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user!);
 
-                user!.RefreshToken = authenticationResponse.RefreshToken;
-                user.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
-                await _userManager.UpdateAsync(user);
+                // Remove expired sessions
+                var sessions = await _userSessionsRepository.GetByUserIdAsync(user.Id);
+                var expiredSessions = sessions.Where(s => s.RefreshTokenExpirationDateTime <= DateTime.UtcNow).ToList();
+                foreach (var expired in expiredSessions)
+                {
+                    await _userSessionsRepository.RemoveSessionAsync(expired);
+                }
+
+                var session = new UserSession()
+                {
+                    RefreshToken = authenticationResponse!.RefreshToken!,
+                    RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime,
+                    ApplicationUserId = user.Id,
+                    User = user
+                };
+                await _userSessionsRepository.AddSessionAsync(session);
+                await _userSessionsRepository.SaveChangesAsync();
 
                 SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
                 SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
@@ -137,6 +161,17 @@ namespace Cloud_Storage_Platform.Controllers
         [HttpGet("logout")]
         public async Task<IActionResult> GetLogout()
         {
+            string? refreshToken = Request.Cookies["refresh_token"];
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                var sessionToRemove = await _userSessionsRepository.GetByRefreshTokenAsync(refreshToken);
+                if (sessionToRemove != null)
+                {
+                    await _userSessionsRepository.RemoveSessionAsync(sessionToRemove);
+                    await _userSessionsRepository.SaveChangesAsync();
+                }
+            }
+
             await _signInManager.SignOutAsync();
 
             Response.Cookies.Delete("access_token");
@@ -148,34 +183,32 @@ namespace Cloud_Storage_Platform.Controllers
         [HttpPost("regenerate-jwt-token")]
         public async Task<IActionResult> GenerateNewAccessToken()
         {
-            //if (regenerateTokenModel == null)
-            //{
-            //    return BadRequest("Inavlid client request");
-            //}
-
-            //ClaimsPrincipal? principal = _jwtService.GetClaimsPrincipalFromJwtToken(regenerateTokenModel.Token);
-            //if (principal == null)
-            //{
-            //    return BadRequest("Inavlid JWT Token");
-            //}
-
-            //string? email = principal.FindFirstValue(ClaimTypes.Email);
             string? refreshToken = Request.Cookies["refresh_token"];
             if (string.IsNullOrEmpty(refreshToken)) 
             {
                 return BadRequest("No refresh token found");
             }
-            ApplicationUser? user = _userManager.Users.Where(u=>u.RefreshToken == refreshToken)?.First();
-            if (user == null || user.RefreshTokenExpirationDateTime <= DateTime.UtcNow)
+            var session = await _userSessionsRepository.GetByRefreshTokenAsync(refreshToken);
+            if (session == null) 
+            {
+                return BadRequest("No matching session with refresh token");
+            }
+
+            if (session.RefreshTokenExpirationDateTime <= DateTime.UtcNow)
             {
                 return BadRequest("Expired refresh token");
             }
 
-            AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user);
-            user.RefreshToken = authenticationResponse.RefreshToken;
-            user.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
+            ApplicationUser? user = await _userManager.FindByIdAsync(session.ApplicationUserId.ToString());
+            if (user == null)
+            {
+                return BadRequest("No matching user for session");
+            }
 
-            await _userManager.UpdateAsync(user);
+            AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user);
+            session.RefreshToken = authenticationResponse!.RefreshToken!;
+            session.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
+            await _userSessionsRepository.SaveChangesAsync();
 
             SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
             SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);

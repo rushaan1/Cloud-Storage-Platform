@@ -26,7 +26,8 @@ export class LoginComponent implements OnInit {
       const formValue = this.loginForm.value;
       const loginDTO: LoginDTO = {
         email: formValue.email,
-        password: formValue.password
+        password: formValue.password,
+        rememberMe: formValue.rememberMe
       };
       this.accountService.login(loginDTO).subscribe({
         next: (res) => {

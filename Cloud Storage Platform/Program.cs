@@ -55,6 +55,7 @@ namespace CloudStoragePlatform.Web
 
             builder.Services.AddScoped<IBulkRetrievalService, BulkRetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
+            builder.Services.AddScoped<IUserSessionsRepository, UserSessionsRepository>();
             builder.Services.AddSingleton<SSE, SSE>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
             builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
