@@ -31,15 +31,17 @@ namespace Cloud_Storage_Platform.Controllers
             _userSessionsRepository = userSessionsRepository;
         }
 
-        private void SetCookie(string name, string value, DateTimeOffset? expires, bool httponly = true)
+        private void SetCookie(string name, string value, DateTimeOffset? expires, bool shouldExpire, bool httponly)
         {
-            Response.Cookies.Append(name, value, new CookieOptions()
+            var options = new CookieOptions()
             {
                 HttpOnly = httponly,
                 Secure = true,
                 SameSite = SameSiteMode.None,
                 Expires = expires
-            });
+            };
+            if (!shouldExpire) { options.Expires = null; }
+            Response.Cookies.Append(name, value, options);
         }
 
         [HttpPost("register")]
@@ -81,10 +83,10 @@ namespace Cloud_Storage_Platform.Controllers
                 await _userSessionsRepository.AddSessionAsync(session);
                 await _userSessionsRepository.SaveChangesAsync();
 
-                SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
-                SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
-                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
-                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+                SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, registerDTO.RememberMe, true);
+                SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, registerDTO.RememberMe, true);
+                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, registerDTO.RememberMe, false);
+                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, registerDTO.RememberMe, false);
 
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
@@ -145,10 +147,10 @@ namespace Cloud_Storage_Platform.Controllers
                 await _userSessionsRepository.AddSessionAsync(session);
                 await _userSessionsRepository.SaveChangesAsync();
 
-                SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
-                SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
-                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
-                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+                SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, loginDTO.RememberMe, true);
+                SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, loginDTO.RememberMe, true);
+                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, loginDTO.RememberMe, false);
+                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, loginDTO.RememberMe, false);
                 
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
@@ -181,7 +183,7 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpPost("regenerate-jwt-token")]
-        public async Task<IActionResult> GenerateNewAccessToken()
+        public async Task<IActionResult> GenerateNewAccessToken([FromQuery] bool rememberMe)
         {
             string? refreshToken = Request.Cookies["refresh_token"];
             if (string.IsNullOrEmpty(refreshToken)) 
@@ -210,10 +212,10 @@ namespace Cloud_Storage_Platform.Controllers
             session.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
             await _userSessionsRepository.SaveChangesAsync();
 
-            SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration);
-            SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime);
-            SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
-            SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, false);
+            SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, rememberMe, true);
+            SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, true);
+            SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
+            SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
             Console.WriteLine("Refreshed!");
             return Ok();
         }

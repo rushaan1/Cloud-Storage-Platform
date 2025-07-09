@@ -32,6 +32,7 @@ export class LoginComponent implements OnInit {
       this.accountService.login(loginDTO).subscribe({
         next: (res) => {
           console.log('Login successful', res);
+          localStorage.setItem('rememberMe', this.loginForm.value.rememberMe.toString());
           this.tokenMonitor.startMonitoring();
         },
         error: (err) => {

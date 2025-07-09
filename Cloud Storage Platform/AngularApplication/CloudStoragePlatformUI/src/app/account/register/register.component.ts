@@ -58,6 +58,7 @@ export class RegisterComponent implements OnInit {
         next: (res) => {
           // this.router.navigate(['filter','home']);
           console.log(res);
+          localStorage.setItem('rememberMe', this.registerForm.value.rememberMe.toString());
           this.tokenMonitor.startMonitoring();
         },
         error: (err) => {

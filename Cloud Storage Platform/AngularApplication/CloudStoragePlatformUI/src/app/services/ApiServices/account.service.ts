@@ -44,8 +44,9 @@ export class AccountService {
     return this.http.post<ResponseWithNameAndEmail>(`${this.API_URL}/login`, loginDTO);
   }
 
-  refreshToken():Observable<any> {
-    return this.http.post(`${this.API_URL}/regenerate-jwt-token`,{});
+  refreshToken(): Observable<any> {
+    const rememberMe = localStorage.getItem('rememberMe') == 'true';
+    return this.http.post(`${this.API_URL}/regenerate-jwt-token?rememberMe=${rememberMe}`, {});
   }
 
   logout(): Observable<void> {
