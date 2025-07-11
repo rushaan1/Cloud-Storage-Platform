@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AccountService, LoginDTO } from '../../services/ApiServices/account.service';
 import {TokenMonitorService} from "../../services/ApiServices/token-monitor.service";
+import {SocialAuthService} from "@abacritt/angularx-social-login";
 
 @Component({
   selector: 'app-login',
@@ -11,7 +12,7 @@ import {TokenMonitorService} from "../../services/ApiServices/token-monitor.serv
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -19,6 +20,9 @@ export class LoginComponent implements OnInit {
       password: ['', Validators.required],
       rememberMe: [true]
     });
+    this.socialAuthService.authState.subscribe(authState => {
+      console.log(authState);
+    })
   }
 
   onSubmit(): void {

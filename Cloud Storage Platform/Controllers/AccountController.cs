@@ -216,7 +216,8 @@ namespace Cloud_Storage_Platform.Controllers
             SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, true);
             SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
             SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
-            Console.WriteLine("Refreshed!");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\nRefreshed at "+DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")+" !\n");
             return Ok();
         }
     }

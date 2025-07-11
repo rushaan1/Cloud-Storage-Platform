@@ -3,6 +3,10 @@
   <div class="auth-content">
     <div class="auth-form-container">
       <h2>Register</h2>
+      <div class="glogin">
+        <asl-google-signin-button text="signup_with" type='standard' size='large'></asl-google-signin-button>
+        <div class="or">OR</div>
+      </div>
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label for="email">Email Address</label>

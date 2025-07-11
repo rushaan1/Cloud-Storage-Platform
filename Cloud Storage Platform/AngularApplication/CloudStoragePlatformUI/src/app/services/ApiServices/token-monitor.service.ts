@@ -1,6 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 import { AccountService } from './account.service';
 import { Utils } from '../../Utils';
+import {BehaviorSubject} from "rxjs";
+import {RefreshedService} from "../StateManagementServices/refreshed.service";
 
 @Injectable({
   providedIn: 'root'
@@ -8,19 +10,7 @@ import { Utils } from '../../Utils';
 export class TokenMonitorService {
   private monitorInterval: any = null;
 
-  public setRefreshTrue() {
-    localStorage.setItem("jwt_refreshing", Math.floor(Date.now() / 1000).toString());
-  }
-
-  public isRefreshing():boolean{
-    const lastRefreshTime = localStorage.getItem('jwt_refreshing');
-    if (lastRefreshTime){
-      return (Math.floor(Date.now() / 1000) - parseInt(lastRefreshTime,10)) <= 4;
-    }
-    return false;
-  }
-
-  constructor(private accountService: AccountService, private ngZone: NgZone) {
+  constructor(private accountService: AccountService, private ngZone: NgZone, private refreshed:RefreshedService) {
   }
 
   startMonitoring() {
@@ -58,9 +48,29 @@ export class TokenMonitorService {
   }
 
   private safeRefresh() {
-    if (this.isRefreshing()) return;
-
-    this.setRefreshTrue();
-    this.accountService.refreshToken().subscribe({});
+    const lastRefreshTime = localStorage.getItem('jwt_last_refreshed');
+    let morethan4s_sinceLastRefresh = true;
+    if (lastRefreshTime){
+      morethan4s_sinceLastRefresh = (Math.floor(Date.now() / 1000) - parseInt(lastRefreshTime,10)) > 4;
+    }
+    if (localStorage.getItem("isRefreshing")!="y" && morethan4s_sinceLastRefresh){
+      localStorage.setItem("isRefreshing", "y");
+      this.accountService.refreshToken().subscribe({
+        next: (res) => {
+          localStorage.setItem("jwt_last_refreshed", Math.floor(Date.now() / 1000).toString());
+          localStorage.setItem("isRefreshing", "n");
+          this.refreshed.setHasRefreshed(true);
+        },
+        complete: () => {
+          localStorage.setItem("jwt_last_refreshed", Math.floor(Date.now() / 1000).toString());
+          localStorage.setItem("isRefreshing", "n");
+          this.refreshed.setHasRefreshed(true);
+        },
+        error: (err) => {
+          console.error('Token refresh error', err);
+          localStorage.setItem("isRefreshing", "n");
+        }
+      });
+    }
   }
 }

@@ -3,6 +3,11 @@
   <div class="auth-content">
     <div class="auth-form-container">
       <h2>Login</h2>
+      <div class="glogin">
+        <asl-google-signin-button type='standard' size='medium'></asl-google-signin-button>
+        <div class="or">OR</div>
+      </div>
+
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -40,7 +45,7 @@
         <button type="submit" class="submit-btn" [disabled]="loginForm.invalid">Login</button>
 
         <div class="form-links">
-          <a href="#">Forgot password?</a>
+<!--          <a href="#">Forgot password?</a>-->
           <a routerLink="/account/register">Don't have an account? Register</a>
         </div>
       </form>

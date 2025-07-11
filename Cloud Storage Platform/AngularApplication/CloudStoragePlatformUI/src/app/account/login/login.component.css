@@ -37,7 +37,6 @@
 
 h2 {
   text-align: start;
-  margin-bottom: 2rem;
   font-weight: 700;
   font-size: 2rem;
 }
@@ -128,6 +127,18 @@ input:focus-visible{
   text-decoration: underline;
 }
 
+.glogin{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 20px 0px 20px 0px;
+}
+
+.or{
+  margin-top: 15px;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .auth-content {
@@ -155,18 +166,27 @@ input:focus-visible{
   }
 }
 
-@media (max-height: 503px){
+@media (max-height: 553px){
   .auth-form-container {
     padding: 1rem 1rem 0.5rem 1rem;
-  }
-  h1{
-    margin-bottom: 2rem;
   }
   .form-control{
     padding: 0.35rem;
   }
   .submit-btn{
     padding: 0.35rem;
+  }
+  .or{
+    margin-top: 5px;
+  }
+  .glogin{
+    margin: 10px 0px 10px 0px;
+  }
+  .form-links{
+    margin-top: 6px;
+  }
+  h2{
+    font-size: 28px;
   }
 }
 

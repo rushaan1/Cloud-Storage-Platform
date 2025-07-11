@@ -130,6 +130,18 @@ input:focus-visible, select:focus-visible {
   text-decoration: underline;
 }
 
+.glogin{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 20px 0px 20px 0px;
+}
+
+.or{
+  margin-top: 15px;
+}
+
 /* Responsive styles */
 @media (max-width: 1250px) {
   .auth-content {
