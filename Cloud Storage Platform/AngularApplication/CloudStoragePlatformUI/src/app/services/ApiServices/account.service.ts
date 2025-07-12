@@ -52,4 +52,15 @@ export class AccountService {
   logout(): Observable<void> {
     return this.http.get<void>(`${this.API_URL}/logout`);
   }
+
+  googlelogin(idToken: string): Observable<any> {
+    return this.http.post(
+      `${this.API_URL}/google-login`,
+      JSON.stringify(idToken),
+      {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
 }

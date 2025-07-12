@@ -14,10 +14,14 @@
             type="email"
             id="email"
             formControlName="email"
-            class="form-control">
+            class="form-control"
+            (click)="onEmailInputClick()">
           <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
             <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
             <span *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+          </div>
+          <div class="error-message" *ngIf="emailAlreadyRegistered">
+            <span>Email already registered</span>
           </div>
         </div>
 
@@ -55,6 +59,9 @@
             id="phoneNumber"
             formControlName="phoneNumber"
             class="form-control">
+          <div class="error-message" *ngIf="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched">
+            <span *ngIf="registerForm.get('phoneNumber')?.errors?.['invalidPhoneNumber']">Phone number not valid</span>
+          </div>
         </div>
 
         <div class="form-group">

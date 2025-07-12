@@ -168,12 +168,6 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
     if (visibleOrderedStickyInfoPanels.length>0){
       visibleOrderedStickyInfoPanels[0].style.top = `${offset}px`;
-      if (parseFloat(window.getComputedStyle(visibleOrderedStickyInfoPanels[0]).width) > 800){
-        visibleOrderedStickyInfoPanels[0].style.marginLeft = "10px";
-      }
-      else{
-        visibleOrderedStickyInfoPanels[0].style.marginLeft = "0px";
-      }
       let cumulativeHeights = 0;
       for (let i = 1; i<visibleOrderedStickyInfoPanels.length; i++){
         let previousInfoPanelHeight:number = parseFloat(
@@ -181,12 +175,6 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
         );
         cumulativeHeights += previousInfoPanelHeight;
         visibleOrderedStickyInfoPanels[i].style.top = `${cumulativeHeights+offset}px`;
-        if (parseFloat(window.getComputedStyle(visibleOrderedStickyInfoPanels[0]).width) > 800){
-          visibleOrderedStickyInfoPanels[0].style.marginLeft = "10px";
-        }
-        else{
-          visibleOrderedStickyInfoPanels[0].style.marginLeft = "0px";
-        }
         // console.log(previousInfoPanelHeight);
       }
     }
@@ -283,7 +271,7 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
       this.setLatestAlertNotification(notification);
       setTimeout(()=>{
         this.dismissTextNotif(notification);
-      },args[1] as number)
+      },args[1] as number);
     });
 
     this.eventService.listen("uploadProgress", (progress:number)=>{

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AccountService, LoginDTO } from '../../services/ApiServices/account.service';
 import {TokenMonitorService} from "../../services/ApiServices/token-monitor.service";
 import {SocialAuthService} from "@abacritt/angularx-social-login";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ import {SocialAuthService} from "@abacritt/angularx-social-login";
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService, private router:Router) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -21,8 +22,19 @@ export class LoginComponent implements OnInit {
       rememberMe: [true]
     });
     this.socialAuthService.authState.subscribe(authState => {
-      console.log(authState);
-    })
+      if (authState && authState.provider === 'GOOGLE' && authState.idToken) {
+        this.accountService.googlelogin(authState.idToken).subscribe({
+          next: (res) => {
+            localStorage.setItem('rememberMe', 'true');
+            this.tokenMonitor.startMonitoring();
+            this.router.navigate(['/']);
+          },
+          error: (err) => {
+            console.error('Google login error', err);
+          }
+        });
+      }
+    });
   }
 
   onSubmit(): void {
@@ -38,6 +50,7 @@ export class LoginComponent implements OnInit {
           console.log('Login successful', res);
           localStorage.setItem('rememberMe', this.loginForm.value.rememberMe.toString());
           this.tokenMonitor.startMonitoring();
+          this.router.navigate(['/']);
         },
         error: (err) => {
           console.error('Login error', err);

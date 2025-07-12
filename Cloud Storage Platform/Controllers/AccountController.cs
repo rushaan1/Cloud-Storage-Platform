@@ -5,6 +5,7 @@ using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO.AuthDTO;
 using CloudStoragePlatform.Core.ServiceContracts;
 using CloudStoragePlatform.Infrastructure.DbContext;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -22,13 +23,15 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IJwtService _jwtService;
         private readonly IUserSessionsRepository _userSessionsRepository;
+        private readonly IConfiguration _config;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
             _userSessionsRepository = userSessionsRepository;
+            _config = configuration;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool shouldExpire, bool httponly)
@@ -71,22 +74,7 @@ namespace Cloud_Storage_Platform.Controllers
             {
                 await _signInManager.SignInAsync(user, isPersistent: registerDTO.RememberMe);
 
-                AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user);
-
-                var session = new UserSession()
-                {
-                    RefreshToken = authenticationResponse!.RefreshToken!,
-                    RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime,
-                    ApplicationUserId = user.Id,
-                    User = user
-                };
-                await _userSessionsRepository.AddSessionAsync(session);
-                await _userSessionsRepository.SaveChangesAsync();
-
-                SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, registerDTO.RememberMe, true);
-                SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, registerDTO.RememberMe, true);
-                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, registerDTO.RememberMe, false);
-                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, registerDTO.RememberMe, false);
+                AuthenticationResponse authenticationResponse = await ProcessAfterLogin(user.Email, registerDTO.RememberMe, true, user);
 
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
@@ -112,6 +100,43 @@ namespace Cloud_Storage_Platform.Controllers
             }
         }
 
+        private async Task<AuthenticationResponse> ProcessAfterLogin(string email, bool rememberMe, bool isRegisteredNow, ApplicationUser? user = null) 
+        {
+            if (user == null) 
+            {
+                user = await _userManager.FindByEmailAsync(email);
+            }
+
+            AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user!);
+
+            if (!isRegisteredNow) 
+            {
+                // Remove expired sessions
+                var sessions = await _userSessionsRepository.GetByUserIdAsync(user.Id);
+                var expiredSessions = sessions.Where(s => s.RefreshTokenExpirationDateTime < DateTime.UtcNow).ToList();
+                foreach (var expired in expiredSessions)
+                {
+                    await _userSessionsRepository.RemoveSessionAsync(expired);
+                }
+            }
+
+            var session = new UserSession()
+            {
+                RefreshToken = authenticationResponse!.RefreshToken!,
+                RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime,
+                ApplicationUserId = user.Id,
+                User = user
+            };
+            await _userSessionsRepository.AddSessionAsync(session);
+            await _userSessionsRepository.SaveChangesAsync();
+
+            SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, rememberMe, true);
+            SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, true);
+            SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
+            SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
+            return authenticationResponse;
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> PostLogin(LoginDTO loginDTO)
         {
@@ -125,32 +150,7 @@ namespace Cloud_Storage_Platform.Controllers
 
             if (result.Succeeded)
             {
-                ApplicationUser? user = await _userManager.FindByEmailAsync(loginDTO.Email);
-
-                AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user!);
-
-                // Remove expired sessions
-                var sessions = await _userSessionsRepository.GetByUserIdAsync(user.Id);
-                var expiredSessions = sessions.Where(s => s.RefreshTokenExpirationDateTime <= DateTime.UtcNow).ToList();
-                foreach (var expired in expiredSessions)
-                {
-                    await _userSessionsRepository.RemoveSessionAsync(expired);
-                }
-
-                var session = new UserSession()
-                {
-                    RefreshToken = authenticationResponse!.RefreshToken!,
-                    RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime,
-                    ApplicationUserId = user.Id,
-                    User = user
-                };
-                await _userSessionsRepository.AddSessionAsync(session);
-                await _userSessionsRepository.SaveChangesAsync();
-
-                SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, loginDTO.RememberMe, true);
-                SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, loginDTO.RememberMe, true);
-                SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, loginDTO.RememberMe, false);
-                SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, loginDTO.RememberMe, false);
+                AuthenticationResponse authenticationResponse = await ProcessAfterLogin(loginDTO.Email, loginDTO.RememberMe, false);
                 
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
@@ -180,6 +180,42 @@ namespace Cloud_Storage_Platform.Controllers
             Response.Cookies.Delete("refresh_token");
 
             return NoContent();
+        }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] string idToken) 
+        {
+            var setting = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new string[] { _config["Google_Auth_Client_ID"] }
+            };
+            
+            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, setting);
+            
+            if (payload == null) { return BadRequest(); }
+            
+            ApplicationUser? user = await _userManager.FindByEmailAsync(payload.Email);
+            AuthenticationResponse authenticationResponse;
+            
+            if (user != null)
+            {
+                await _signInManager.SignInAsync(user, true);
+                authenticationResponse = await ProcessAfterLogin(payload.Email, true, false, user);
+            }
+            else 
+            {
+                ApplicationUser createdUser = new ApplicationUser()
+                {
+                    Email = payload.Email,
+                    UserName = payload.Email,
+                    PersonName = payload.Name
+                };
+
+                IdentityResult iResult = await _userManager.CreateAsync(createdUser);
+                authenticationResponse = await ProcessAfterLogin(createdUser.Email, true, true, createdUser);
+            }
+            
+            return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
         }
 
         [HttpPost("regenerate-jwt-token")]
