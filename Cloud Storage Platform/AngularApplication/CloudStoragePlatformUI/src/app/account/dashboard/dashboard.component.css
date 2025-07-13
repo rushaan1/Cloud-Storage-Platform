@@ -1,0 +1,13 @@
+.pfp {
+  /*background: url("C:\\Users\\rusha\\OneDrive\\Pictures\\🌸Nyanoless - Comms Open! (@NanolessP).png");*/
+  background-color: #d9534f;
+  height: 150px;
+  width: 150px;
+  border-radius: 50%;
+  background-size: cover;
+  margin-top: 30px;
+}
+
+.margin-left{
+  margin-left: 50px;
+}

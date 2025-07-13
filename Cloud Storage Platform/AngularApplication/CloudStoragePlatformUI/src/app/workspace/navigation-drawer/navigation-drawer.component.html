@@ -7,22 +7,14 @@
   Platform</pre>
     </h1>
   </div>
-  <div class="storage-info">
-    <div class="outer">
-      <div class="inner-outer">
-        <div class="bg"></div>
-      </div>
-    </div>
-    <div [ngStyle]="{'margin-bottom':createFolderCheck() ? 'unset' : '20px'}" class="space">5GB of 10GB used.</div>
-  </div>
-  <!-- Create a horizontal button with an i element in the left side and Create new folder text on the right side !-->
 
+  <storage-bar *ngIf="filesState.showSpaceUtilizedInNavDrawer"></storage-bar>
   <div *ngIf="createFolderCheck()" (click)="createFolderClick()" class="new-folder-button">
     <i class="fa-solid fa-folder-plus"></i>
     <div>Create new folder</div>
   </div>
 
-  <ul class="category top-category maindrawer-top">
+  <ul [ngStyle]="{'margin-top':!this.filesState.outsideFilesAndFoldersMode ? 'unset' : '20px'}" class="category top-category maindrawer-top">
     <li (mouseleave)="topCategoryLiHoverAway($event)" (mouseover)="topCategoryLiHover($event)" [routerLinkActive]="['active']"
         [routerLink]="['/filter/gallery']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-solid fa-icons"></i>Gallery</a></li>
@@ -43,7 +35,7 @@
         [routerLink]="['/filter/trash']"><a [routerLinkActive]="['active']"><i
       [routerLinkActive]="['active']" class="fa-regular fa-trash-can"></i>Trash</a></li>
   </ul>
-  <ul *ngIf="filesState.getItemsBeingMoved().length==0" class="category bottom-category maindrawer-bottom">
+  <ul *ngIf="filesState.getItemsBeingMoved().length==0 && !filesState.outsideFilesAndFoldersMode" class="category bottom-category maindrawer-bottom">
     <li (click)="typeItemSelected($event, 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
         class="category-tab" id="Images"
         style="padding-left: 0;"><input id="0-NavCheckbox" type="checkbox"/><a><i class="fa-regular fa-image"></i>Images</a>
@@ -100,7 +92,7 @@
     </ul>
 
 
-    <ul *ngIf="filesState.getItemsBeingMoved().length==0" class="category bottom-category m-bottom-cat">
+    <ul *ngIf="filesState.getItemsBeingMoved().length==0 && !filesState.outsideFilesAndFoldersMode" class="category bottom-category m-bottom-cat">
       <li (click)="typeItemSelectedMini($event,'Images', 0)" (mouseleave)="hoverTransitionOppositeTrigger($event)" (mouseover)="hoverTransitionTrigger($event)"
           class="m-cat-tab category-tab Images" id="Images"
           style="padding-left: 0;"><a><i class="fa-regular fa-image"></i></a></li>

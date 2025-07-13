@@ -25,6 +25,8 @@ export class FilesStateService {
   filesInViewer$ = this.filesInViewer.asObservable();
 
   fileOpened = false;
+  outsideFilesAndFoldersMode = false;
+  showSpaceUtilizedInNavDrawer = true;
 
   addSelectedItem(item: File){
     this.selectedItems.next([...this.selectedItems.value, item]);

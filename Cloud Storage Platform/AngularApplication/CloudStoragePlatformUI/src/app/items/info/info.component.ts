@@ -34,6 +34,7 @@ export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
 
   constructor(protected foldersService:FilesAndFoldersService, protected route:ActivatedRoute, protected router:Router, protected filesState:FilesStateService, protected  eventService:EventService, private ngZone:NgZone, private networkStatus:NetworkStatusService, protected bcService:BreadcrumbService) {}
   ngOnInit(): void {
+    this.filesState.outsideFilesAndFoldersMode = true;
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id");
       if (!id) {
@@ -198,5 +199,6 @@ export class InfoComponent implements OnInit, AfterViewInit, OnDestroy{
     if (this.eventSource){
       this.eventSource.close();
     }
+    this.filesState.outsideFilesAndFoldersMode = false;
   }
 }

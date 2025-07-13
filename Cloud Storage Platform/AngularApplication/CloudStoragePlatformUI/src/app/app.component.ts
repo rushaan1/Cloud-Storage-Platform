@@ -19,6 +19,7 @@ export class AppComponent implements AfterViewInit, OnInit {
   initialMiniSet:boolean = false;
   title = 'CloudStoragePlatformUI';
   isAuthPage = false;
+  isAccDashboard = false;
   private lastUrl = '';
 
   constructor(
@@ -35,6 +36,7 @@ export class AppComponent implements AfterViewInit, OnInit {
     ).subscribe((event: any) => {
       const wasAuthPage = this.isAuthPage;
       this.isAuthPage = event.url.includes('/account/login') || event.url.includes('/account/register');
+      this.isAccDashboard = event.url.includes('/account/dashboard');
       this.lastUrl = event.url;
 
       // Only apply miniToggle when entering non-auth pages, not when leaving them

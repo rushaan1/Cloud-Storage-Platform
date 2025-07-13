@@ -28,9 +28,12 @@
             type="password"
             id="password"
             formControlName="password"
-            class="form-control">
-          <div class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            class="form-control"
+            (focus)="dismissInvalidLoginAlert()"
+            (blur)="dismissInvalidLoginAlert()">
+          <div class="error-message" *ngIf="(loginForm.get('password')?.invalid && loginForm.get('password')?.touched) || logininvalid">
             <span *ngIf="loginForm.get('password')?.errors?.['required']">Password is required</span>
+            <span *ngIf="logininvalid && !loginForm.get('password')?.errors?.['required']">Invalid email or password</span>
           </div>
         </div>
 

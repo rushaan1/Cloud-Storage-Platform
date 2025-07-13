@@ -42,7 +42,11 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   windowWidth: number = window.innerWidth;
   mobileSearchActive: boolean = false;
 
-  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService, private filesState:FilesStateService, protected cd:ChangeDetectorRef){}
+  // For blocked cursor/hover state on disabled controls
+  sortBlockedHover = false;
+  styleBlockedHover = false;
+
+  constructor(protected eventService:EventService, protected router: Router, private breadCrumbService:BreadcrumbService, protected route:ActivatedRoute, protected filesService:FilesAndFoldersService, private networkStatus:NetworkStatusService, protected filesState:FilesStateService, protected cd:ChangeDetectorRef){}
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();

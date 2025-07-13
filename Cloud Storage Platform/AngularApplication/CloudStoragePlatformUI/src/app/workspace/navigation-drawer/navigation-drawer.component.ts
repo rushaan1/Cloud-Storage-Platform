@@ -30,10 +30,6 @@ export class NavigationDrawerComponent implements OnInit {
     const miniDrawer = document.getElementsByClassName("mini-drawer")[0] as HTMLElement;
     miniDrawer.style.translate = "-100%";
     // bg means loader's bg
-    setTimeout(()=>{
-      (document.getElementsByClassName("bg")[0] as HTMLElement).style.width = "50%";
-    console.log(miniDrawer.style.translate);
-    },100);
 
     this.breadcrumbService.breadcrumbs$.subscribe(breadcrumbs=>{
       this.breadCrumbs = breadcrumbs;
@@ -251,6 +247,6 @@ export class NavigationDrawerComponent implements OnInit {
 
   createFolderCheck(){
     // checks if folder can be created right now
-    return !this.anyItemRenaming && this.breadCrumbs[0]=='home' && this.filesState.getItemsBeingMoved().length==0;
+    return !this.anyItemRenaming && this.breadCrumbs[0]=='home' && this.filesState.getItemsBeingMoved().length==0 && !this.filesState.outsideFilesAndFoldersMode;
   }
 }

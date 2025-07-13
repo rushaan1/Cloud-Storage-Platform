@@ -39,7 +39,13 @@
         </div>
 
         <div #sortParent class="sort-parent-div">
-          <select #sortSelection (change)="sortingChanged($event)" id="sortBy">
+          <select #sortSelection (change)="sortingChanged($event)" id="sortBy"
+            [disabled]="filesState.outsideFilesAndFoldersMode"
+            [ngClass]="{'disabled-select': filesState.outsideFilesAndFoldersMode}"
+            [title]="filesState.outsideFilesAndFoldersMode ? 'Cannot be used here' : ''"
+            (mouseenter)="sortBlockedHover = filesState.outsideFilesAndFoldersMode"
+            (mouseleave)="sortBlockedHover = false"
+            [style.cursor]="sortBlockedHover ? 'not-allowed' : 'pointer'">
             <option>{{ getSortByLabel() }}</option>
             <option class="asc" value="0">Alphabetical (A to Z)</option>
             <option class="desc" value="1">Alphabetical (Z to A)</option>
@@ -50,10 +56,16 @@
             <option class="desc" value="5">Last Opened (Recently opened first)</option>
             <option class="asc" value="4">Last Opened (Least recently opened first)</option>
           </select>
-          <span #sorting></span>
+          <span [ngClass]="{'disabled-select': filesState.outsideFilesAndFoldersMode}" #sorting></span>
         </div>
 
-        <div (click)="styleChange()" class="style">
+        <div (click)="!filesState.outsideFilesAndFoldersMode && styleChange()"
+             class="style"
+             [ngClass]="{'disabled-style': filesState.outsideFilesAndFoldersMode}"
+             [title]="filesState.outsideFilesAndFoldersMode ? 'Cannot be used here' : ''"
+             (mouseenter)="styleBlockedHover = filesState.outsideFilesAndFoldersMode"
+             (mouseleave)="styleBlockedHover = false"
+             [style.cursor]="styleBlockedHover ? 'not-allowed' : 'pointer'">
           <div class="style-text">
             {{ getStyleSwitchLabel() }}
           </div>
@@ -65,7 +77,7 @@
         </div>
 
         <div class="user-info">
-          <div #pfp (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp"></div>
+          <div #pfp (click)="router.navigate(['account','dashboard']);" (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp"></div>
           <div #pfpDropdown *ngIf="this.pfpDropdownShowing" class="top-pointed-dropdown">
             <span #pfpDropDownSpan>
               Hi FirstName, <br>

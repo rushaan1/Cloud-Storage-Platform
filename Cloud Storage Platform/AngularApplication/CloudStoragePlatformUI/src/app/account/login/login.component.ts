@@ -12,7 +12,7 @@ import {Router} from "@angular/router";
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-
+  logininvalid = false;
   constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService, private router:Router) {}
 
   ngOnInit(): void {
@@ -37,6 +37,10 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  dismissInvalidLoginAlert(): void {
+    this.logininvalid = false;
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       const formValue = this.loginForm.value;
@@ -54,6 +58,9 @@ export class LoginComponent implements OnInit {
         },
         error: (err) => {
           console.error('Login error', err);
+          if (err.error.detail == "Invalid email or password"){
+            this.logininvalid = true;
+          }
         }
       });
     }

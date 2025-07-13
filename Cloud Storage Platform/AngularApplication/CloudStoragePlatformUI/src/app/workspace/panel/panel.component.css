@@ -251,6 +251,15 @@ span {
   cursor: pointer;
 }
 
+.disabled-select {
+  opacity: 99% !important;
+}
+
+.disabled-style {
+  opacity: 70% !important;
+  pointer-events: auto !important;
+}
+
 @media (max-width: 1095px) {
   .upload{
     padding: 2px 11px 2px 10px;

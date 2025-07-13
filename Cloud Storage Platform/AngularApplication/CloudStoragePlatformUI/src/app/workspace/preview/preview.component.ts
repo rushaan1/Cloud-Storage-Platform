@@ -6,6 +6,7 @@ import {HttpClient, HttpParams} from "@angular/common/http";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
 import {finalize, tap} from "rxjs";
 import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
+import {FilesStateService} from "../../services/StateManagementServices/files-state.service";
 
 @Component({
   selector: 'file-preview',
@@ -17,16 +18,14 @@ export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
   fileText: string = '';
   trustedUrl: SafeResourceUrl = '';
   protected readonly FileType = FileType;
-  constructor(private cd:ChangeDetectorRef,protected router:Router, private http: HttpClient, private loader:LoadingService, protected sanitizer: DomSanitizer) {}
+  constructor(private cd:ChangeDetectorRef,protected router:Router, private http: HttpClient, private loader:LoadingService, protected sanitizer: DomSanitizer, private filesState:FilesStateService) {}
 
   ngAfterViewInit(): void {
     this.loadTxtFile();
   }
 
   ngOnDestroy() {
-    // if (this.fileUrl && this.fileUrl.length > 0) {
-    //   URL.revokeObjectURL(this.fileUrl);
-    // }
+    this.filesState.outsideFilesAndFoldersMode = false;
   }
 
   loadTxtFile() {
@@ -52,6 +51,7 @@ export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
   }
 
   ngOnInit(): void {
+    this.filesState.outsideFilesAndFoldersMode = true;
     this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl('https://localhost:7219/api/Retrievals/filePreview?filePath=' + this.file.filePath);
   }
 

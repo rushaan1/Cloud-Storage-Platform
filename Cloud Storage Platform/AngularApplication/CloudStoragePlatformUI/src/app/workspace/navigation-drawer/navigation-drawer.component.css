@@ -79,13 +79,6 @@ input {
 }
 
 
-.storage-info {
-    height: 10.5vh;
-    background-color: #F5F5F5;
-  z-index: 1;
-  position: relative;
-}
-
 .menu {
     font-size: 1.5rem;
     background-color: bisque;
@@ -171,39 +164,7 @@ a {
 
 
 
-.storage-info{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    align-content: flex-end;
-}
 
-.outer{
-    height: 25px;
-    background-color: #F5F5F5;
-    border: 2px solid black;
-    border-radius: 5px;
-    width: 90%;
-}
-
-.inner-outer{
-    width: 100%;
-}
-
-.bg{
-    width: 1%;
-    height: 25px;
-    background: url("C:\\Users\\rusha\\source\\repos\\Cloud Storage Platform\\Cloud Storage Platform\\AngularApplication\\CloudStoragePlatformUI\\src\\storage-bg.png");
-    background-size: cover;
-    transition: width 0.2s ease-in-out;
-}
-
-.space{
-    width: 50%;
-    margin-top: 5px;
-    /* align-self: flex-start; */
-}
 
 ::-webkit-scrollbar {
     width: 8px; /* Set the width of the scrollbar */

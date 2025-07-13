@@ -11,6 +11,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import { BreadcrumbsComponent } from '../items/breadcrumbs/breadcrumbs.component';
 import { PreviewComponent } from './preview/preview.component';
+import { StorageBarComponent } from './storage-bar/storage-bar.component';
 
 
 @NgModule({
@@ -19,6 +20,7 @@ import { PreviewComponent } from './preview/preview.component';
     ViewerComponent,
     PanelComponent,
     PreviewComponent,
+    StorageBarComponent,
   ],
   imports: [
     CommonModule,
