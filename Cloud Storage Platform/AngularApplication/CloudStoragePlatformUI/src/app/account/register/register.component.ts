@@ -4,6 +4,7 @@ import { AccountService, RegisterDTO } from '../../services/ApiServices/account.
 import {Router} from "@angular/router";
 import {TokenMonitorService} from "../../services/ApiServices/token-monitor.service";
 import {SocialAuthService} from "@abacritt/angularx-social-login";
+import { phoneNumberValidator } from '../../Utils';
 
 @Component({
   selector: 'app-register',
@@ -26,7 +27,7 @@ export class RegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       username: ['', [Validators.required, Validators.minLength(3)]],
       country: ['', Validators.required],
-      phoneNumber: ['', [this.phoneNumberValidator]],
+      phoneNumber: ['', [phoneNumberValidator]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
       rememberMe: [true]
@@ -46,21 +47,6 @@ export class RegisterComponent implements OnInit {
         });
       }
     });
-  }
-
-  phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
-      return null; // Allow empty values since phone is optional
-    }
-    
-    const phoneNumber = control.value.toString().replace(/\s+/g, ''); // Remove spaces
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/; // International phone number format
-    
-    if (!phoneRegex.test(phoneNumber)) {
-      return { invalidPhoneNumber: true };
-    }
-    
-    return null;
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {

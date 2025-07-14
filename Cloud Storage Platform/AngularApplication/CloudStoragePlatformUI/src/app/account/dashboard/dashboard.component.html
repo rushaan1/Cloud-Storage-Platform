@@ -1,1 +1,186 @@
-<div class="pfp margin-left"></div>
+<div class="dashboard">
+  <div class="pfp margin-left"></div>
+  <h1 class="name">Full user name</h1>
+  <div class="storage-bar-container">
+    <storage-bar></storage-bar>
+  </div>
+  <div class="analytics" #analyticsContainer>
+    <ngx-charts-pie-chart
+      [results]="pieData"
+      [view]="chartView"
+      [labels]="true"
+      [animations]="true"
+      [explodeSlices]="false"
+      [gradient]="false"
+    >
+    </ngx-charts-pie-chart>
+
+    <ngx-charts-bar-vertical
+      [results]="barData"
+      [view]="barChartView"
+      [scheme]="'cool'"
+      [xAxis]="true"
+      [yAxis]="true"
+      [animations]="true"
+      [legend]="false"
+      [showXAxisLabel]="true"
+      [showYAxisLabel]="true"
+      [xAxisLabel]="'Folders'"
+      [yAxisLabel]="'Space Used (MB)'"
+      class="bar-chart"
+    >
+    </ngx-charts-bar-vertical>
+  </div>
+
+  <div class="account-details" *ngIf="!updateAccountMode">
+    <div class="account-details-heading">Account Details</div>
+    <table class="account-details-table">
+      <tr>
+        <td class="entry-name">Email: </td>
+        <td class="entry-value">sample(a)gmail.com</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Created on: </td>
+        <td class="entry-value">2025-05-02</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Full name: </td>
+        <td class="entry-value">Full user name</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Country: </td>
+        <td class="entry-value">India</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Phone number: </td>
+        <td class="entry-value">+1234567890</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Folders: </td>
+        <td class="entry-value">37</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Files: </td>
+        <td class="entry-value">150</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Items shared: </td>
+        <td class="entry-value">12</td>
+      </tr>
+      <tr>
+        <td class="entry-name">Favorite items: </td>
+        <td class="entry-value">20</td>
+      </tr>
+    </table>
+    <div class="buttons" *ngIf="!deleteConfirmMode">
+      <div class="btn blue" (click)="onUpdateDetailsClick()">Update Details</div>
+      <div class="btn coral">Log out</div>
+      <div class="btn red" (click)="onDeleteAccountClick()">Delete account</div>
+    </div>
+    <span *ngIf="deleteConfirmMode" class="delete-confirm-span">Are you sure you want to delete your account?<br> This action cannot be undone.<br> All the files & folders along with shared ones will deleted too.</span>
+    <div class="buttons" *ngIf="deleteConfirmMode">
+      <div class="btn red" (click)="onConfirmDelete()">Confirm Delete</div>
+      <div class="btn blue" (click)="onCancelDelete()">Cancel</div>
+    </div>
+  </div>
+
+  <div class="account-details" *ngIf="updateAccountMode">
+    <div class="account-details-heading">Update Account</div>
+    <form [formGroup]="updateForm">
+      <table class="account-details-table">
+        <tr>
+          <td class="entry-name">Email: </td>
+          <td class="entry-value">
+            <input type="email" formControlName="email" class="account-input" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('email')?.touched && updateForm.get('email')?.invalid">
+              <span *ngIf="updateForm.get('email')?.errors?.['required']">Email is required.</span>
+              <span *ngIf="updateForm.get('email')?.errors?.['email']">Please enter a valid email address.</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="entry-name">Full name: </td>
+          <td class="entry-value">
+            <input type="text" formControlName="fullName" class="account-input" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('fullName')?.touched && updateForm.get('fullName')?.invalid">
+              <span *ngIf="updateForm.get('fullName')?.errors?.['required']">Full name is required.</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="entry-name">Country: </td>
+          <td class="entry-value">
+            <select formControlName="country" class="account-input">
+              <option value="" disabled>Select your country</option>
+              <option *ngFor="let country of countries" [value]="country">{{country}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('country')?.touched && updateForm.get('country')?.invalid">
+              <span *ngIf="updateForm.get('country')?.errors?.['required']">Country is required.</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="entry-name">Phone number: </td>
+          <td class="entry-value">
+            <input type="tel" formControlName="phoneNumber" class="account-input" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('phoneNumber')?.touched && updateForm.get('phoneNumber')?.invalid">
+              <span *ngIf="updateForm.get('phoneNumber')?.errors?.['invalidPhoneNumber']">Phone number not valid</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="entry-name">Password: </td>
+          <td class="entry-value">
+            <input type="password" formControlName="password" class="account-input" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('password')?.touched && updateForm.get('password')?.invalid">
+              <span *ngIf="updateForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters.</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="entry-name">Confirm password: </td>
+          <td class="entry-value">
+            <input type="password" formControlName="confirmPassword" class="account-input" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('confirmPassword')?.touched && updateForm.get('confirmPassword')?.invalid">
+              <span *ngIf="updateForm.get('confirmPassword')?.errors?.['passwordMismatch']">Passwords do not match.</span>
+            </span>
+          </td>
+        </tr>
+      </table>
+      <div class="buttons">
+        <div class="btn blue" (click)="onConfirmUpdate()">Confirm</div>
+        <div class="btn blue" (click)="onCancelUpdate()">Cancel</div>
+      </div>
+    </form>
+  </div>
+</div>

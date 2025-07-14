@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { AccountService } from './account.service';
 import { Utils } from '../../Utils';
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, finalize} from "rxjs";
 import {RefreshedService} from "../StateManagementServices/refreshed.service";
 
 @Injectable({
@@ -41,8 +41,7 @@ export class TokenMonitorService {
     }
     const now = Math.floor(Date.now() / 1000);
     const refreshTime = (expiry - 15) - now; // 6 minutes before expiry
-    if (refreshTime <= 0 || expiry > refreshTokenExpiry) {
-      // refresh 6 mins before JWT's expiry or if the refresh token itself is expiring before JWT because each refresh returns new JWT & new refresh token with new expiries
+    if (refreshTime <= 0) {
       this.safeRefresh();
     }
   }
@@ -55,20 +54,19 @@ export class TokenMonitorService {
     }
     if (localStorage.getItem("isRefreshing")!="y" && morethan4s_sinceLastRefresh){
       localStorage.setItem("isRefreshing", "y");
-      this.accountService.refreshToken().subscribe({
-        next: (res) => {
-          localStorage.setItem("jwt_last_refreshed", Math.floor(Date.now() / 1000).toString());
+      this.refreshed.currentTabRefreshing = true;
+      this.accountService.refreshToken().pipe(
+        finalize(() => {
           localStorage.setItem("isRefreshing", "n");
-          this.refreshed.setHasRefreshed(true);
-        },
-        complete: () => {
+          this.refreshed.currentTabRefreshing = false;
+        })
+      ).subscribe({
+        next: () => {
           localStorage.setItem("jwt_last_refreshed", Math.floor(Date.now() / 1000).toString());
-          localStorage.setItem("isRefreshing", "n");
           this.refreshed.setHasRefreshed(true);
         },
         error: (err) => {
           console.error('Token refresh error', err);
-          localStorage.setItem("isRefreshing", "n");
         }
       });
     }

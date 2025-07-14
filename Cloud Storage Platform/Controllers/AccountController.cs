@@ -244,14 +244,9 @@ namespace Cloud_Storage_Platform.Controllers
             }
 
             AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user);
-            session.RefreshToken = authenticationResponse!.RefreshToken!;
-            session.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
-            await _userSessionsRepository.SaveChangesAsync();
 
             SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, rememberMe, true);
-            SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, true);
             SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
-            SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("\nRefreshed at "+DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")+" !\n");
             return Ok();

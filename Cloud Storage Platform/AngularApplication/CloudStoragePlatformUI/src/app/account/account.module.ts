@@ -5,6 +5,9 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import {GoogleLoginProvider, GoogleSigninButtonModule, SocialAuthServiceConfig} from "@abacritt/angularx-social-login";
 import { DashboardComponent } from './dashboard/dashboard.component';
+import {WorkspaceModule} from "../workspace/workspace.module";
+import {NgxChartsModule} from "@swimlane/ngx-charts";
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -12,11 +15,14 @@ import { DashboardComponent } from './dashboard/dashboard.component';
     RegisterComponent,
     DashboardComponent
   ],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        GoogleSigninButtonModule
-    ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    GoogleSigninButtonModule,
+    WorkspaceModule,
+    NgxChartsModule,
+    FormsModule
+  ],
   providers: [{
     provide: 'SocialAuthServiceConfig',
     useValue: {

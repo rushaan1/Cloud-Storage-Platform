@@ -35,6 +35,7 @@ import { StorageBarComponent } from './storage-bar/storage-bar.component';
     NavigationDrawerComponent,
     ViewerComponent,
     PanelComponent,
+    StorageBarComponent,
   ]
 })
 export class WorkspaceModule { }

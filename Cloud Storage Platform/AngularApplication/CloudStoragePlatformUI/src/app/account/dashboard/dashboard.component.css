@@ -1,3 +1,12 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
 .pfp {
   /*background: url("C:\\Users\\rusha\\OneDrive\\Pictures\\🌸Nyanoless - Comms Open! (@NanolessP).png");*/
   background-color: #d9534f;
@@ -5,9 +14,207 @@
   width: 150px;
   border-radius: 50%;
   background-size: cover;
-  margin-top: 30px;
+  margin-top: 25px;
 }
 
-.margin-left{
-  margin-left: 50px;
+.storage-bar-container{
+  width: 35%;
+  height: 10.5vh;
+  margin-top: 23px;
+}
+
+.name{
+  font-family: Poppins, serif;
+  font-weight: 500;
+  font-size: 60px;
+}
+
+.analytics{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.bar-chart{
+  margin-top: 50px;
+}
+
+.account-details{
+  margin-right: 40px;
+}
+
+.account-details-heading{
+  font-family: Poppins, serif;
+  font-size: 30px;
+  text-align: center;
+  margin-right: 120px;
+}
+
+.account-details-table {
+  max-width: 500px;
+  width: 500px;
+  font-size: 20px;
+  font-family: Inter, serif;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin-top: 20px;
+}
+
+.account-details-table td {
+  padding: 8px 24px 0px 0;
+  vertical-align: middle;
+}
+
+.account-details-table .entry-name {
+  text-align: left;
+}
+
+.account-details-table .entry-value {
+  text-align: left;
+
+}
+
+.buttons{
+  margin-top: 15px;
+}
+
+.btn{
+  font-size: 18px;
+  font-family: Poppins, serif;
+  padding: 8px 8px 8px 8px;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.26);
+  display: inline-block;
+  margin-right: 15px;
+  margin-bottom: 15px;
+}
+
+.btn:hover{
+  cursor: pointer;
+}
+
+.blue{
+  background-color: #3574F0;
+}
+
+.blue:hover{
+  background-color: #5188ef;
+}
+
+.red{
+  background-color: red;
+}
+
+.red:hover{
+  background-color: #ff4d4d;
+}
+
+.coral{
+  background-color: #ff4949;
+}
+
+.coral:hover{
+  background-color: #ff6767;
+}
+
+.account-input {
+  padding: 8px;
+  font-size: 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  display: block;
+}
+
+select.account-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  display: block;
+  background: white;
+  height: 37px !important;
+}
+
+.validation {
+  color: #d9534f;
+  font-size: 0.9em;
+  margin-top: 4px;
+  display: block;
+  min-height: 18px;
+}
+
+.delete-confirm-span {
+  display: block;
+  color: #d9534f;
+  font-weight: 500;
+  margin: 18px 0 10px 0;
+  text-align: left;
+}
+
+@media (max-width: 759px){
+  .bar-chart{
+    margin-top: 0px;
+  }
+  .account-details-heading{
+    margin-top: 20px;
+    margin-right: 0px;
+  }
+  .account-details{
+    margin-right: 0px;
+  }
+  .account-details-table {
+    margin-left: 10px;
+  }
+  .account-details-table td{
+    padding: 0px 24px 0px 0;
+  }
+}
+
+@media (max-width: 671px){
+  .name{
+    font-size: 35px;
+  }
+  .account-details-table{
+    font-size: 16px;
+  }
+  .btn{
+    font-size: 15px;
+    margin-right: 10px;
+  }
+  .account-input{
+    width: 150px;
+    height: 30px;
+    font-size: 14px;
+  }
+  .account-details-table td{
+    padding: 0 5px 0 0;
+  }
+  .delete-confirm-span{
+    padding-left: 10px;
+  }
+}
+
+@media (max-width: 950px){
+  .storage-bar-container{
+    width: 240px;
+  }
+}
+
+@media (max-width: 850px) {
+  .account-details-table td {
+    padding: 0px 24px 0px 0;
+  }
+  .account-details-table{
+    width: unset;
+  }
 }

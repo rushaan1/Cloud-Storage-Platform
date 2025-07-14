@@ -4,15 +4,15 @@
   align-items: center;
   flex-wrap: wrap;
   align-content: flex-end;
-  height: 10.5vh;
-  background-color: #F5F5F5;
+  /*height: 10.5vh;*/
+  background-color: transparent;
   z-index: 1;
   position: relative;
 }
 
 .outer{
   height: 25px;
-  background-color: #F5F5F5;
+  background-color: transparent;
   border: 2px solid black;
   border-radius: 5px;
   width: 90%;
@@ -31,7 +31,7 @@
 }
 
 .space{
-  width: 50%;
+  /*width: 50%;*/
   margin-top: 5px;
   /* align-self: flex-start; */
 }

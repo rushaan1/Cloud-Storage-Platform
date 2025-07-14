@@ -5,6 +5,7 @@ import {BehaviorSubject} from "rxjs";
   providedIn: 'root'
 })
 export class RefreshedService {
+  currentTabRefreshing:boolean = false;
   private _hasRefreshed = new BehaviorSubject<boolean>(false);
   hasRefreshed$ = this._hasRefreshed.asObservable();
 

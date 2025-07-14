@@ -1,8 +1,9 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {LoadingService} from "./services/StateManagementServices/loading.service";
 import {NavigationEnd, Router} from "@angular/router";
 import {filter} from "rxjs/operators";
 import {TokenMonitorService} from "./services/ApiServices/token-monitor.service";
+import {RefreshedService} from "./services/StateManagementServices/refreshed.service";
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,8 @@ export class AppComponent implements AfterViewInit, OnInit {
     private loadingService: LoadingService,
     private router: Router,
     private cd: ChangeDetectorRef,
-    private tokenMonitor: TokenMonitorService
+    private tokenMonitor: TokenMonitorService,
+    private refreshed: RefreshedService
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +49,13 @@ export class AppComponent implements AfterViewInit, OnInit {
         }, 0);
       }
     });
+    window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+  }
+
+  handleBeforeUnload() {
+    if (this.refreshed.currentTabRefreshing){
+      localStorage.setItem("isRefreshing", "n");
+    }
   }
 
   ngAfterViewInit(): void {
@@ -85,4 +94,5 @@ export class AppComponent implements AfterViewInit, OnInit {
     }
     this.cd.detectChanges();
   }
+
 }

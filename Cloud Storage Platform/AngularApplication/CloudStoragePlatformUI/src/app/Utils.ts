@@ -1,6 +1,7 @@
 import {ArgumentInvalidException} from "./ArgumentInvalidException";
 import {FileType} from "./models/FileType";
 import {File} from "./models/File";
+import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 export class Utils {
   private constructor() {}
@@ -110,4 +111,16 @@ export class Utils {
     return null;
   }
 
+}
+
+export function phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value) {
+    return null; // Allow empty values since phone is optional
+  }
+  const phoneNumber = control.value.toString().replace(/\s+/g, ''); // Remove spaces
+  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/; // International phone number format
+  if (!phoneRegex.test(phoneNumber)) {
+    return { invalidPhoneNumber: true };
+  }
+  return null;
 }
