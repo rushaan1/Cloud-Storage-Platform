@@ -1,4 +1,14 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {EventService} from "../../services/event-service.service";
 import {Utils} from "../../Utils";

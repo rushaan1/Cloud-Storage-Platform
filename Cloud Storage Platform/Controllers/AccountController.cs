@@ -359,5 +359,18 @@ namespace Cloud_Storage_Platform.Controllers
             };
             return Ok(response);
         }
+
+        [HttpGet("get-user")]
+        [Authorize]
+        public async Task<IActionResult> GetUser()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return Unauthorized();
+            return Ok(new { personName = user.PersonName });
+        }
     }
 }

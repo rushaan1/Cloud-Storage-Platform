@@ -84,6 +84,14 @@ export class RegisterComponent implements OnInit {
           localStorage.setItem('rememberMe', this.registerForm.value.rememberMe.toString());
           this.tokenMonitor.startMonitoring();
           this.router.navigate(['/']);
+          this.accountService.getUser().subscribe({
+            next: (userRes) => {
+              if (userRes && userRes.personName) {
+                localStorage.setItem('name', userRes.personName);
+              }
+            },
+            error: () => {}
+          });
         },
         error: (err) => {
           console.error('Registration error', err);

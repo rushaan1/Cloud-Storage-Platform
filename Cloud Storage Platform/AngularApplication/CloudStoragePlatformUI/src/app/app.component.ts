@@ -4,6 +4,8 @@ import {NavigationEnd, Router} from "@angular/router";
 import {filter} from "rxjs/operators";
 import {TokenMonitorService} from "./services/ApiServices/token-monitor.service";
 import {RefreshedService} from "./services/StateManagementServices/refreshed.service";
+import { AccountService } from './services/ApiServices/account.service';
+import {EventService} from "./services/event-service.service";
 
 @Component({
   selector: 'app-root',
@@ -28,11 +30,21 @@ export class AppComponent implements AfterViewInit, OnInit {
     private router: Router,
     private cd: ChangeDetectorRef,
     private tokenMonitor: TokenMonitorService,
-    private refreshed: RefreshedService
+    private refreshed: RefreshedService,
+    private accountService: AccountService,
+    private eventService: EventService
   ) {}
 
   ngOnInit(): void {
     this.tokenMonitor.startMonitoring();
+    this.accountService.getUser().subscribe({
+      next: (res) => {
+        if (res && res.personName) {
+          localStorage.setItem('name', res.personName);
+        }
+      },
+      error: () => {}
+    });
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -93,6 +105,7 @@ export class AppComponent implements AfterViewInit, OnInit {
       localStorage.setItem("miniDrawerSet", "N");
     }
     this.cd.detectChanges();
+    this.eventService.emit("forceCdInPanel");
   }
 
 }

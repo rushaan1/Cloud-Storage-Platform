@@ -89,4 +89,8 @@ export class AccountService {
   updateAccount(dto: UpdateAccountDTO): Observable<any> {
     return this.http.patch(`${this.API_URL}/update-account`, dto);
   }
+
+  getUser(): Observable<{ personName: string }> {
+    return this.http.get<{ personName: string }>(`${this.API_URL}/get-user`);
+  }
 }

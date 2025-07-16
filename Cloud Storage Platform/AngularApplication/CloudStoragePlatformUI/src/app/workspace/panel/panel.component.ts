@@ -41,6 +41,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
   filesInMutualPath:string[] = [];
   windowWidth: number = window.innerWidth;
   mobileSearchActive: boolean = false;
+  userName: string = '';
 
   // For blocked cursor/hover state on disabled controls
   sortBlockedHover = false;
@@ -50,6 +51,10 @@ export class PanelComponent implements OnInit, AfterViewChecked {
 
   ngOnInit(){
     this.showStartupWelcomeMsgWithPfpDropDown();
+    const storedName = localStorage.getItem('name');
+    if (storedName) {
+      this.userName = Utils.resize(storedName, 40);
+    }
     this.breadCrumbService.breadcrumbs$.subscribe((crumbs)=>{
       this.crumbs = crumbs;
     });
@@ -58,6 +63,11 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       localStorage.setItem("uploadProgress", "-1");
     }
     window.addEventListener('resize', this.onResize.bind(this));
+
+    this.eventService.listen("forceCdInPanel",()=>{
+      console.log("cd forced");
+      setTimeout(()=>this.ngAfterViewChecked(), 1000);
+    });
   }
   setPanelWidth() {
     const parent = this.panelMain.nativeElement.parentElement as HTMLElement;
@@ -71,10 +81,10 @@ export class PanelComponent implements OnInit, AfterViewChecked {
       const rect = this.pfp.nativeElement.getBoundingClientRect();
       this.pfpDropdownDiv.nativeElement.style.right = `${rect.top}px`;
       if (this.onlyHiText){
-        this.pfpDropDownSpan.nativeElement.innerText = "Hi FirstName";
+        this.pfpDropDownSpan.nativeElement.innerText = `Hi ${this.userName}`;
       }
       else{
-        this.pfpDropDownSpan.nativeElement.innerHTML = "Hi FirstName, <br> <b>Click to open account dashboard</b>";
+        this.pfpDropDownSpan.nativeElement.innerHTML = `Hi ${this.userName}, <br> <b>Click to open account dashboard</b>`;
       }
     }
     this.setPanelWidth();

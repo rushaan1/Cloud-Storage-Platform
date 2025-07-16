@@ -56,6 +56,14 @@ export class LoginComponent implements OnInit {
           localStorage.setItem('rememberMe', this.loginForm.value.rememberMe.toString());
           this.tokenMonitor.startMonitoring();
           this.router.navigate(['/']);
+          this.accountService.getUser().subscribe({
+            next: (userRes) => {
+              if (userRes && userRes.personName) {
+                localStorage.setItem('name', userRes.personName);
+              }
+            },
+            error: () => {}
+          });
         },
         error: (err) => {
           console.error('Login error', err);

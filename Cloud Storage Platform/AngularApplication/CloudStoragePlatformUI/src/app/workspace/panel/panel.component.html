@@ -77,10 +77,10 @@
         </div>
 
         <div class="user-info">
-          <div #pfp (click)="router.navigate(['account','dashboard']);" (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp"></div>
+          <div #pfp (click)="router.navigate(['account','dashboard']);" (mouseenter)="this.showPfpDropdown(false); this.mouseHoveringOverPfp = true;" (mouseleave)="this.hidePfpDropdown(); this.mouseHoveringOverPfp = false;" class="pfp" [attr.title]="userName"></div>
           <div #pfpDropdown *ngIf="this.pfpDropdownShowing" class="top-pointed-dropdown">
             <span #pfpDropDownSpan>
-              Hi FirstName, <br>
+              Hi {{userName}}, <br>
               <b>Click to open account dashboard</b>
             </span>
           </div>
