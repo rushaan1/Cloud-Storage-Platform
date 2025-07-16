@@ -13,6 +13,7 @@ import {Router} from "@angular/router";
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   logininvalid = false;
+  showPassword = false;
   constructor(private fb: FormBuilder, private accountService: AccountService, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService, private router:Router) {}
 
   ngOnInit(): void {

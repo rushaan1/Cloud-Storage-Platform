@@ -139,6 +139,10 @@ input:focus-visible{
   margin-top: 15px;
 }
 
+.password-eye:hover{
+  cursor: pointer;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .auth-content {

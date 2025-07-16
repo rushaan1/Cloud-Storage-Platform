@@ -19,6 +19,7 @@ export class RegisterComponent implements OnInit {
     'France', 'Spain', 'Italy', 'Japan', 'China', 'India', 'Brazil',
     'Mexico', 'Russia', 'South Africa'
   ];
+  showPassword = false;
 
   constructor(private fb: FormBuilder, private accountService: AccountService, private router:Router, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService) {}
 

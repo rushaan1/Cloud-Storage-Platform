@@ -65,9 +65,9 @@
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">Password <i class="fa-regular fa-eye password-eye" [ngStyle]="{ opacity: showPassword ? 0.5 : 1 }" (mousedown)="showPassword=true" (mouseup)="showPassword=false" (mouseleave)="showPassword=false"></i></label>
           <input
-            type="password"
+            [type]="showPassword ? 'text' : 'password'"
             id="password"
             formControlName="password"
             class="form-control">
@@ -78,9 +78,9 @@
         </div>
 
         <div class="form-group">
-          <label for="confirmPassword">Confirm Password</label>
+          <label for="confirmPassword">Confirm Password <i class="fa-regular fa-eye password-eye" [ngStyle]="{ opacity: showPassword ? 0.5 : 1 }" (mousedown)="showPassword=true" (mouseup)="showPassword=false" (mouseleave)="showPassword=false"></i></label>
           <input
-            type="password"
+            [type]="showPassword ? 'text' : 'password'"
             id="confirmPassword"
             formControlName="confirmPassword"
             class="form-control">

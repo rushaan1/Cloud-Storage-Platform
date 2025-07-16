@@ -74,7 +74,7 @@ export class PanelComponent implements OnInit, AfterViewChecked {
         this.pfpDropDownSpan.nativeElement.innerText = "Hi FirstName";
       }
       else{
-        this.pfpDropDownSpan.nativeElement.innerHTML = "Hi FirstName, <br> <b>Click to open account settings</b>";
+        this.pfpDropDownSpan.nativeElement.innerHTML = "Hi FirstName, <br> <b>Click to open account dashboard</b>";
       }
     }
     this.setPanelWidth();

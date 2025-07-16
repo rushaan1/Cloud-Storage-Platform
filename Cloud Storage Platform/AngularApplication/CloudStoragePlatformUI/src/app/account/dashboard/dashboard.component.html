@@ -1,6 +1,6 @@
 <div class="dashboard">
   <div class="pfp margin-left"></div>
-  <h1 class="name">Full user name</h1>
+  <h1 class="name">{{ accountDetails?.personName || 'Loading...' }}</h1>
   <div class="storage-bar-container">
     <storage-bar></storage-bar>
   </div>
@@ -12,6 +12,7 @@
       [animations]="true"
       [explodeSlices]="false"
       [gradient]="false"
+      [title]="'Space utilized by types'"
     >
     </ngx-charts-pie-chart>
 
@@ -25,8 +26,8 @@
       [legend]="false"
       [showXAxisLabel]="true"
       [showYAxisLabel]="true"
-      [xAxisLabel]="'Folders'"
-      [yAxisLabel]="'Space Used (MB)'"
+      [xAxisLabel]="'Files'"
+      [yAxisLabel]="'Size (MB)'"
       class="bar-chart"
     >
     </ngx-charts-bar-vertical>
@@ -37,45 +38,46 @@
     <table class="account-details-table">
       <tr>
         <td class="entry-name">Email: </td>
-        <td class="entry-value">sample(a)gmail.com</td>
+        <td class="entry-value">{{ accountDetails?.email || 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Created on: </td>
-        <td class="entry-value">2025-05-02</td>
+        <td class="entry-value">{{ accountDetails?.createdAt || 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Full name: </td>
-        <td class="entry-value">Full user name</td>
+        <td class="entry-value">{{ accountDetails?.personName || 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Country: </td>
-        <td class="entry-value">India</td>
+        <td class="entry-value">{{ accountDetails?.country || 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Phone number: </td>
-        <td class="entry-value">+1234567890</td>
+        <td class="entry-value">{{ accountDetails?.phoneNumber || 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Folders: </td>
-        <td class="entry-value">37</td>
+        <td class="entry-value">{{ accountDetails?.totalFolders ?? 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Files: </td>
-        <td class="entry-value">150</td>
+        <td class="entry-value">{{ accountDetails?.totalFiles ?? 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Items shared: </td>
-        <td class="entry-value">12</td>
+        <td class="entry-value">{{ accountDetails?.itemsShared ?? 'N/A' }}</td>
       </tr>
       <tr>
         <td class="entry-name">Favorite items: </td>
-        <td class="entry-value">20</td>
+        <td class="entry-value">{{ accountDetails?.favoriteItems ?? 'N/A' }}</td>
       </tr>
     </table>
+    <span *ngIf="updatednow" class="updated-info">Account details have been successfully updated.</span>
     <div class="buttons" *ngIf="!deleteConfirmMode">
-      <div class="btn blue" (click)="onUpdateDetailsClick()">Update Details</div>
-      <div class="btn coral">Log out</div>
-      <div class="btn red" (click)="onDeleteAccountClick()">Delete account</div>
+      <div class="btn blue" (click)="onUpdateDetailsClick()" [class.disabled-btn]="loadingAnalytics" [attr.title]="loadingAnalytics ? 'Loading...' : null" [style.cursor]="loadingAnalytics ? 'not-allowed' : 'pointer'" [attr.disabled]="loadingAnalytics ? true : null">Update Details</div>
+      <div class="btn coral" (click)="logout()" [class.disabled-btn]="loadingAnalytics" [attr.title]="loadingAnalytics ? 'Loading...' : null" [style.cursor]="loadingAnalytics ? 'not-allowed' : 'pointer'" [attr.disabled]="loadingAnalytics ? true : null">Log out</div>
+      <div class="btn red" (click)="onDeleteAccountClick()" [class.disabled-btn]="loadingAnalytics" [attr.title]="loadingAnalytics ? 'Loading...' : null" [style.cursor]="loadingAnalytics ? 'not-allowed' : 'pointer'" [attr.disabled]="loadingAnalytics ? true : null">Delete account</div>
     </div>
     <span *ngIf="deleteConfirmMode" class="delete-confirm-span">Are you sure you want to delete your account?<br> This action cannot be undone.<br> All the files & folders along with shared ones will deleted too.</span>
     <div class="buttons" *ngIf="deleteConfirmMode">
@@ -100,6 +102,7 @@
             <span class="validation" *ngIf="updateForm.get('email')?.touched && updateForm.get('email')?.invalid">
               <span *ngIf="updateForm.get('email')?.errors?.['required']">Email is required.</span>
               <span *ngIf="updateForm.get('email')?.errors?.['email']">Please enter a valid email address.</span>
+              <span *ngIf="updateForm.get('email')?.errors?.['emailAlreadyRegistered'] && !updateForm.get('email')?.errors?.['required'] && !updateForm.get('email')?.errors?.['email']">Email is already registered.</span>
             </span>
           </td>
         </tr>
@@ -114,6 +117,20 @@
           <td>
             <span class="validation" *ngIf="updateForm.get('fullName')?.touched && updateForm.get('fullName')?.invalid">
               <span *ngIf="updateForm.get('fullName')?.errors?.['required']">Full name is required.</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="entry-name">Phone number: </td>
+          <td class="entry-value">
+            <input type="tel" formControlName="phoneNumber" class="account-input" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="validation" *ngIf="updateForm.get('phoneNumber')?.touched && updateForm.get('phoneNumber')?.invalid">
+              <span *ngIf="updateForm.get('phoneNumber')?.errors?.['invalidPhoneNumber']">Phone number not valid</span>
             </span>
           </td>
         </tr>
@@ -135,23 +152,14 @@
           </td>
         </tr>
         <tr>
-          <td class="entry-name">Phone number: </td>
+          <td class="entry-name">Update Password (optional): </td>
           <td class="entry-value">
-            <input type="tel" formControlName="phoneNumber" class="account-input" />
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>
-            <span class="validation" *ngIf="updateForm.get('phoneNumber')?.touched && updateForm.get('phoneNumber')?.invalid">
-              <span *ngIf="updateForm.get('phoneNumber')?.errors?.['invalidPhoneNumber']">Phone number not valid</span>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td class="entry-name">Password: </td>
-          <td class="entry-value">
-            <input type="password" formControlName="password" class="account-input" />
+            <div class="password-input-wrapper">
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="account-input" />
+              <i class="fa-regular fa-eye password-eye"
+                 [ngStyle]="{ opacity: showPassword ? 0.5 : 1 }"
+                 (mousedown)="showPassword=true" (mouseup)="showPassword=false" (mouseleave)="showPassword=false"></i>
+            </div>
           </td>
         </tr>
         <tr>
@@ -163,9 +171,14 @@
           </td>
         </tr>
         <tr>
-          <td class="entry-name">Confirm password: </td>
+          <td class="entry-name">Confirm password (optional): </td>
           <td class="entry-value">
-            <input type="password" formControlName="confirmPassword" class="account-input" />
+            <div class="password-input-wrapper">
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="confirmPassword" class="account-input" />
+              <i class="fa-regular fa-eye password-eye"
+                 [ngStyle]="{ opacity: showPassword ? 0.5 : 1 }"
+                 (mousedown)="showPassword=true" (mouseup)="showPassword=false" (mouseleave)="showPassword=false"></i>
+            </div>
           </td>
         </tr>
         <tr>

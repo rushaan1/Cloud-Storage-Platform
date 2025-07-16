@@ -31,7 +31,7 @@ namespace CloudStoragePlatform.Core.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // Subject
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // JWT unique ID
                 new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Email!),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()!),
                 new Claim(ClaimTypes.Name, user.PersonName!),
                 new Claim(ClaimTypes.Email, user.Email!)
             };

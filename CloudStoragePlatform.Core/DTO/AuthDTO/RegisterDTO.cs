@@ -16,7 +16,6 @@ namespace CloudStoragePlatform.Core.DTO.AuthDTO
 
         [Required(ErrorMessage = "Email can't be blank")]
         [EmailAddress(ErrorMessage = "Email should be in a proper email address format")]
-        [Remote(action: "IsEmailAlreadyRegistered", controller: "Account", ErrorMessage = "Email is already registered")]
         public string Email { get; set; } = string.Empty;
 
         public string? PhoneNumber { get; set; }

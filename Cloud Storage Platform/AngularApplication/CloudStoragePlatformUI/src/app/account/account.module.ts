@@ -8,6 +8,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import {WorkspaceModule} from "../workspace/workspace.module";
 import {NgxChartsModule} from "@swimlane/ngx-charts";
 import { FormsModule } from '@angular/forms';
+import {RouterLink} from "@angular/router";
 
 @NgModule({
   declarations: [
@@ -15,14 +16,15 @@ import { FormsModule } from '@angular/forms';
     RegisterComponent,
     DashboardComponent
   ],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    GoogleSigninButtonModule,
-    WorkspaceModule,
-    NgxChartsModule,
-    FormsModule
-  ],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        GoogleSigninButtonModule,
+        WorkspaceModule,
+        NgxChartsModule,
+        FormsModule,
+        RouterLink
+    ],
   providers: [{
     provide: 'SocialAuthServiceConfig',
     useValue: {

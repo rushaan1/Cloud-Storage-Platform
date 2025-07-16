@@ -24,14 +24,16 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IJwtService _jwtService;
         private readonly IUserSessionsRepository _userSessionsRepository;
         private readonly IConfiguration _config;
+        private readonly IBulkRetrievalService _retrievalService;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
             _userSessionsRepository = userSessionsRepository;
             _config = configuration;
+            _retrievalService = bulkRetrievalService;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool shouldExpire, bool httponly)
@@ -160,8 +162,8 @@ namespace Cloud_Storage_Platform.Controllers
             }
         }
 
-        [HttpGet("logout")]
-        public async Task<IActionResult> GetLogout()
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
         {
             string? refreshToken = Request.Cookies["refresh_token"];
             if (!string.IsNullOrEmpty(refreshToken))
@@ -178,6 +180,8 @@ namespace Cloud_Storage_Platform.Controllers
 
             Response.Cookies.Delete("access_token");
             Response.Cookies.Delete("refresh_token");
+            Response.Cookies.Delete("jwt_expiry");
+            Response.Cookies.Delete("refresh_expiry");
 
             return NoContent();
         }
@@ -250,6 +254,110 @@ namespace Cloud_Storage_Platform.Controllers
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("\nRefreshed at "+DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")+" !\n");
             return Ok();
+        }
+
+        [HttpGet("account-details-analytics")]
+        [Authorize]
+        public async Task<IActionResult> GetAccountDetailsAndAnalytics()
+        {
+            // Get current user
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                return Unauthorized();
+            }
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var analytics = await _retrievalService.GetUsageAnalytics();
+
+            string createdAt = user.CreatedAt.HasValue
+                ? user.CreatedAt.Value.ToString("dd-MM-yyyy")
+                : "Not Available";
+            string phone = string.IsNullOrWhiteSpace(user.PhoneNumber) ? "N/A" : user.PhoneNumber;
+
+            var result = new
+            {
+                analytics.TopExtensionsBySize,
+                analytics.TopFilesBySize,
+                analytics.TotalFolders,
+                analytics.TotalFiles,
+                analytics.FavoriteItems,
+                analytics.ItemsShared,
+                Email = user.Email,
+                CreatedAt = createdAt,
+                Country = user.Country,
+                PhoneNumber = phone,
+                PersonName = user.PersonName
+            };
+            return Ok(result);
+        }
+
+        [HttpPatch("update-account")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAccount([FromBody] UpdateAccountDTO dto)
+        {
+            bool isValid = ModelState.IsValid;
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return Unauthorized();
+
+            bool updated = false;
+            if (!string.IsNullOrWhiteSpace(dto.Email) && dto.Email != user.Email)
+            {
+                user.Email = dto.Email;
+                user.UserName = dto.Email;
+                updated = true;
+            }
+            if (!string.IsNullOrWhiteSpace(dto.FullName) && dto.FullName != user.PersonName)
+            {
+                user.PersonName = dto.FullName;
+                updated = true;
+            }
+            if (!string.IsNullOrWhiteSpace(dto.Country) && dto.Country != user.Country)
+            {
+                user.Country = dto.Country;
+                updated = true;
+            }
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && dto.PhoneNumber != user.PhoneNumber)
+            {
+                user.PhoneNumber = dto.PhoneNumber;
+                updated = true;
+            }
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                if (dto.Password != dto.ConfirmPassword)
+                    return BadRequest("Passwords do not match.");
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, dto.Password);
+                if (!result.Succeeded)
+                    return BadRequest(string.Join("; ", result.Errors.Select(e => e.Description)));
+                updated = true;
+            }
+            if (updated)
+            {
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    return Problem(string.Join("; ", result.Errors.Select(e => e.Description)));
+            }
+            // Return updated info (same as analytics DTO)
+            string createdAt = user.CreatedAt.HasValue ? user.CreatedAt.Value.ToString("dd-MM-yyyy") : "Not Available";
+            string phone = string.IsNullOrWhiteSpace(user.PhoneNumber) ? "N/A" : user.PhoneNumber;
+            var response = new
+            {
+                Email = user.Email,
+                CreatedAt = createdAt,
+                Country = user.Country,
+                PhoneNumber = phone,
+                PersonName = user.PersonName
+            };
+            return Ok(response);
         }
     }
 }

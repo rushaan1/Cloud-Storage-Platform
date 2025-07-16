@@ -166,6 +166,74 @@ namespace CloudStoragePlatform.Core.Services
             return GetResponse(new List<Folder>(), files, sortOptions);
         }
 
+        public async Task<UsageAnalyticsResult> GetUsageAnalytics()
+        {
+            var files = await _filesRepository.GetAllFiles();
+            var folders = await _foldersRepository.GetAllFolders();
+
+            // Group by extension and sum sizes
+            List<ExtensionSizeSummary> extensionGroups = files
+                .GroupBy(f => Path.GetExtension(f.FileName)?.ToLower() ?? "")
+                .Select(g => new ExtensionSizeSummary
+                {
+                    Extension = string.IsNullOrWhiteSpace(g.Key) ? "no extension" : g.Key,
+                    TotalSize = g.Sum(f => f.Size)
+                })
+                .OrderByDescending(e => e.TotalSize)
+                .Take(10)
+                .ToList();
+
+            // Top 10 files by size
+            List<FileSizeSummary> topFiles = files
+                .OrderByDescending(f => f.Size)
+                .Take(10)
+                .Select(f => new FileSizeSummary
+                {
+                    FileName = f.FileName,
+                    Size = f.Size
+                })
+                .ToList();
+
+            // Total counts
+            int totalFolders = folders.Count;
+            int totalFiles = files.Count;
+
+            // Favorite items (files + folders)
+            int favoriteItems = files.Count(f => f.IsFavorite) + folders.Count(f => f.IsFavorite);
+
+            // Shared items (files + folders)
+            int itemsShared = 0;
+            DateTime now = DateTime.UtcNow;
+            // Files
+            itemsShared += files.Count(f =>
+                f.Sharing != null &&
+                !string.IsNullOrWhiteSpace(f.Sharing.ShareLinkUrl) &&
+                (
+                    !f.Sharing.ShareLinkExpiry.HasValue ||
+                    f.Sharing.ShareLinkExpiry.Value > now
+                )
+            );
+            // Folders
+            itemsShared += folders.Count(f =>
+                f.Sharing != null &&
+                !string.IsNullOrWhiteSpace(f.Sharing.ShareLinkUrl) &&
+                (
+                    !f.Sharing.ShareLinkExpiry.HasValue ||
+                    f.Sharing.ShareLinkExpiry.Value > now
+                )
+            );
+
+            return new UsageAnalyticsResult
+            {
+                TopExtensionsBySize = extensionGroups,
+                TopFilesBySize = topFiles,
+                TotalFolders = totalFolders,
+                TotalFiles = totalFiles,
+                FavoriteItems = favoriteItems,
+                ItemsShared = itemsShared
+            };
+        }
+
         private (List<FolderResponse> Folders, List<FileResponse> Files) GetResponse(List<Folder> folders, List<File> files, SortOrderOptions sortOptions)
         {
             List<Folder> sortedFolders = Utilities.Sort(folders, sortOptions);

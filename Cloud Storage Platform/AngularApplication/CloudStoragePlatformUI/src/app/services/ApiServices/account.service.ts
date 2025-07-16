@@ -18,14 +18,32 @@ export interface LoginDTO {
   rememberMe: boolean;
 }
 
-export interface RegenerateTokenModel {
-  token: string;
-  refreshToken: string;
-}
-
 export interface ResponseWithNameAndEmail {
   personName: string;
   email: string;
+}
+
+export interface AccountDetailsAndAnalytics {
+  topExtensionsBySize: { extension: string; totalSize: number }[];
+  topFilesBySize: { fileName: string; size: number }[];
+  totalFolders: number;
+  totalFiles: number;
+  favoriteItems: number;
+  itemsShared: number;
+  email: string;
+  createdAt: string;
+  country: string;
+  phoneNumber: string;
+  personName: string;
+}
+
+export interface UpdateAccountDTO {
+  email?: string | null;
+  fullName?: string | null;
+  country?: string | null;
+  phoneNumber?: string | null;
+  password?: string | null;
+  confirmPassword?: string | null;
 }
 
 @Injectable({
@@ -50,7 +68,7 @@ export class AccountService {
   }
 
   logout(): Observable<void> {
-    return this.http.get<void>(`${this.API_URL}/logout`);
+    return this.http.post<void>(`${this.API_URL}/logout`,{});
   }
 
   googlelogin(idToken: string): Observable<any> {
@@ -62,5 +80,13 @@ export class AccountService {
         headers: { 'Content-Type': 'application/json' }
       }
     );
+  }
+
+  getAccountDetailsAndAnalytics(): Observable<AccountDetailsAndAnalytics> {
+    return this.http.get<AccountDetailsAndAnalytics>(`${this.API_URL}/account-details-analytics`);
+  }
+
+  updateAccount(dto: UpdateAccountDTO): Observable<any> {
+    return this.http.patch(`${this.API_URL}/update-account`, dto);
   }
 }
