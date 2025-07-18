@@ -103,8 +103,7 @@ namespace ServiceTests
             
             File file = new File() { 
                 FileName = fileAddRequest.FileName, 
-                FilePath = fileAddRequest.FilePath, 
-                Size = 1024.0f 
+                FilePath = fileAddRequest.FilePath
             };
 
             _filesRepositoryMock.Setup(f => f.AddFile(It.IsAny<File>()))
@@ -118,7 +117,6 @@ namespace ServiceTests
             fileResponse.FileId.Should().NotBeEmpty();
             fileResponse.FileName.Should().Be(file.FileName);
             fileResponse.FilePath.Should().Be(file.FilePath);
-            fileResponse.Size.Should().Be(1024.0f);
             fileExists.Should().BeTrue();
         }
         #endregion

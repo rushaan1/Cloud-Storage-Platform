@@ -106,9 +106,11 @@ namespace CloudStoragePlatform.Core.Services
             
             string parentFolderPath = Utilities.ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
             Folder? folder = null;
-            if (Directory.Exists(parentFolderPath))
+            Folder? parent = await _foldersRepository.GetFolderByFolderPath(parentFolderPath);
+            bool duplicate = (await _foldersRepository.GetFolderByFolderPath(folderAddRequest.FolderPath)) != null;
+            if (parent!=null)
             {
-                if (Directory.Exists(folderAddRequest.FolderPath))
+                if (duplicate)
                 {
                     throw new DuplicateFolderException();
                 }
@@ -125,7 +127,6 @@ namespace CloudStoragePlatform.Core.Services
                     SharingId = Guid.NewGuid(),
                 };
 
-                Folder? parent = await _foldersRepository.GetFolderByFolderPath(parentFolderPath);
                 if (folderAddRequest.FolderName.Contains("\\"))
                 {
                     // This is a very rare exceptional edge case as Linux allows file names to have \
@@ -153,10 +154,7 @@ namespace CloudStoragePlatform.Core.Services
                     await _foldersRepository.UpdateFolder(parent, false, false, false, false, true, false);
                     
                     // Note: We don't need to update parent folder sizes here since a new folder has initial size of 0
-                    // If there is an initial size, uncomment the line below
-                    // await UpdateFolderSizesOnAdd(parent, folder.Size);
                 }
-                Directory.CreateDirectory(folderAddRequest.FolderPath);
             }
             else 
             {
@@ -235,7 +233,7 @@ namespace CloudStoragePlatform.Core.Services
             float folderSizeInMB = folder.Size;
             
             // Delete the folder from filesystem
-            Directory.Delete(folder.FolderPath, true);
+            
             
             // Delete from database
             bool result = await _foldersRepository.DeleteFolder(folder);
@@ -250,22 +248,26 @@ namespace CloudStoragePlatform.Core.Services
         }
 
         // just confirming that including folder to moved's name in newFolderPath will NOT proof code from moving folder to its subfolder
-        public async Task<FolderResponse> MoveFolder(Guid folderId, string newFolderPath)
+        public async Task<FolderResponse> MoveFolder(Guid folderId, string newParentPath)
         {
             Folder? folder = await _foldersRepository.GetFolderByFolderId(folderId);
             if (folder == null)
             {
                 throw new ArgumentException();
             }
-            if (Directory.Exists(newFolderPath) == false) 
+
+            Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newParentPath);
+
+            if (newParent == null) 
             {
                 throw new DirectoryNotFoundException();
             }
 
             string previousFolderPath = folder.FolderPath;
-            string newFolderPathOfFolder = Path.Combine(newFolderPath, folder.FolderName);
+            string newPathOfFolder = Path.Combine(newParentPath, folder.FolderName);
+            bool duplicate = (await _foldersRepository.GetFolderByFolderPath(newPathOfFolder)) != null;
 
-            if (Directory.Exists(newFolderPathOfFolder))
+            if (duplicate)
             {
                 throw new DuplicateFolderException();
             }
@@ -273,8 +275,6 @@ namespace CloudStoragePlatform.Core.Services
             // Store old parent and folder size
             Folder? oldParent = folder.ParentFolder;
             float folderSizeInMB = folder.Size;
-            
-            Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newFolderPath);
 
             if (newParent?.FolderId == folderId) 
             {
@@ -291,12 +291,11 @@ namespace CloudStoragePlatform.Core.Services
                 parent = parent.ParentFolder;
             }
 
-            folder.FolderPath = newFolderPathOfFolder;
+            folder.FolderPath = newPathOfFolder;
             folder.ParentFolder = newParent!;
 
             Folder? finalMainFolder = await _foldersRepository.UpdateFolder(folder, true, true, false, false, false, false);
-            await Utilities.UpdateChildPaths(_foldersRepository,_filesRepository,folder, previousFolderPath, newFolderPathOfFolder);
-            Directory.Move(previousFolderPath, newFolderPathOfFolder);
+            await Utilities.UpdateChildPaths(_foldersRepository,_filesRepository,folder, previousFolderPath, newPathOfFolder);
             await Utilities.UpdateMetadataMove(folder, previousFolderPath, _foldersRepository);
             
             // Update folder sizes if the parent folder changes
@@ -321,7 +320,8 @@ namespace CloudStoragePlatform.Core.Services
                 throw new ArgumentException();
             }
             string newp = Utilities.ReplaceLastOccurance(folder.FolderPath, folder.FolderName, folderRenameRequest.newName);
-            if (Directory.Exists(newp)) 
+            bool duplicate = (await _foldersRepository.GetFolderByFolderPath(newp)) != null;
+            if (duplicate) 
             {
                 throw new DuplicateFolderException();
             }        
@@ -331,7 +331,6 @@ namespace CloudStoragePlatform.Core.Services
             await Utilities.UpdateChildPaths(_foldersRepository, _filesRepository, folder, oldp, newp);
             await Utilities.UpdateMetadataRename(folder, _foldersRepository);
             Folder? updatedFolder = await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
-            FileSystem.RenameDirectory(oldp, folderRenameRequest.newName);
             return updatedFolder!.ToFolderResponse();
         }
     }

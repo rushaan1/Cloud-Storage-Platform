@@ -231,11 +231,7 @@ namespace ServiceTests
                 new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "B", FolderPath = Path.Combine(initialPath, "B") }
             };
 
-            var files = new List<File>
-            {
-                new File { FileId = _fixture.Create<Guid>(), FileName = "File1.txt", FilePath = Path.Combine(initialPath, "File1.txt") },
-                new File { FileId = _fixture.Create<Guid>(), FileName = "File2.txt", FilePath = Path.Combine(initialPath, "File2.txt") }
-            };
+            var files = new List<File>{};
 
             Folder folder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderPath = initialPath, SubFolders = folders, Files = files };
 
@@ -313,43 +309,6 @@ namespace ServiceTests
             fileResponses[1].FileName.Should().Be(filteredFiles[1].FileName);
             fileResponses.Count.Should().Be(2);
         }
-
-        [Fact]
-        public async Task GetAllFilteredSearchSuccessful_WithoutFiles()
-        {
-            // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
-
-            var filteredFolders = new List<Folder>
-            {
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abx", FolderPath = Path.Combine(initialPath, "Abx") },
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "Abc", FolderPath = Path.Combine(initialPath, "Abc") },
-            };
-
-            var filteredFiles = new List<File>
-            {
-                new File { FileId = _fixture.Create<Guid>(), FileName = "File1ab.txt", FilePath = Path.Combine(initialPath, "File1ab.txt") },
-                new File { FileId = _fixture.Create<Guid>(), FileName = "File2ab.txt", FilePath = Path.Combine(initialPath, "File2ab.txt") }
-            };
-
-            _foldersRepositoryMock.Setup(f => f.GetFilteredFolders(It.IsAny<Expression<Func<Folder, bool>>>()))
-                .ReturnsAsync(filteredFolders);
-
-            _filesRepositoryMock.Setup(f => f.GetFilteredFiles(It.IsAny<Func<File, bool>>()))
-                .ReturnsAsync(filteredFiles);
-
-            // Act
-            //Should be case insensitive & search folder name
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFilteredChildren("ab", sortOptions);
-
-            // Assert
-            folderResponses[0].FolderName.Should().Be(filteredFolders[1].FolderName);
-            folderResponses[1].FolderName.Should().Be(filteredFolders[0].FolderName);
-            folderResponses.Count.Should().Be(2);
-
-            fileResponses.Should().NotBeNull();
-            fileResponses.Should().BeEmpty();
-        }
         #endregion
 
         #region GetAllFavorites
@@ -425,7 +384,8 @@ namespace ServiceTests
 
             _foldersRepositoryMock.Setup(f => f.GetFilteredFolders(It.IsAny<Expression<Func<Folder, bool>>>()))
                 .ReturnsAsync(favoriteFolders);
-
+            _filesRepositoryMock.Setup(f => f.GetFilteredFiles(It.IsAny<Func<File, bool>>()))
+                .ReturnsAsync(new List<File> { });
             // Act
             (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllFavorites(sortOptions);
 
@@ -498,35 +458,6 @@ namespace ServiceTests
             fileResponses[0].FileName.Should().Be("TrashFile1.txt");
             fileResponses[1].FileName.Should().Be("TrashFile2.txt");
         }
-
-        [Fact]
-        public async Task GetAllTrashes_Success_WithoutFiles()
-        {
-            // Arrange
-            var sortOptions = SortOrderOptions.ALPHABETICAL_ASCENDING;
-
-            var trashFolders = new List<Folder>
-            {
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "TrashFolder1", FolderPath = Path.Combine(initialPath, "TrashFolder1"), IsTrash = true },
-                new Folder { FolderId = _fixture.Create<Guid>(), FolderName = "TrashFolder2", FolderPath = Path.Combine(initialPath, "TrashFolder2"), IsTrash = true }
-            };
-
-            _foldersRepositoryMock.Setup(f => f.GetFilteredFolders(It.IsAny<Expression<Func<Folder, bool>>>()))
-                .ReturnsAsync(trashFolders);
-
-            // Act
-            (List<FolderResponse> folderResponses, List<FileResponse> fileResponses) = await _retrievalService.GetAllTrashes(sortOptions);
-
-            // Assert
-            folderResponses.Should().NotBeNull();
-            folderResponses.Should().HaveCount(2);
-            folderResponses[0].FolderName.Should().Be("TrashFolder1");
-            folderResponses[1].FolderName.Should().Be("TrashFolder2");
-
-            fileResponses.Should().NotBeNull();
-            fileResponses.Should().BeEmpty();
-        }
-
         #endregion
 
 

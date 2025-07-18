@@ -135,7 +135,7 @@ namespace CloudStoragePlatform.Core.Services
 
             List<File> files = await _filesRepository.GetFilteredFiles(f => f.IsFavorite);
             return GetResponse(folders, files, sortOptions);
-        } //TODO Unit test this service
+        }
 
         public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllTrashes(SortOrderOptions sortOptions)
         {
@@ -144,7 +144,7 @@ namespace CloudStoragePlatform.Core.Services
 
             List<File> files = await _filesRepository.GetFilteredFiles(f => f.IsTrash);
             return GetResponse(folders, files, sortOptions);
-        } //TODO Unit test this service
+        }
 
         public async Task<(List<FolderResponse> Folders, List<FileResponse> Files)> GetAllRecents()
         {

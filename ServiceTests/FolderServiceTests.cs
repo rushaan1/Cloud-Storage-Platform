@@ -50,63 +50,67 @@ namespace ServiceTests
         public async Task AddFolder_DuplicateFolder()
         {
             string newFolderName = _fixture.Create<string>();
-            FolderAddRequest? folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(initialPath, newFolderName) };
-            
-            Directory.CreateDirectory(folderAddRequest.FolderPath);
+            var folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(initialPath, newFolderName) };
 
-            try
-            {
-                Func<Task> action = async () =>
-                {
-                    await _foldersModificationService.AddFolder(folderAddRequest);
-                };
-                await action.Should().ThrowAsync<DuplicateFolderException>();
-            }
-            finally 
-            {
-                Directory.Delete(folderAddRequest.FolderPath);
-            }
-        }
-
-
-        [Fact]
-        public async Task AddFolder_InvalidAddRequestPath()
-        {
-            string newFolderName = _fixture.Create<string>();
-            FolderAddRequest? folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(_fixture.Create<string>(), newFolderName) };
+            // Simulate duplicate folder
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(folderAddRequest.FolderPath))
+                .ReturnsAsync(new Folder());
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.Is<string>(p => p == initialPath)))
+                .ReturnsAsync(new Folder { FolderPath = initialPath });
 
             Func<Task> action = async () =>
             {
                 await _foldersModificationService.AddFolder(folderAddRequest);
             };
-
-            await action.Should().ThrowAsync<ArgumentException>();
+            await action.Should().ThrowAsync<DuplicateFolderException>();
         }
 
-        // PLEASE USE DIRECTORY IN THE SERVICE TO CHECK IF THE PATH IS VALID
+        [Fact]
+        public async Task AddFolder_InvalidAddRequestPath()
+        {
+            string newFolderName = _fixture.Create<string>();
+            var folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(_fixture.Create<string>(), newFolderName) };
+
+            // Simulate parent not found
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync((Folder)null!);
+
+            Func<Task> action = async () =>
+            {
+                await _foldersModificationService.AddFolder(folderAddRequest);
+            };
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
 
         [Fact]
         public async Task AddFolder_CorrectDetails()
         {
             string newFolderName = _fixture.Create<string>();
-            FolderAddRequest? folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(initialPath, newFolderName) };
-            Folder folder = new Folder() { 
-                FolderName = folderAddRequest.FolderName, 
+            var folderAddRequest = new FolderAddRequest() { FolderName = newFolderName, FolderPath = Path.Combine(initialPath, newFolderName) };
+            var parentFolder = new Folder { FolderPath = initialPath, SubFolders = new List<Folder>() };
+            var folder = new Folder() {
+                FolderName = folderAddRequest.FolderName,
                 FolderPath = folderAddRequest.FolderPath,
-                Size = 512.0f
+                IsFavorite = false,
+                IsTrash = false,
+                ParentFolder = parentFolder,
+                SubFolders = new List<Folder>(),
+                Files = new List<CloudStoragePlatform.Core.Domain.Entities.File>()
             };
-
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(folderAddRequest.FolderPath))
+                .ReturnsAsync((Folder)null!);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.Is<string>(p => p == initialPath)))
+                .ReturnsAsync(parentFolder);
             _foldersRepositoryMock.Setup(f => f.AddFolder(It.IsAny<Folder>()))
                 .ReturnsAsync(folder);
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(parentFolder);
 
-            FolderResponse folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
-            bool folderExists = Directory.Exists(folderResponse.FolderPath);
-
+            var folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
             folderResponse.FolderId.Should().NotBeEmpty();
             folderResponse.FolderName.Should().Be(folder.FolderName);
             folderResponse.FolderPath.Should().Be(folder.FolderPath);
-            folderResponse.Size.Should().Be(512.0f);
-            folderExists.Should().BeTrue();
+            folderResponse.Size.Should().Be(0f);
         }
         #endregion
 
@@ -144,23 +148,17 @@ namespace ServiceTests
 
             Folder folderToBeRenamed = new Folder() { FolderId = renameRequest.id, FolderName = folderToBeRenamedsName, FolderPath = folderToBeRenamedsPath };
 
-            Directory.CreateDirectory(pathOfExistingFolderWithNewFolderName);
-
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folderToBeRenamed);
 
-            try
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(pathOfExistingFolderWithNewFolderName))
+                .ReturnsAsync(new Folder());
+
+            Func<Task> action = async () =>
             {
-                Func<Task> action = async () =>
-                {
-                    await _foldersModificationService.RenameFolder(renameRequest);
-                };
-                await action.Should().ThrowAsync<DuplicateFolderException>();
-            }
-            finally 
-            {
-                Directory.Delete(pathOfExistingFolderWithNewFolderName);
-            }
+                await _foldersModificationService.RenameFolder(renameRequest);
+            };
+            await action.Should().ThrowAsync<DuplicateFolderException>();
         }
 
         [Fact]
@@ -169,36 +167,22 @@ namespace ServiceTests
             //Arrange
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
-
-            RenameRequest renameRequest = _fixture.Create<RenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
-            Folder folder = new Folder() { FolderId = renameRequest.id, FolderName = folderName, FolderPath = folderPath };
+            var renameRequest = _fixture.Create<RenameRequest>();
+            var folder = new Folder() { FolderId = renameRequest.id, FolderName = folderName, FolderPath = folderPath, SubFolders = new List<Folder>(), Files = new List<CloudStoragePlatform.Core.Domain.Entities.File>() };
             Utilities.AttachMetadataForTesting(_fixture, folder, null);
-            Folder updated = new Folder() { FolderId = renameRequest.id, FolderName = folderName, FolderPath = folderPath };
-            updated.FolderName = renameRequest.newName;
-            updated.FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.newName);
-            Directory.CreateDirectory(folderPath);
-
+            var updated = new Folder() { FolderId = renameRequest.id, FolderName = renameRequest.newName, FolderPath = folder.FolderPath.Replace(folder.FolderName, renameRequest.newName) };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
-
             _foldersRepositoryMock.Setup(f=> f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
-
             _filesRepositoryMock.Setup(f => f.UpdateFile(It.IsAny<CloudStoragePlatform.Core.Domain.Entities.File>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(new CloudStoragePlatform.Core.Domain.Entities.File() { FilePath = Path.Combine(folderPath, _fixture.Create<string>()) });
-            // The service will check using Directory to see if folder with new name already exists 
-
             //Act
-            _output.WriteLine($"SOURCE DIR: {folderPath}\nDESTINATION DIR: {updated.FolderPath}");
-            FolderResponse response = await _foldersModificationService.RenameFolder(renameRequest);
-
+            var response = await _foldersModificationService.RenameFolder(renameRequest);
             //Assert
-            bool folderExists = Directory.Exists(Path.Combine(initialPath, renameRequest.newName));
             response.FolderId.Should().Be(renameRequest.id);
             response.FolderName.Should().Be(renameRequest.newName);
             response.FolderPath.Should().Be(updated.FolderPath);
-            folderExists.Should().BeTrue();
-            Directory.Delete(response.FolderPath!);
         }
         #endregion
 
@@ -241,6 +225,9 @@ namespace ServiceTests
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(newFolderPath))
+                .ReturnsAsync((Folder) null!);
+
             //Act
             Func<Task> action = async () =>
             {
@@ -261,18 +248,22 @@ namespace ServiceTests
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
-            Directory.CreateDirectory(folderPath);
 
-            string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
+            string nameOfNewParent = _fixture.Create<string>();
+            string destinationDirectoryPath = Path.Combine(initialPath, nameOfNewParent);
+            Folder newParent = new Folder() { FolderId = Guid.NewGuid(), FolderName = nameOfNewParent, FolderPath = destinationDirectoryPath };
+            
             string newPathForFOLDER = Path.Combine(destinationDirectoryPath, folderName);
-            Directory.CreateDirectory(destinationDirectoryPath);
-
+            Folder duplicate = new Folder() { FolderId = Guid.NewGuid(), FolderName = folderName, FolderPath = newPathForFOLDER };
+            
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
-            //creating duplicate directory
-            Directory.CreateDirectory(newPathForFOLDER);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(destinationDirectoryPath))
+                .ReturnsAsync(newParent);
 
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(newPathForFOLDER))
+                .ReturnsAsync(duplicate);
 
             //Act
             Func<Task> action = async () =>
@@ -294,7 +285,6 @@ namespace ServiceTests
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
-            Directory.CreateDirectory(folderPath);
 
             Guid childFolderGuid = _fixture.Create<Guid>();
             string childFolderName = _fixture.Create<string>();
@@ -302,17 +292,15 @@ namespace ServiceTests
             Folder childFolder = new Folder() { FolderId = childFolderGuid, FolderName = childFolderName, FolderPath = childFolderPath };
             childFolder.ParentFolder = folder;
             childFolder.ParentFolderId = folder.FolderId;
-            Directory.CreateDirectory(childFolderPath);
 
             string destinationDirectoryPath = childFolderPath;
-            Directory.CreateDirectory(destinationDirectoryPath);
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(destinationDirectoryPath))
                 .ReturnsAsync(childFolder);
-
-            //creating duplicate directory
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(Path.Combine(destinationDirectoryPath, folderName)))
+                .ReturnsAsync((Folder) null!);
 
             //Act
             Func<Task> action = async () =>
@@ -333,15 +321,17 @@ namespace ServiceTests
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
-            Directory.CreateDirectory(folderPath);
 
             string destinationDirectoryPath = folder.FolderPath;
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
 
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(destinationDirectoryPath))
                 .ReturnsAsync(folder);
+
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(Path.Combine(destinationDirectoryPath, folderName)))
+                .ReturnsAsync((Folder) null!);
 
 
             //Act
@@ -361,68 +351,64 @@ namespace ServiceTests
         public async Task MoveFolder_SuccessfullyMoved() 
         {
             //Arrange
+            Folder previousParent = new Folder() { FolderId = Guid.NewGuid(), FolderName = Path.GetDirectoryName(initialPath)!, FolderPath = initialPath };
             Guid guid = _fixture.Create<Guid>();
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
             Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
-            Directory.CreateDirectory(folderPath);
+            folder.ParentFolder = previousParent;
+            folder.ParentFolderId = previousParent.ParentFolderId;
             Utilities.AttachMetadataForTesting(_fixture, folder, null);
-            string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
+
+            string destinationDirectoryName = _fixture.Create<string>();
+            string destinationDirectoryPath = Path.Combine(initialPath, destinationDirectoryName);
+            Folder destinationFolder_aka_newParent = new Folder() { FolderId = Guid.NewGuid(), FolderName = destinationDirectoryName, FolderPath = destinationDirectoryPath };
+
             string newPathForFOLDER = Path.Combine(destinationDirectoryPath, folderName);
 
             CloudStoragePlatform.Core.Domain.Entities.File file1 = new CloudStoragePlatform.Core.Domain.Entities.File() { FileId = _fixture.Create<Guid>(), FileName = _fixture.Create<string>() + ".txt" };
             string subFilesPath1 = Path.Combine(folder.FolderPath, file1.FileName);
             file1.FilePath = subFilesPath1;
             folder.Files.Add(file1);
-            using (System.IO.File.Create(subFilesPath1)) { }
 
             CloudStoragePlatform.Core.Domain.Entities.File file2 = new CloudStoragePlatform.Core.Domain.Entities.File() { FileId = _fixture.Create<Guid>(), FileName = _fixture.Create<string>() + ".txt" };
             string subFilesPath2 = Path.Combine(folder.FolderPath, file2.FileName);
             file2.FilePath = subFilesPath2;
             folder.Files.Add(file2);
-            using (System.IO.File.Create(subFilesPath2)) { }
 
             Folder subFolder = new Folder() { FolderId = _fixture.Create<Guid>(), FolderName = _fixture.Create<string>() };
             subFolder.FolderPath = Path.Combine(folder.FolderPath, subFolder.FolderName);
-            Directory.CreateDirectory(subFolder.FolderPath);
             folder.SubFolders.Add(subFolder);
 
             Folder updated = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
             updated.FolderPath = newPathForFOLDER;
+            updated.ParentFolder = destinationFolder_aka_newParent;
+            updated.ParentFolderId = destinationFolder_aka_newParent.FolderId;
 
-            Directory.CreateDirectory(destinationDirectoryPath);
 
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(destinationDirectoryPath))
+                .ReturnsAsync(destinationFolder_aka_newParent);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(newPathForFOLDER))
+                .ReturnsAsync((Folder) null!);
+
             _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
 
             _filesRepositoryMock.Setup(f => f.UpdateFile(It.IsAny<CloudStoragePlatform.Core.Domain.Entities.File>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(new CloudStoragePlatform.Core.Domain.Entities.File() { FilePath = Path.Combine(folderPath, _fixture.Create<string>()) });
 
-            try
-            {
-                //Act
-                FolderResponse response = await _foldersModificationService.MoveFolder(guid, destinationDirectoryPath);
+            //Act
+            FolderResponse response = await _foldersModificationService.MoveFolder(guid, destinationDirectoryPath);
 
 
-                //Assert
-                bool dirExists = Directory.Exists(newPathForFOLDER);
-                bool subDirExists = Directory.Exists(Path.Combine(response.FolderPath!, subFolder.FolderName));
-                _output.WriteLine($"RESPONSE FOLDER PATH: {response.FolderPath}\nSUBFOLDER FOLDERNAME: {subFolder.FolderName}");
-                bool subFilesCheck = (Directory.EnumerateFiles(response.FolderPath!).Count() == 2);
-                response.Should().NotBeNull();
-                response.FolderId.Should().Be(guid);
-                response.FolderName.Should().Be(folderName);
-                response.FolderPath.Should().Be(newPathForFOLDER);
-                dirExists.Should().BeTrue();
-                subDirExists.Should().BeTrue();
-                subFilesCheck.Should().BeTrue();
-            }
-            finally 
-            {
-                //Directory.Delete(destinationDirectoryPath);
-            }
+            //Assert
+            _output.WriteLine($"RESPONSE FOLDER PATH: {response.FolderPath}\nSUBFOLDER FOLDERNAME: {subFolder.FolderName}");
+            response.Should().NotBeNull();
+            response.FolderId.Should().Be(guid);
+            response.FolderName.Should().Be(folderName);
+            response.FolderPath.Should().Be(newPathForFOLDER);
         }
         #endregion
 
@@ -593,22 +579,15 @@ namespace ServiceTests
             Guid guid = _fixture.Create<Guid>();
             string folderName = _fixture.Create<string>();
             string folderPath = Path.Combine(initialPath, folderName);
-            Folder folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath};
-            
+            var folder = new Folder() { FolderId = guid, FolderName = folderName, FolderPath = folderPath };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderId(It.IsAny<Guid>()))
                 .ReturnsAsync(folder);
             _foldersRepositoryMock.Setup(f => f.DeleteFolder(It.IsAny<Folder>()))
                 .ReturnsAsync(true);
-
-            Directory.CreateDirectory(folderPath);
-            using (System.IO.File.Create(Path.Combine(folderPath, _fixture.Create<string>() + ".txt"))) {}
             //Act
             bool deleted = await _foldersModificationService.DeleteFolder(guid);
-
             //Assert
             deleted.Should().BeTrue();
-            Directory.EnumerateDirectories(initialPath).Should().BeEmpty();
-            Directory.EnumerateFiles(initialPath).Should().BeEmpty();
         }
         #endregion
         #endregion
@@ -682,23 +661,15 @@ namespace ServiceTests
             };
             _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
                 .ReturnsAsync(folder);
-            Directory.CreateDirectory(path);
 
-            try
-            {
-                // Act
-                FolderResponse fr = await _foldersRetrievalService.GetFolderByFolderPath(path);
+            // Act
+            FolderResponse fr = await _foldersRetrievalService.GetFolderByFolderPath(path);
 
-                // Assert
-                fr.Should().NotBeNull();
-                fr.FolderId.Should().Be(folder.FolderId);
-                fr.FolderPath.Should().Be(path);
-                fr.Size.Should().Be(5120.0f);
-            }
-            finally 
-            {
-                Directory.Delete(path);
-            }
+            // Assert
+            fr.Should().NotBeNull();
+            fr.FolderId.Should().Be(folder.FolderId);
+            fr.FolderPath.Should().Be(path);
+            fr.Size.Should().Be(5120.0f);
         }
         #endregion
 
