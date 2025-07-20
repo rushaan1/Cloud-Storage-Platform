@@ -51,7 +51,7 @@ namespace CloudStoragePlatform.Core.Services
                 var file = files.First();
                 if (file != null)
                 {
-                    await using var fileStream = System.IO.File.OpenRead(file.FilePath);
+                    await using var fileStream = System.IO.File.OpenRead(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, file.FileId.ToString()));
                     await fileStream.CopyToAsync(outputStream);
                 }
                 return;
@@ -82,7 +82,7 @@ namespace CloudStoragePlatform.Core.Services
                         }
                         var entry = archive.CreateEntry(path);
                         using var entryStream = entry.Open();
-                        await using var fileStream = System.IO.File.OpenRead(subFile.FilePath);
+                        await using var fileStream = System.IO.File.OpenRead(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, subFile.FileId.ToString()));
                         await fileStream.CopyToAsync(entryStream);
                     }
                 }
@@ -90,7 +90,7 @@ namespace CloudStoragePlatform.Core.Services
                 {
                     var entry = archive.CreateEntry(file.FileName);
                     using var entryStream = entry.Open();
-                    await using var fileStream = System.IO.File.OpenRead(file.FilePath);
+                    await using var fileStream = System.IO.File.OpenRead(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, file.FileId.ToString()));
                     await fileStream.CopyToAsync(entryStream);
                 }
             }

@@ -23,7 +23,13 @@ namespace CloudStoragePlatform.Core.Services
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
             _sse = sse;
-            // inject user identifying stuff in constructor and in repository's constructor
+        }
+        public async Task del() 
+        {
+            var f = await _foldersRepository.GetFolderByFolderId(new Guid("9e2abd0a-94ac-43e2-a212-9dc9f7590447"));
+            bool status = await _foldersRepository.DeleteFolder(f);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(status);
         }
         private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
         {

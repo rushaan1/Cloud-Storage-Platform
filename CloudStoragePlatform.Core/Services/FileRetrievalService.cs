@@ -23,8 +23,9 @@ namespace CloudStoragePlatform.Core.Services
 
         public async Task<FileStream> GetFilePreview(string filePath) 
         {
-            await Utilities.UpdateMetadataOpen(await _filesRepository.GetFileByFilePath(filePath), _filesRepository);
-            return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
+            var f = await _filesRepository.GetFileByFilePath(filePath);
+            await Utilities.UpdateMetadataOpen(f, _filesRepository);
+            return new FileStream(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, f.FileId.ToString()), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
         }
 
         public async Task<FileResponse?> GetFileByFileId(Guid id)

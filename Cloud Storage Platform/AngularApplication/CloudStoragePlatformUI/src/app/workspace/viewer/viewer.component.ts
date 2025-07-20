@@ -233,17 +233,11 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
                 for (let i = 0; i<items.length; i++){
                   if (!this.containsId(items[i].fileId)){
-                    // if (!items[i].isTrash && this.extractCleanParentPath(items[i].filePath) == path){
-                    //   this.visibleFiles.push(items[i]);
-                    // }
                     if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
                       allFiles2.push(items[i]);
                     }
                   }
                   else{
-                    // this.visibleFiles = this.visibleFiles.filter((f)=>{
-                    //   return f.fileId != items[i].fileId;
-                    // });
                     if (this.crumbs[0] == "Trash"){
                       allFiles2 = allFiles2.filter(f=>{
                         return f.fileId != items[i].fileId;
@@ -290,6 +284,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
                   else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
                     this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),Utils.processFileModel(data.content[i].res)]);
                   }
+                  console.log("visible ones:");
+                  console.log(this.visibleFiles);
+                  console.log("in state:");
+                  console.log(this.filesState.getFilesInViewer());
                 }
             }
             this.cdRef.detectChanges();

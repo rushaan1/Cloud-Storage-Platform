@@ -11,11 +11,11 @@ namespace CloudStoragePlatform.Core.Services
 {
     public class ThumbnailService
     {
-        public async Task GenerateImageThumbnail(Guid id, string filePath, bool isGIF)
+        public async Task GenerateImageThumbnail(Guid id, string path, bool isGIF)
         {
             await Task.Run(() =>
             {
-                using var image = Image.Load(filePath);
+                using var image = Image.Load(@$"C:\CloudStoragePlatform\home\{id.ToString()}");
                 if (isGIF)
                 {
                     while (image.Frames.Count > 1)
@@ -44,7 +44,7 @@ namespace CloudStoragePlatform.Core.Services
             var startInfo = new ProcessStartInfo
             {
                 FileName = ffmpeg,
-                Arguments = $"-i \"{filePath}\" -i \"{overlayPath}\" -ss 00:00:01 -vframes 1 " +
+                Arguments = $"-i \"{@$"C:\CloudStoragePlatform\home\{id.ToString()}"}\" -i \"{overlayPath}\" -ss 00:00:01 -vframes 1 " +
                             "-filter_complex \"[0:v]scale=200:-1[bg];[bg][1:v]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2\" " +
                             $"\"{outputPath}\" -y",
                 RedirectStandardOutput = false,

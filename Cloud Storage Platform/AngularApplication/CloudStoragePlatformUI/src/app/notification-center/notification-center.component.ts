@@ -403,13 +403,13 @@ export class NotificationCenterComponent implements AfterViewChecked, AfterViewI
 
     const filesBeingMoved = this.filesState.getItemsBeingMoved().filter(f=>{return f.fileType!=FileType.Folder});
     const foldersBeingMoved = this.filesState.getItemsBeingMoved().filter(f=>{return f.fileType==FileType.Folder});
+    this.filesState.setItemsBeingMoved([]);
     forkJoin({
       files: this.foldersService.batchMoveFiles(filesBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs)),
       folders: this.foldersService.batchMoveFolders(foldersBeingMoved.map((f)=>f.fileId), Utils.constructFilePathForApi(destinationCrumbs))
     }).subscribe({
       next: ()=>{
         setTimeout(()=>{this.eventService.emit("addNotif", ["Moved "+(foldersBeingMoved.length+filesBeingMoved.length)+" item(s) to "+decodeURIComponent(this.breadcrumbService.getBreadcrumbs()[this.breadcrumbService.getBreadcrumbs().length-1])+".", 12000]);},800);
-        this.filesState.setItemsBeingMoved([]);
       }
     });
   }

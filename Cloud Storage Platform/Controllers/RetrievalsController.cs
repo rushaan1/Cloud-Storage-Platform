@@ -29,7 +29,7 @@ namespace Cloud_Storage_Platform.Controllers
         public async Task<IActionResult> GetFileForPreview(string filePath)
         {
             // TODO After Azure integration ensure file being opened's metadata is being updated
-
+            // BUT WAIT A MIN IT'S ALREADY BEING UPDATED IN THE SERVICE BEING CALLED erm what the sigma
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
             var mimeType = extension switch
             {
@@ -157,10 +157,6 @@ namespace Cloud_Storage_Platform.Controllers
         public async Task<ActionResult<BulkResponse>> GetAllFoldersInHomeFolder(SortOrderOptions sortOrder = SortOrderOptions.DATEADDED_ASCENDING)
         {
             (List<FolderResponse> folders, List<FileResponse> files) res = await _retrievalService.GetAllInHome(sortOrder);
-            if (res.folders.Count == 0 && res.files.Count == 0)
-            {
-                return NotFound();
-            }
             return new BulkResponse { folders = res.folders, files = res.files };
         }
 

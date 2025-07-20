@@ -19,6 +19,7 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
+        public static string PHYSICAL_STORAGE_PATH = "C:\\CloudStoragePlatform\\home";
         private readonly SSE _sse;
 
         public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse)
@@ -77,81 +78,80 @@ namespace CloudStoragePlatform.Core.Services
         {
             string parentFolderPath = Utilities.ReplaceLastOccurance(fileAddRequest.FilePath, @"\" + fileAddRequest.FileName, "");
             File? file = null;
-            if (Directory.Exists(parentFolderPath))
+            bool duplicate = (await _filesRepository.GetFileByFilePath(fileAddRequest.FilePath)) != null;
+            if (duplicate)
             {
-                if (System.IO.File.Exists(fileAddRequest.FilePath))
-                {
-                    throw new DuplicateFileException();
-                }
-                Metadata metadata = new Metadata()
-                {
-                    MetadataId = Guid.NewGuid(),
-                    RenameCount = 0,
-                    MoveCount = 0,
-                    OpenCount = 0,
-                    ShareCount = 0
-                };
-                Sharing sharing = new Sharing()
-                {
-                    SharingId = Guid.NewGuid(),
-                };
-
-                string extension = fileAddRequest.FileName.Split('.').Last().ToLower();
-                FileType fileType = extension switch
-                {
-                    "jpg" or "jpeg" or "png" or "webp" => FileType.Image,
-                    "mp3" or "wav" => FileType.Audio,
-                    "gif" => FileType.GIF,
-                    "mp4" or "avi" => FileType.Video,
-                    "pdf" or "doc" or "docx" or "txt" => FileType.Document,
-                    _ => FileType.Document
-                };
-
-                Folder? parent = await _foldersRepository.GetFolderByFolderPath(parentFolderPath);
-                if (fileAddRequest.FileName.Contains("\\"))
-                {
-                    // This is a very rare exceptional edge case as Linux allows file names to have \
-                    string[] filesInParent = (string[])parent!.Files.Select((f) => { return f.FileName; });
-                    string newName = Utilities.FindUniqueName(filesInParent, fileAddRequest.FileName.Replace("\\", "-"), true);
-                    fileAddRequest.FilePath = Utilities.ReplaceLastOccurance(fileAddRequest.FilePath, fileAddRequest.FileName, newName);
-                    fileAddRequest.FileName = newName;
-                }
-
-                
-                file = new File()
-                {
-                    FileId = Guid.NewGuid(),
-                    FileName = fileAddRequest.FileName,
-                    FilePath = fileAddRequest.FilePath,
-                    ParentFolder = parent,
-                    Metadata = metadata,
-                    Sharing = sharing,
-                    CreationDate = DateTime.Now,
-                    FileType = fileType
-                };
-
-                using (FileStream fs = new FileStream(file.FilePath, FileMode.Create, FileAccess.Write))
-                {
-                    await stream.CopyToAsync(fs);
-                }
-                float fileSizeInMB = (float)Math.Round(GetFileSizeInMB(file.FilePath), 2);
-                file.Size = fileSizeInMB;
-
-                metadata.File = file;
-                sharing.File = file;
-                await _filesRepository.AddFile(file);
-                
-                if (parent != null)
-                {
-                    parent.Files.Add(file);
-                    await _foldersRepository.UpdateFolder(parent, false, false, false, false, false, true);
-                    await UpdateFolderSizesOnAdd(parent, fileSizeInMB);
-                }
+                throw new DuplicateFileException();
             }
-            else
+            Folder? parent = await _foldersRepository.GetFolderByFolderPath(parentFolderPath);
+            if (parent == null) 
             {
                 throw new ArgumentException();
             }
+            Metadata metadata = new Metadata()
+            {
+                MetadataId = Guid.NewGuid(),
+                RenameCount = 0,
+                MoveCount = 0,
+                OpenCount = 0,
+                ShareCount = 0
+            };
+            Sharing sharing = new Sharing()
+            {
+                SharingId = Guid.NewGuid(),
+            };
+
+            string extension = fileAddRequest.FileName.Split('.').Last().ToLower();
+            FileType fileType = extension switch
+            {
+                "jpg" or "jpeg" or "png" or "webp" => FileType.Image,
+                "mp3" or "wav" => FileType.Audio,
+                "gif" => FileType.GIF,
+                "mp4" or "avi" => FileType.Video,
+                "pdf" or "doc" or "docx" or "txt" => FileType.Document,
+                _ => FileType.Document
+            };
+
+            if (fileAddRequest.FileName.Contains("\\"))
+            {
+                // This is a very rare exceptional edge case as Linux allows file names to have \
+                string[] filesInParent = (string[])parent!.Files.Select((f) => { return f.FileName; });
+                string newName = Utilities.FindUniqueName(filesInParent, fileAddRequest.FileName.Replace("\\", "-"), true);
+                fileAddRequest.FilePath = Utilities.ReplaceLastOccurance(fileAddRequest.FilePath, fileAddRequest.FileName, newName);
+                fileAddRequest.FileName = newName;
+            }
+
+
+            file = new File()
+            {
+                FileId = Guid.NewGuid(),
+                FileName = fileAddRequest.FileName,
+                FilePath = fileAddRequest.FilePath,
+                ParentFolder = parent,
+                Metadata = metadata,
+                Sharing = sharing,
+                CreationDate = DateTime.Now,
+                FileType = fileType
+            };
+
+            using (FileStream fs = new FileStream(Path.Combine(PHYSICAL_STORAGE_PATH, file.FileId.ToString()), FileMode.Create, FileAccess.Write))
+            {
+                await stream.CopyToAsync(fs);
+            }
+            float fileSizeInMB = (float)Math.Round(GetFileSizeInMB(file.FileId.ToString()), 2);
+            file.Size = fileSizeInMB;
+
+            metadata.File = file;
+            sharing.File = file;
+            await _filesRepository.AddFile(file);
+
+            if (parent != null)
+            {
+                parent.Files.Add(file);
+                await _foldersRepository.UpdateFolder(parent, false, false, false, false, false, true);
+                await UpdateFolderSizesOnAdd(parent, fileSizeInMB);
+            }
+
             ThumbnailService thumbnailService = new ThumbnailService();
             if (file.FileType == FileType.Image || file.FileType == FileType.GIF)
             {
@@ -223,7 +223,7 @@ namespace CloudStoragePlatform.Core.Services
             float fileSizeInMB = file.Size;
             
             // Delete the file from the file system
-            System.IO.File.Delete(file.FilePath);
+            System.IO.File.Delete(Path.Combine(PHYSICAL_STORAGE_PATH, file.FileId.ToString()));
             
             // Delete the file from database
             bool result = await _filesRepository.DeleteFile(file);
@@ -244,15 +244,17 @@ namespace CloudStoragePlatform.Core.Services
             {
                 throw new ArgumentException();
             }
-            if (Directory.Exists(newParentPath) == false)
+            // Get new parent folder
+            Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newParentPath);
+            if (newParent == null)
             {
                 throw new DirectoryNotFoundException();
             }
 
             string previousFilePath = file.FilePath;
             string newFilePathOfFile = Path.Combine(newParentPath, file.FileName);
-
-            if (System.IO.File.Exists(newFilePathOfFile))
+            bool duplicate = (await _filesRepository.GetFileByFilePath(newFilePathOfFile)) != null;
+            if (duplicate)
             {
                 throw new DuplicateFileException();
             }
@@ -261,14 +263,10 @@ namespace CloudStoragePlatform.Core.Services
             Folder? oldParent = file.ParentFolder;
             float fileSizeInMB = file.Size;
 
-            // Get new parent folder
-            Folder? newParent = await _foldersRepository.GetFolderByFolderPath(newParentPath);
-
             file.FilePath = newFilePathOfFile;
             file.ParentFolder = newParent!;
 
             File? finalMainFile = await _filesRepository.UpdateFile(file, true, true, false, false);
-            System.IO.File.Move(previousFilePath, newFilePathOfFile);
             await Utilities.UpdateMetadataMove(file, previousFilePath, _filesRepository);
             
             // Update folder sizes if the parent folder changes
@@ -294,7 +292,8 @@ namespace CloudStoragePlatform.Core.Services
             }
 
             string newFilePath = Path.Combine(Path.GetDirectoryName(file.FilePath)!, fileRenameRequest.newName);
-            if (System.IO.File.Exists(newFilePath))
+            bool duplicate = (await _filesRepository.GetFileByFilePath(newFilePath)) != null;
+            if (duplicate)
             {
                 throw new DuplicateFileException();
             }
@@ -305,13 +304,12 @@ namespace CloudStoragePlatform.Core.Services
 
             await Utilities.UpdateMetadataRename(file, _filesRepository);
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
-            System.IO.File.Move(oldFilePath, newFilePath);
             return updatedFile!.ToFileResponse();
         }
 
-        private float GetFileSizeInMB(string filePath)
+        private float GetFileSizeInMB(string id)
         {
-            var fileInfo = new System.IO.FileInfo(filePath);
+            var fileInfo = new System.IO.FileInfo(Path.Combine(PHYSICAL_STORAGE_PATH, id));
             return ConvertBytesToMegabytes(fileInfo.Length);
         }
     }

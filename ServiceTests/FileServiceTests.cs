@@ -63,21 +63,18 @@ namespace ServiceTests
         public async Task UploadFile_DuplicateFile()
         {
             string newFileName = _fixture.Create<string>();
-            FileAddRequest? fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(initialPath, newFileName) };
-            Stream stream = CreateNewTestFile(fileAddRequest.FilePath);
+            var fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(initialPath, newFileName) };
+            var stream = new MemoryStream(new byte[] { 0x41, 0x42, 0x43 });
 
-            try
+            // Simulate duplicate file
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(fileAddRequest.FilePath))
+                .ReturnsAsync(new File());
+
+            Func<Task> action = async () =>
             {
-                Func<Task> action = async () =>
-                {
-                    await _filesModificationService.UploadFile(fileAddRequest, stream);
-                };
-                await action.Should().ThrowAsync<DuplicateFileException>();
-            }
-            finally
-            {
-                System.IO.File.Delete(fileAddRequest.FilePath);
-            }
+                await _filesModificationService.UploadFile(fileAddRequest, stream);
+            };
+            await action.Should().ThrowAsync<DuplicateFileException>();
         }
 
 
@@ -85,13 +82,18 @@ namespace ServiceTests
         public async Task UploadFile_InvalidAddRequestPath()
         {
             string newFileName = _fixture.Create<string>();
-            FileAddRequest? fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(_fixture.Create<string>(), newFileName) };
+            var fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(_fixture.Create<string>(), newFileName) };
+
+            // Simulate parent not found
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync((Folder)null!);
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(It.IsAny<string>()))
+                .ReturnsAsync((File)null!);
 
             Func<Task> action = async () =>
             {
                 await _filesModificationService.UploadFile(fileAddRequest, new MemoryStream());
             };
-
             await action.Should().ThrowAsync<ArgumentException>();
         }
 
@@ -99,25 +101,26 @@ namespace ServiceTests
         public async Task UploadFile_CorrectDetails()
         {
             string newFileName = _fixture.Create<string>();
-            FileAddRequest? fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(initialPath, newFileName) };
-            
-            File file = new File() { 
-                FileName = fileAddRequest.FileName, 
-                FilePath = fileAddRequest.FilePath
+            var fileAddRequest = new FileAddRequest() { FileName = newFileName, FilePath = Path.Combine(initialPath, newFileName) };
+            var parentFolder = new Folder { FolderPath = initialPath, Files = new List<File>() };
+            var file = new File() {
+                FileName = fileAddRequest.FileName,
+                FilePath = fileAddRequest.FilePath,
+                ParentFolder = parentFolder
             };
-
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(fileAddRequest.FilePath))
+                .ReturnsAsync((File)null!);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.Is<string>(p => p == initialPath)))
+                .ReturnsAsync(parentFolder);
             _filesRepositoryMock.Setup(f => f.AddFile(It.IsAny<File>()))
                 .ReturnsAsync(file);
-            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(It.IsAny<string>()))
-                .ReturnsAsync(new Folder());
+            _foldersRepositoryMock.Setup(f => f.UpdateFolder(It.IsAny<Folder>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(parentFolder);
 
-            FileResponse fileResponse = await _filesModificationService.UploadFile(fileAddRequest, CreateNewTestFile(Path.Combine(initialPath, "temp")));
-            bool fileExists = System.IO.File.Exists(fileResponse.FilePath);
-
+            var fileResponse = await _filesModificationService.UploadFile(fileAddRequest, new MemoryStream(new byte[] { 0x41, 0x42, 0x43 }));
             fileResponse.FileId.Should().NotBeEmpty();
             fileResponse.FileName.Should().Be(file.FileName);
             fileResponse.FilePath.Should().Be(file.FilePath);
-            fileExists.Should().BeTrue();
         }
         #endregion
 
@@ -145,32 +148,23 @@ namespace ServiceTests
             string newFileName = _fixture.Create<string>();
             string pathOfExistingFileWithNewFileName = Path.Combine(initialPath, newFileName);
 
-
-
             string fileToBeRenamedsName = _fixture.Create<string>();
             string fileToBeRenamedsPath = Path.Combine(initialPath, fileToBeRenamedsName);
 
-            RenameRequest renameRequest = _fixture.Build<RenameRequest>().With(frr => frr.newName, newFileName).Create();
+            var renameRequest = _fixture.Build<RenameRequest>().With(frr => frr.newName, newFileName).Create();
 
-            File fileToBeRenamed = new File() { FileId = renameRequest.id, FileName = fileToBeRenamedsName, FilePath = fileToBeRenamedsPath };
-
-            CreateNewTestFile(pathOfExistingFileWithNewFileName);
+            var fileToBeRenamed = new File() { FileId = renameRequest.id, FileName = fileToBeRenamedsName, FilePath = fileToBeRenamedsPath };
 
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(fileToBeRenamed);
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(pathOfExistingFileWithNewFileName))
+                .ReturnsAsync(new File());
 
-            try
+            Func<Task> action = async () =>
             {
-                Func<Task> action = async () =>
-                {
-                    await _filesModificationService.RenameFile(renameRequest);
-                };
-                await action.Should().ThrowAsync<DuplicateFileException>();
-            }
-            finally
-            {
-                System.IO.File.Delete(pathOfExistingFileWithNewFileName);
-            }
+                await _filesModificationService.RenameFile(renameRequest);
+            };
+            await action.Should().ThrowAsync<DuplicateFileException>();
         }
 
         [Fact]
@@ -180,30 +174,22 @@ namespace ServiceTests
             string fileName = _fixture.Create<string>();
             string filePath = Path.Combine(initialPath, fileName);
 
-            RenameRequest renameRequest = _fixture.Create<RenameRequest>();// IF ERROR COMES HERE REGARDING INVALID DIRECTORY NAME IT MIGHT BE BECAUSE FIXTURE ISN'T RESPECTING THE CUSTOMIZATION OF STRING GENERATION WHEN GENERATING STRING PROPERTIES OF OBJECT
-
-            File file = new File() { FileId = renameRequest.id, FileName = fileName, FilePath = filePath };
+            var renameRequest = _fixture.Create<RenameRequest>();
+            var file = new File() { FileId = renameRequest.id, FileName = fileName, FilePath = filePath };
             Utilities.AttachMetadataForTesting(_fixture, null, file);
-            File updated = new File() { FileId = renameRequest.id, FileName = fileName, FilePath = filePath };
-            updated.FileName = renameRequest.newName;
-            updated.FilePath = file.FilePath.Replace(file.FileName, renameRequest.newName);
-            CreateNewTestFile(filePath);
-
+            var updated = new File() { FileId = renameRequest.id, FileName = renameRequest.newName, FilePath = filePath.Replace(fileName, renameRequest.newName) };
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(file);
-
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(It.Is<string>(p => p == Path.Combine(Path.GetDirectoryName(filePath)!, renameRequest.newName))))
+                .ReturnsAsync((File)null!);
             _filesRepositoryMock.Setup(f => f.UpdateFile(It.IsAny<File>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
-
-            FileResponse response = await _filesModificationService.RenameFile(renameRequest);
-
+            //Act
+            var response = await _filesModificationService.RenameFile(renameRequest);
             //Assert
-            bool folderExists = System.IO.File.Exists(Path.Combine(initialPath, renameRequest.newName));
             response.FileId.Should().Be(renameRequest.id);
             response.FileName.Should().Be(renameRequest.newName);
             response.FilePath.Should().Be(updated.FilePath);
-            folderExists.Should().BeTrue();
-            System.IO.File.Delete(response.FilePath!);
         }
         #endregion
 
@@ -264,28 +250,20 @@ namespace ServiceTests
             Guid guid = _fixture.Create<Guid>();
             string fileName = _fixture.Create<string>();
             string filePath = Path.Combine(initialPath, fileName);
-            File file = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
-            CreateNewTestFile(file.FilePath);
-
+            var file = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
             string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
             string newPathForFile = Path.Combine(destinationDirectoryPath, fileName);
-            Directory.CreateDirectory(destinationDirectoryPath);
-
+            var duplicate = new File() { FileId = Guid.NewGuid(), FileName = fileName, FilePath = newPathForFile };
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(file);
-
-            //creating duplicate directory
-            CreateNewTestFile(newPathForFile);
-
-
-            //Act
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(destinationDirectoryPath))
+                .ReturnsAsync(new Folder());
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(newPathForFile))
+                .ReturnsAsync(duplicate);
             Func<Task> action = async () =>
             {
                 await _filesModificationService.MoveFile(guid, destinationDirectoryPath);
             };
-
-
-            //Assert
             await action.Should().ThrowAsync<DuplicateFileException>();
         }
 
@@ -303,6 +281,9 @@ namespace ServiceTests
 
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(file);
+
+            _foldersRepositoryMock.Setup(fo => fo.GetFolderByFolderPath(It.IsAny<string>()))
+                .ReturnsAsync(new Folder());
 
             _filesRepositoryMock.Setup(f => f.GetFileByFilePath(It.IsAny<string>()))
                 .ReturnsAsync(file);
@@ -329,36 +310,26 @@ namespace ServiceTests
             Guid guid = _fixture.Create<Guid>();
             string fileName = _fixture.Create<string>();
             string filePath = Path.Combine(initialPath, fileName);
-
-            File file = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
-            
+            var file = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
             Utilities.AttachMetadataForTesting(_fixture, null, file);
-            
-            CreateNewTestFile(filePath);
-
             string destinationDirectoryPath = Path.Combine(initialPath, _fixture.Create<string>());
             string newPathForFile = Path.Combine(destinationDirectoryPath, fileName);
-            Directory.CreateDirectory(destinationDirectoryPath);
-
-            File updated = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
-            updated.FilePath = newPathForFile;
-
+            var updated = new File() { FileId = guid, FileName = fileName, FilePath = newPathForFile };
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(file);
+            _foldersRepositoryMock.Setup(f => f.GetFolderByFolderPath(destinationDirectoryPath))
+                .ReturnsAsync(new Folder());
+            _filesRepositoryMock.Setup(f => f.GetFileByFilePath(newPathForFile))
+                .ReturnsAsync((File)null!);
             _filesRepositoryMock.Setup(f => f.UpdateFile(It.IsAny<File>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(updated);
-
             //Act
-            FileResponse response = await _filesModificationService.MoveFile(guid, destinationDirectoryPath);
-
-
+            var response = await _filesModificationService.MoveFile(guid, destinationDirectoryPath);
             //Assert
-            bool fileExists = System.IO.File.Exists(newPathForFile);
             response.Should().NotBeNull();
             response.FileId.Should().Be(guid);
             response.FileName.Should().Be(fileName);
             response.FilePath.Should().Be(newPathForFile);
-            fileExists.Should().BeTrue();
         }
         #endregion
 
@@ -528,28 +499,15 @@ namespace ServiceTests
             Guid guid = _fixture.Create<Guid>();
             string fileName = _fixture.Create<string>();
             string filePath = Path.Combine(initialPath, fileName);
-            File file = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
-
+            var file = new File() { FileId = guid, FileName = fileName, FilePath = filePath };
             _filesRepositoryMock.Setup(f => f.GetFileByFileId(It.IsAny<Guid>()))
                 .ReturnsAsync(file);
             _filesRepositoryMock.Setup(f => f.DeleteFile(It.IsAny<File>()))
                 .ReturnsAsync(true);
-
-            CreateNewTestFile(filePath);
-
-            try
-            {
-                //Act
-                bool deleted = await _filesModificationService.DeleteFile(guid);
-
-                //Assert
-                deleted.Should().BeTrue();
-                Directory.EnumerateDirectories(initialPath).Should().BeEmpty();
-            }
-            catch (Exception)
-            {
-                System.IO.File.Delete(filePath);
-            }
+            //Act
+            bool deleted = await _filesModificationService.DeleteFile(guid);
+            //Assert
+            deleted.Should().BeTrue();
         }
         #endregion
 
