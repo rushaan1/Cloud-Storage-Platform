@@ -10,13 +10,14 @@ namespace CloudStoragePlatform.Core
 {
     public class SSE
     {
-        private readonly List<HttpResponse> _clients = new(); 
+        // Now stores (HttpResponse, Guid userId)
+        private readonly List<(HttpResponse Response, Guid UserId)> _clients = new();
 
-        public void AddClient(HttpResponse response)
+        public void AddClient(HttpResponse response, Guid userId)
         {
             lock (_clients)
             {
-                _clients.Add(response);
+                _clients.Add((response, userId));
             }
         }
 
@@ -24,17 +25,19 @@ namespace CloudStoragePlatform.Core
         {
             lock (_clients)
             {
-                _clients.Remove(response);
+                _clients.RemoveAll(c => c.Response == response);
             }
         }
 
-        public async Task SendEventAsync(string eventType, object data)
+        // Only send to clients matching userId
+        public async Task SendEventAsync(string eventType, object data, Guid userId)
         {
             var json = JsonSerializer.Serialize(
-                new 
-                { eventType = eventType,
+                new
+                {
+                    eventType = eventType,
                     content = data
-                }, 
+                },
             new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -44,27 +47,28 @@ namespace CloudStoragePlatform.Core
             {
                 _clients.RemoveAll(client =>
                 {
-                    return client.HttpContext.RequestAborted.IsCancellationRequested;
+                    return client.Response.HttpContext.RequestAborted.IsCancellationRequested;
                 });
             }
 
-            var tasks = _clients.Select(async client =>
-            {
-                try
+            var tasks = _clients
+                .Where(client => client.UserId == userId)
+                .Select(async client =>
                 {
-                    await client.WriteAsync("data: "+json+"\n\n");
-                    await client.Body.FlushAsync();
-                }
-                catch
-                {
-                    RemoveClient(client);
-                }
-            });
+                    try
+                    {
+                        await client.Response.WriteAsync("data: " + json + "\n\n");
+                        await client.Response.Body.FlushAsync();
+                    }
+                    catch
+                    {
+                        RemoveClient(client.Response);
+                    }
+                });
 
-            Console.WriteLine("SSE subscribed by "+_clients.Count+" clients.");
+            Console.WriteLine($"SSE: {tasks.Count()} clients for user {userId}.");
 
             await Task.WhenAll(tasks);
         }
     }
-
 }

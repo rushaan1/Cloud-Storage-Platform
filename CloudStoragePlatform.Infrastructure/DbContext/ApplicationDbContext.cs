@@ -78,15 +78,26 @@ namespace CloudStoragePlatform.Infrastructure.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            modelBuilder.Entity<Folder>().HasData(new Folder()
-            {
-                FolderId = new Guid("9E2ABD0A-94AC-43E2-A212-9DC9F7590447"),
-                FolderName = "home",
-                FolderPath = @"C:\CloudStoragePlatform\home",
-                CreationDate = DateTime.Now,
-                IsFavorite = false,
-                IsTrash = false
-            });
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Folders)
+                .WithOne(f => f.User)
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Files)
+                .WithOne(f => f.User)
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.MetaDatasets)
+                .WithOne(m => m.User)
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Shares)
+                .WithOne(f => f.User)
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

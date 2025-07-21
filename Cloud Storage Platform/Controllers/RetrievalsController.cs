@@ -1,4 +1,5 @@
 ﻿using Cloud_Storage_Platform.CustomModelBinders;
+using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.ServiceContracts;
@@ -8,6 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Cloud_Storage_Platform.Controllers
 {
+    [TypeFilter(typeof(IdentifyUser))]
     [Route("api/[controller]")]
     [ApiController]
     public class RetrievalsController : ControllerBase

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CloudStoragePlatform.Core.Domain.IdentityEntites;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public string? ShareLinkUrl { get; set; }
         public DateTime? ShareLinkExpiry { get; set; } 
         public int? CurrentShareLinkTimesSeen { get; set; } 
-        public DateTime? ShareLinkCreateDate { get; set; } 
+        public DateTime? ShareLinkCreateDate { get; set; }
+        public virtual ApplicationUser User { get; set; }
+        public Guid UserId { get; set; }
     }
 }

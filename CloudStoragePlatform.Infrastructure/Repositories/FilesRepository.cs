@@ -1,5 +1,7 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.IdentityEntites;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
+using CloudStoragePlatform.Core.Services;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,13 +15,19 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
     public class FilesRepository : IFilesRepository
     {
         private readonly ApplicationDbContext _db;
-        public FilesRepository(ApplicationDbContext db)
+        private readonly UserIdentification _uIdentification;
+        private ApplicationUser? _user => _uIdentification.User;
+        public FilesRepository(UserIdentification uIdentification, ApplicationDbContext db)
         {
             _db = db;
+            _uIdentification = uIdentification;
         }
 
         public async Task<Core.Domain.Entities.File> AddFile(Core.Domain.Entities.File file)
         {
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            file.UserId = _user.Id;
+            file.User = _user;
             _db.Files.Add(file);
             await _db.SaveChangesAsync();
             return file;
@@ -27,28 +35,33 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
 
         public async Task<List<Core.Domain.Entities.File>> GetAllFiles()
         {
-            return await _db.Files.ToListAsync();
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Files.Where(f => f.UserId == _user.Id).ToListAsync();
         }
 
         public async Task<Core.Domain.Entities.File?> GetFileByFileId(Guid id)
         {
-            return await _db.Files.FirstOrDefaultAsync(f => f.FileId == id);
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Files.FirstOrDefaultAsync(f => f.FileId == id && f.UserId == _user.Id);
         }
 
         public async Task<Core.Domain.Entities.File?> GetFileByFilePath(string path)
         {
-            return await _db.Files.FirstOrDefaultAsync(f => f.FilePath == path);
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Files.FirstOrDefaultAsync(f => f.FilePath == path && f.UserId == _user.Id);
         }
 
         public async Task<List<Core.Domain.Entities.File>> GetFilteredFiles(Func<Core.Domain.Entities.File, bool> predicate)
         {
-            return _db.Files.Where(predicate).ToList();
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            // Only files belonging to the user, then apply predicate in memory
+            return await Task.Run(() => _db.Files.Where(f => f.UserId == _user.Id).AsEnumerable().Where(predicate).ToList());
         }
-
 
         public async Task<Core.Domain.Entities.File?> UpdateFile(Core.Domain.Entities.File file, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing)
         {
-            Core.Domain.Entities.File? matchingFile = await _db.Files.FirstOrDefaultAsync(f => f.FileId == file.FileId);
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            Core.Domain.Entities.File? matchingFile = await _db.Files.FirstOrDefaultAsync(f => f.FileId == file.FileId && f.UserId == _user.Id);
             if (matchingFile == null)
             {
                 return null;
@@ -86,9 +99,11 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             return matchingFile;
         }
 
-
         public async Task<bool> DeleteFile(Core.Domain.Entities.File file)
         {
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            if (file.UserId != _user.Id) return false;
+
             _db.Shares.Remove(file.Sharing);
             _db.MetaDatasets.Remove(file.Metadata);
 

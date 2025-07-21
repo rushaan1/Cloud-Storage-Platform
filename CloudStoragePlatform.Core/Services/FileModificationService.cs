@@ -19,15 +19,19 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
-        public static string PHYSICAL_STORAGE_PATH = "C:\\CloudStoragePlatform\\home";
+        public static string PHYSICAL_STORAGE_PATH;
         private readonly SSE _sse;
+        private readonly UserIdentification _ui;
 
-        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse)
+        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui)
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
             _sse = sse;
-            // inject user identifying stuff in constructor and in repository's constructor
+
+            // TODO MAY BE PROBLEMATIC WHEN ADDING SHARE FEATURE
+            PHYSICAL_STORAGE_PATH = "C:\\CloudStoragePlatform\\home\\" + ui.User.Id.ToString();
+            _ui = ui;
         }
 
         private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
@@ -40,7 +44,7 @@ namespace CloudStoragePlatform.Core.Services
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             
             // Send SSE notification about folder size update
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -59,7 +63,7 @@ namespace CloudStoragePlatform.Core.Services
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             
             // Send SSE notification about folder size update
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)

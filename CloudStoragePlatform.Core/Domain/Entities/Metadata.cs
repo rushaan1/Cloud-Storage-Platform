@@ -1,4 +1,5 @@
-﻿using CloudStoragePlatform.Core.DTO;
+﻿using CloudStoragePlatform.Core.Domain.IdentityEntites;
+using CloudStoragePlatform.Core.DTO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -26,6 +27,9 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public int OpenCount { get; set; } = 0;
 
         public int ShareCount { get; set; } = 0;
+        public virtual ApplicationUser User { get; set; }
+        public Guid UserId { get; set; }
+
         /// <summary>
         /// in MegaBytes
         /// </summary>

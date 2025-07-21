@@ -3,6 +3,7 @@ using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Exceptions;
 using CloudStoragePlatform.Core.ServiceContracts;
+using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
@@ -18,15 +19,19 @@ namespace CloudStoragePlatform.Core.Services
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
         private readonly SSE _sse;
-        public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse) 
+        private readonly UserIdentification _ui;
+        private readonly IConfiguration _config;
+        public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui, IConfiguration config) 
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
             _sse = sse;
+            _ui = ui;
+            _config = config;
         }
         public async Task del() 
         {
-            var f = await _foldersRepository.GetFolderByFolderId(new Guid("9e2abd0a-94ac-43e2-a212-9dc9f7590447"));
+            var f = await _foldersRepository.GetFolderByFolderId(new Guid("10273c11-8ec5-4e95-b51e-2d7b2b819d83"));
             bool status = await _foldersRepository.DeleteFolder(f);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(status);
@@ -41,7 +46,7 @@ namespace CloudStoragePlatform.Core.Services
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             
             // Send SSE notification about folder size update
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -60,7 +65,7 @@ namespace CloudStoragePlatform.Core.Services
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             
             // Send SSE notification about folder size update
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
             
             // Recursively update parent folders
             if (folder.ParentFolder != null)
@@ -90,7 +95,7 @@ namespace CloudStoragePlatform.Core.Services
             await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
             
             // Send SSE notification for updated folder size
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size });
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
             
             return folder.Size;
         }
@@ -153,6 +158,13 @@ namespace CloudStoragePlatform.Core.Services
                 };
                 metadata.Folder = folder;
                 sharing.Folder = folder;
+                if (folderAddRequest.FolderPath == Path.Combine(_config["InitialPathForStorage"], "home")) 
+                {
+                    metadata.Folder = null;
+                    sharing.Folder = null;
+                    folder.Sharing = null;
+                    folder.Metadata = null;
+                }
                 await _foldersRepository.AddFolder(folder);
                 if (parent != null)
                 {

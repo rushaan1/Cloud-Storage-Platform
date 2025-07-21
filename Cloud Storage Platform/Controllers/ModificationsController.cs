@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
+using CloudStoragePlatform.Core.Services;
 
 namespace Cloud_Storage_Platform.Controllers
 {
+    [TypeFilter(typeof(IdentifyUser))]
     [Route("api/[controller]")]
     [ApiController]
     public class ModificationsController : ControllerBase
@@ -19,13 +21,15 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IConfiguration _configuration;
         private readonly IFilesModificationService _filesModificationService;
         private readonly SSE _sse;
+        private readonly UserIdentification _userIdentification;
 
-        public ModificationsController(IFoldersModificationService foldersModificationService, IConfiguration configuration, SSE sse, IFilesModificationService filesModificationService)
+        public ModificationsController(IFoldersModificationService foldersModificationService, IConfiguration configuration, SSE sse, IFilesModificationService filesModificationService, UserIdentification userIdentification)
         {
             _foldersModificationService = foldersModificationService;
             _configuration = configuration;
             _sse = sse;
             _filesModificationService = filesModificationService;
+            _userIdentification = userIdentification;
         }
 
         [HttpPost]
@@ -35,7 +39,7 @@ namespace Cloud_Storage_Platform.Controllers
             folderAddRequest.FolderPath = _configuration["InitialPathForStorage"] + Uri.UnescapeDataString(folderAddRequest.FolderPath);
             FolderResponse folderResponse = await _foldersModificationService.AddFolder(folderAddRequest);
             var res = new List<FolderResponse>() { folderResponse };
-            await _sse.SendEventAsync("added", new { res });
+            await _sse.SendEventAsync("added", new { res }, _userIdentification.User.Id);
             return folderResponse;
         }
 
@@ -100,7 +104,7 @@ namespace Cloud_Storage_Platform.Controllers
 
                 section = await multipartReader.ReadNextSectionAsync();
             }
-            await _sse.SendEventAsync("added", new { res });
+            await _sse.SendEventAsync("added", new { res }, _userIdentification.User.Id);
             return res;
         }
 
@@ -119,7 +123,7 @@ namespace Cloud_Storage_Platform.Controllers
                 var response = await _filesModificationService.RenameFile(renameReq);
                 newName = response.FileName;
             }
-            await _sse.SendEventAsync("renamed", new { id = renameReq.id, val = newName });
+            await _sse.SendEventAsync("renamed", new { id = renameReq.id, val = newName }, _userIdentification.User.Id);
             return NoContent();
         }
 
@@ -130,12 +134,12 @@ namespace Cloud_Storage_Platform.Controllers
             if (isFolder)
             {
                 var folderResponse = await _foldersModificationService.AddOrRemoveFavorite(id);
-                await _sse.SendEventAsync("favorite_updated", new { id = folderResponse.FolderId, res = folderResponse });
+                await _sse.SendEventAsync("favorite_updated", new { id = folderResponse.FolderId, res = folderResponse }, _userIdentification.User.Id);
             }
             else
             {
                 var fileResponse = await _filesModificationService.AddOrRemoveFavorite(id);
-                await _sse.SendEventAsync("favorite_updated", new { id = fileResponse.FileId, res = fileResponse });
+                await _sse.SendEventAsync("favorite_updated", new { id = fileResponse.FileId, res = fileResponse }, _userIdentification.User.Id);
             }
             return NoContent();
         }
@@ -167,7 +171,7 @@ namespace Cloud_Storage_Platform.Controllers
                     updatedFiles.Add(response);
                 }
             }
-            await _sse.SendEventAsync("trash_updated", new { updatedFolders, updatedFiles });
+            await _sse.SendEventAsync("trash_updated", new { updatedFolders, updatedFiles }, _userIdentification.User.Id);
             return NoContent();
         }
 
@@ -186,7 +190,7 @@ namespace Cloud_Storage_Platform.Controllers
                     FolderPath = fullpath
                 }));
             }
-            await _sse.SendEventAsync("added", new { res });
+            await _sse.SendEventAsync("added", new { res }, _userIdentification.User.Id);
             return NoContent();
         }
 
@@ -212,7 +216,7 @@ namespace Cloud_Storage_Platform.Controllers
                     }
                 }
             }
-            await _sse.SendEventAsync("deleted", new { ids });
+            await _sse.SendEventAsync("deleted", new { ids }, _userIdentification.User.Id);
             return (deleted == ids.Count) ? NoContent() : StatusCode(500);
         }
 
@@ -248,7 +252,7 @@ namespace Cloud_Storage_Platform.Controllers
                     });
                 }
             }
-            await _sse.SendEventAsync("moved", movedList);
+            await _sse.SendEventAsync("moved", movedList, _userIdentification.User.Id);
             return NoContent();
         }
 
@@ -267,8 +271,8 @@ namespace Cloud_Storage_Platform.Controllers
         [AllowAnonymous]
         public async Task ServerSentEvents([FromQuery] string token)
         {
-            var userId = SseTokenStore.GetAndRemove(token);
-            if (userId == null)
+            var userIdStr = SseTokenStore.GetAndRemove(token);
+            if (userIdStr == null || !Guid.TryParse(userIdStr, out Guid userId))
             {
                 Response.StatusCode = 403;
                 return;
@@ -277,7 +281,7 @@ namespace Cloud_Storage_Platform.Controllers
             Response.Headers.Add("Content-Type", "text/event-stream");
             Response.Headers.Add("Cache-Control", "no-cache");
 
-            _sse.AddClient(Response);
+            _sse.AddClient(Response, userId);
 
             try
             {

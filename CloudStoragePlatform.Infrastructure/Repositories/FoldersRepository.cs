@@ -1,6 +1,8 @@
 ﻿using CloudStoragePlatform.Core.Domain.Entities;
+using CloudStoragePlatform.Core.Domain.IdentityEntites;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
 using CloudStoragePlatform.Core.DTO;
+using CloudStoragePlatform.Core.Services;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,20 +17,18 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
     public class FoldersRepository : IFoldersRepository
     {
         private readonly ApplicationDbContext _db;
-        public FoldersRepository(ApplicationDbContext db) 
+        private readonly UserIdentification _uIdentification;
+        private ApplicationUser? _user => _uIdentification.User;
+        public FoldersRepository(UserIdentification uIdentification, ApplicationDbContext db) 
         {
             _db = db;
-
-            // Not remembering sql queries no problem
-
-            // Deleting all folders with metadatsets & sharing except home
-            //List<Folder> folders = _db.Folders.Where(f=>f.FolderName!= "home").ToList();
-            //folders.ForEach(f => DisconnectAndDeleteMetadataAndSharing(f));
-            //folders.ForEach(f => _db.Folders.Remove(f));
-            //_db.SaveChanges();
+            _uIdentification = uIdentification;
         }
         public async Task<Folder> AddFolder(Folder folder) 
         {
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            folder.UserId = _user.Id;
+            folder.User = _user;
             _db.Folders.Add(folder);
             await _db.SaveChangesAsync();
             return folder;
@@ -36,32 +36,39 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
 
         public async Task<List<Folder>> GetAllFolders() 
         {
-            return await _db.Folders.ToListAsync();
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Folders.Where(f => f.UserId == _user.Id).ToListAsync();
         }
 
         public async Task<List<Folder>> GetFilteredFolders(Expression<Func<Folder, bool>> predicate) 
         {
-            return await _db.Folders.Where(predicate).ToListAsync();
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Folders.Where(f => f.UserId == _user.Id).Where(predicate).ToListAsync();
         }
 
         public async Task<List<Folder>> GetFilteredSubFolders(Folder parent, Func<Folder, bool> predicate)
         {
-            return await Task.Run(()=>parent.SubFolders.Where(predicate).ToList());
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            // Only subfolders belonging to the user
+            return await Task.Run(() => parent.SubFolders.Where(f => f.UserId == _user.Id).Where(predicate).ToList());
         }
 
         public async Task<Folder?> GetFolderByFolderId(Guid id) 
         {
-            return await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == id);
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == id && f.UserId == _user.Id);
         }
 
         public async Task<Folder?> GetFolderByFolderPath(string path)
         {
-            return await _db.Folders.FirstOrDefaultAsync(f => f.FolderPath == path);
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            return await _db.Folders.FirstOrDefaultAsync(f => f.FolderPath == path && f.UserId == _user.Id);
         }
 
         public async Task<Folder?> UpdateFolder(Folder folder, bool updateProperties, bool updateParentFolder, bool updateMetadata, bool updateSharing, bool updateSubFolders, bool updateSubFiles) 
         {
-            Folder? matchingFolder = await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == folder.FolderId);
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            Folder? matchingFolder = await _db.Folders.FirstOrDefaultAsync(f => f.FolderId == folder.FolderId && f.UserId == _user.Id);
             if (matchingFolder== null) 
             {
                 return null;
@@ -134,6 +141,10 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
 
         public async Task<bool> DeleteFolder(Folder folder) 
         {
+            if (_user == null) throw new InvalidOperationException("User context is not set.");
+            // Only allow delete if folder belongs to user
+            if (folder.UserId != _user.Id) return false;
+
             if (folder.SubFolders.Any()) 
             {
                 foreach (Folder f in folder.SubFolders.ToList()) 

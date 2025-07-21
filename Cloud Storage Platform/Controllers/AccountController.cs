@@ -1,9 +1,12 @@
 ﻿using Castle.Core.Internal;
+using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.IdentityEntites;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
+using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.DTO.AuthDTO;
 using CloudStoragePlatform.Core.ServiceContracts;
+using CloudStoragePlatform.Core.Services;
 using CloudStoragePlatform.Infrastructure.DbContext;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -25,8 +28,10 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IUserSessionsRepository _userSessionsRepository;
         private readonly IConfiguration _config;
         private readonly IBulkRetrievalService _retrievalService;
+        private readonly IFoldersModificationService _foldersModificationService;
+        private readonly UserIdentification _ui;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService, IFoldersModificationService foldersModificationService, UserIdentification ui)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -34,6 +39,8 @@ namespace Cloud_Storage_Platform.Controllers
             _userSessionsRepository = userSessionsRepository;
             _config = configuration;
             _retrievalService = bulkRetrievalService;
+            _foldersModificationService = foldersModificationService;
+            _ui = ui;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool shouldExpire, bool httponly)
@@ -47,6 +54,18 @@ namespace Cloud_Storage_Platform.Controllers
             };
             if (!shouldExpire) { options.Expires = null; }
             Response.Cookies.Append(name, value, options);
+        }
+
+        private async Task UserStorageLinking(ApplicationUser user) 
+        {
+            _ui.User = user;
+            FolderAddRequest homeReq = new FolderAddRequest()
+            {
+                FolderName = "home",
+                FolderPath = Path.Combine(_config["InitialPathForStorage"], "home")
+            };
+            Directory.CreateDirectory(Path.Combine(_config["InitialPathForStorage"], user.Id.ToString()));
+            await _foldersModificationService.AddFolder(homeReq);
         }
 
         [HttpPost("register")]
@@ -74,6 +93,7 @@ namespace Cloud_Storage_Platform.Controllers
             IdentityResult result = await _userManager.CreateAsync(user, registerDTO.Password);
             if (result.Succeeded)
             {
+                await UserStorageLinking(user);
                 await _signInManager.SignInAsync(user, isPersistent: registerDTO.RememberMe);
 
                 AuthenticationResponse authenticationResponse = await ProcessAfterLogin(user.Email, registerDTO.RememberMe, true, user);
@@ -216,6 +236,7 @@ namespace Cloud_Storage_Platform.Controllers
                 };
 
                 IdentityResult iResult = await _userManager.CreateAsync(createdUser);
+                await UserStorageLinking(createdUser);
                 authenticationResponse = await ProcessAfterLogin(createdUser.Email, true, true, createdUser);
             }
             
@@ -256,6 +277,7 @@ namespace Cloud_Storage_Platform.Controllers
             return Ok();
         }
 
+        [TypeFilter(typeof(IdentifyUser))]
         [HttpGet("account-details-analytics")]
         [Authorize]
         public async Task<IActionResult> GetAccountDetailsAndAnalytics()
