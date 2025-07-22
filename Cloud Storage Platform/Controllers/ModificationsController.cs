@@ -3,16 +3,17 @@ using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.ServiceContracts;
+using CloudStoragePlatform.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
-using CloudStoragePlatform.Core.Services;
+using System.Security.Claims;
 
 namespace Cloud_Storage_Platform.Controllers
 {
-    [TypeFilter(typeof(IdentifyUser))]
+    [ServiceFilter(typeof(IdentifyUser))]
     [Route("api/[controller]")]
     [ApiController]
     public class ModificationsController : ControllerBase
@@ -260,7 +261,7 @@ namespace Cloud_Storage_Platform.Controllers
         public async Task<IActionResult> SSEAuth() 
         {
             var token = Guid.NewGuid().ToString();
-            SseTokenStore.Save(token, User.Identity.Name, TimeSpan.FromMinutes(1));
+            SseTokenStore.Save(token, User.FindFirstValue(ClaimTypes.NameIdentifier), TimeSpan.FromMinutes(1));
 
             return Ok(new { sseToken = token });
         }
@@ -272,7 +273,7 @@ namespace Cloud_Storage_Platform.Controllers
         public async Task ServerSentEvents([FromQuery] string token)
         {
             var userIdStr = SseTokenStore.GetAndRemove(token);
-            if (userIdStr == null || !Guid.TryParse(userIdStr, out Guid userId))
+            if (userIdStr == null)
             {
                 Response.StatusCode = 403;
                 return;
@@ -281,7 +282,7 @@ namespace Cloud_Storage_Platform.Controllers
             Response.Headers.Add("Content-Type", "text/event-stream");
             Response.Headers.Add("Cache-Control", "no-cache");
 
-            _sse.AddClient(Response, userId);
+            _sse.AddClient(Response, new Guid(userIdStr));
 
             try
             {

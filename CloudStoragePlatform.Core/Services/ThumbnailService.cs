@@ -3,6 +3,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,11 +12,19 @@ namespace CloudStoragePlatform.Core.Services
 {
     public class ThumbnailService
     {
-        public async Task GenerateImageThumbnail(Guid id, string path, bool isGIF)
+        private readonly UserIdentification _userIdentification;
+        public ThumbnailService(UserIdentification userIdentification)
         {
+            _userIdentification = userIdentification;
+        }
+
+        public async Task GenerateImageThumbnail(Guid fileId, string path, bool isGIF)
+        {
+            var userId = _userIdentification.User.Id;
+            var filePath = $@"C:\\CloudStoragePlatform\\{userId}\\{fileId}";
             await Task.Run(() =>
             {
-                using var image = Image.Load(@$"C:\CloudStoragePlatform\home\{id.ToString()}");
+                using var image = Image.Load(filePath);
                 if (isGIF)
                 {
                     while (image.Frames.Count > 1)
@@ -31,20 +40,22 @@ namespace CloudStoragePlatform.Core.Services
 
                 using var ms = new MemoryStream();
                 image.SaveAsPng(ms);
-                System.IO.File.WriteAllBytes(@"C:\CloudStoragePlatform\thumbnails\" + id.ToString()+".png", ms.ToArray());
+                System.IO.File.WriteAllBytes($@"C:\\CloudStoragePlatform\\thumbnails\\{fileId}.png", ms.ToArray());
             });
         }
 
-        public async Task GenerateVideoThumbnail(Guid id, string filePath)
+        public async Task GenerateVideoThumbnail(Guid fileId, string filePath)
         {
-            var outputPath = @"C:\CloudStoragePlatform\thumbnails\" + id + ".png";
+            var userId = _userIdentification.User.Id;
+            var inputPath = $@"C:\\CloudStoragePlatform\\{userId}\\{fileId}";
+            var outputPath = $@"C:\\CloudStoragePlatform\\thumbnails\\{fileId}.png";
             var overlayPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "filmframe.png");
             var ffmpeg = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "ffmpeg.exe");
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = ffmpeg,
-                Arguments = $"-i \"{@$"C:\CloudStoragePlatform\home\{id.ToString()}"}\" -i \"{overlayPath}\" -ss 00:00:01 -vframes 1 " +
+                Arguments = $"-i \"{inputPath}\" -i \"{overlayPath}\" -ss 00:00:01 -vframes 1 " +
                             "-filter_complex \"[0:v]scale=200:-1[bg];[bg][1:v]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2\" " +
                             $"\"{outputPath}\" -y",
                 RedirectStandardOutput = false,
@@ -57,20 +68,24 @@ namespace CloudStoragePlatform.Core.Services
             await process.WaitForExitAsync();
         }
 
-
-        public static byte[]? GetThumbnail(Guid id) 
+        public byte[]? GetThumbnail(Guid fileId)
         {
-            if (!File.Exists(@"C:\CloudStoragePlatform\thumbnails\" + id+".png"))
+            var thumbPath = $@"C:\\CloudStoragePlatform\\thumbnails\\{fileId}.png";
+            if (!File.Exists(thumbPath))
             {
                 return null;
             }
-            var bytes = File.ReadAllBytes(@"C:\CloudStoragePlatform\thumbnails\" + id + ".png");
+            var bytes = File.ReadAllBytes(thumbPath);
             return bytes;
         }
 
-        public void DeleteThumbnail(Guid id) 
+        public void DeleteThumbnail(Guid fileId)
         {
-
+            var thumbPath = $@"C:\\CloudStoragePlatform\\thumbnails\\{fileId}.png";
+            if (File.Exists(thumbPath))
+            {
+                File.Delete(thumbPath);
+            }
         }
     }
 }

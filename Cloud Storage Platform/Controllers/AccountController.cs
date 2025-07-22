@@ -277,7 +277,7 @@ namespace Cloud_Storage_Platform.Controllers
             return Ok();
         }
 
-        [TypeFilter(typeof(IdentifyUser))]
+        [ServiceFilter(typeof(IdentifyUser))]
         [HttpGet("account-details-analytics")]
         [Authorize]
         public async Task<IActionResult> GetAccountDetailsAndAnalytics()

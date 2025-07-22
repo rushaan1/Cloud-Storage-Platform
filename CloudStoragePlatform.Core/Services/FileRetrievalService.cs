@@ -15,17 +15,21 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFilesRepository _filesRepository;
         private readonly IConfiguration _configuration;
-        public FileRetrievalService(IFilesRepository filesRepository, IConfiguration configuration)
+        private readonly UserIdentification _userIdentification;
+        private readonly ThumbnailService _thumbnailService;
+        public FileRetrievalService(IFilesRepository filesRepository, IConfiguration configuration, UserIdentification userIdentification, ThumbnailService thumbnailService)
         {
             _filesRepository = filesRepository;
             _configuration = configuration;
+            _userIdentification = userIdentification;
+            _thumbnailService = thumbnailService;
         }
 
         public async Task<FileStream> GetFilePreview(string filePath) 
         {
             var f = await _filesRepository.GetFileByFilePath(filePath);
             await Utilities.UpdateMetadataOpen(f, _filesRepository);
-            return new FileStream(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, f.FileId.ToString()), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
+            return new FileStream(Path.Combine(_userIdentification.PhysicalStoragePath, f.FileId.ToString()), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 64 * 1024, useAsync: true);
         }
 
         public async Task<FileResponse?> GetFileByFileId(Guid id)
@@ -35,7 +39,8 @@ namespace CloudStoragePlatform.Core.Services
             {
                 return null;
             }
-            return file.ToFileResponse();
+            var thumbnail = _thumbnailService.GetThumbnail(file.FileId);
+            return file.ToFileResponse(thumbnail);
         }
 
         public async Task<FileResponse?> GetFileByFilePath(string path)
@@ -45,7 +50,8 @@ namespace CloudStoragePlatform.Core.Services
             {
                 return null;
             }
-            return file.ToFileResponse();
+            var thumbnail = _thumbnailService.GetThumbnail(file.FileId);
+            return file.ToFileResponse(thumbnail);
         }
 
         public async Task<FileOrFolderMetadataResponse> GetMetadata(Guid fileId)

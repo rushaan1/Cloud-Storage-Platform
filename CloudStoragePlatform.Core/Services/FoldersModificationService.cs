@@ -114,12 +114,17 @@ namespace CloudStoragePlatform.Core.Services
 
         public async Task<FolderResponse> AddFolder(FolderAddRequest folderAddRequest)
         {
-            
-            string parentFolderPath = Utilities.ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
+            bool isHomeCreation = folderAddRequest.FolderPath == Path.Combine(_config["InitialPathForStorage"], "home");
+            string parentFolderPath = folderAddRequest.FolderPath;
+            if (!isHomeCreation) 
+            {
+                parentFolderPath = Utilities.ReplaceLastOccurance(folderAddRequest.FolderPath, @"\"+folderAddRequest.FolderName, "");
+            }
+
             Folder? folder = null;
             Folder? parent = await _foldersRepository.GetFolderByFolderPath(parentFolderPath);
             bool duplicate = (await _foldersRepository.GetFolderByFolderPath(folderAddRequest.FolderPath)) != null;
-            if (parent!=null)
+            if (parent!=null || isHomeCreation)
             {
                 if (duplicate)
                 {
@@ -158,7 +163,7 @@ namespace CloudStoragePlatform.Core.Services
                 };
                 metadata.Folder = folder;
                 sharing.Folder = folder;
-                if (folderAddRequest.FolderPath == Path.Combine(_config["InitialPathForStorage"], "home")) 
+                if (isHomeCreation) 
                 {
                     metadata.Folder = null;
                     sharing.Folder = null;

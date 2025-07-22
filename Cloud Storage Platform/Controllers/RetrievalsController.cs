@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Cloud_Storage_Platform.Controllers
 {
-    [TypeFilter(typeof(IdentifyUser))]
+    [ServiceFilter(typeof(IdentifyUser))]
     [Route("api/[controller]")]
     [ApiController]
     public class RetrievalsController : ControllerBase

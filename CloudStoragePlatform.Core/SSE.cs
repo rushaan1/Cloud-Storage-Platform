@@ -65,9 +65,6 @@ namespace CloudStoragePlatform.Core
                         RemoveClient(client.Response);
                     }
                 });
-
-            Console.WriteLine($"SSE: {tasks.Count()} clients for user {userId}.");
-
             await Task.WhenAll(tasks);
         }
     }

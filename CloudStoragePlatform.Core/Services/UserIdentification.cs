@@ -10,5 +10,7 @@ namespace CloudStoragePlatform.Core.Services
     public class UserIdentification
     {
         public ApplicationUser? User { get; set; }
+        public string PhysicalStoragePath => "C:\\CloudStoragePlatform\\" + User.Id.ToString();
+        public UserIdentification() { Console.WriteLine("Instantiated UserIdentification "+ToString()); }
     }
 }

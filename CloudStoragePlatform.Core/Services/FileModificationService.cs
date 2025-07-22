@@ -19,19 +19,17 @@ namespace CloudStoragePlatform.Core.Services
     {
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
-        public static string PHYSICAL_STORAGE_PATH;
         private readonly SSE _sse;
         private readonly UserIdentification _ui;
+        private readonly ThumbnailService _thumbnailService;
 
-        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui)
+        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui, ThumbnailService thumbnailService)
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
             _sse = sse;
-
-            // TODO MAY BE PROBLEMATIC WHEN ADDING SHARE FEATURE
-            PHYSICAL_STORAGE_PATH = "C:\\CloudStoragePlatform\\home\\" + ui.User.Id.ToString();
             _ui = ui;
+            _thumbnailService = thumbnailService;
         }
 
         private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
@@ -138,7 +136,7 @@ namespace CloudStoragePlatform.Core.Services
                 FileType = fileType
             };
 
-            using (FileStream fs = new FileStream(Path.Combine(PHYSICAL_STORAGE_PATH, file.FileId.ToString()), FileMode.Create, FileAccess.Write))
+            using (FileStream fs = new FileStream(Path.Combine(_ui.PhysicalStoragePath, file.FileId.ToString()), FileMode.Create, FileAccess.Write))
             {
                 await stream.CopyToAsync(fs);
             }
@@ -156,16 +154,15 @@ namespace CloudStoragePlatform.Core.Services
                 await UpdateFolderSizesOnAdd(parent, fileSizeInMB);
             }
 
-            ThumbnailService thumbnailService = new ThumbnailService();
             if (file.FileType == FileType.Image || file.FileType == FileType.GIF)
             {
-                await thumbnailService.GenerateImageThumbnail(file.FileId, file.FilePath, file.FileType == FileType.GIF);
+                await _thumbnailService.GenerateImageThumbnail(file.FileId, file.FilePath, file.FileType == FileType.GIF);
             }
             else if (file.FileType == FileType.Video)
             {
-                await thumbnailService.GenerateVideoThumbnail(file.FileId, file.FilePath);
+                await _thumbnailService.GenerateVideoThumbnail(file.FileId, file.FilePath);
             }
-            var response = file.ToFileResponse();
+            var response = file.ToFileResponse(_thumbnailService.GetThumbnail(file.FileId));
             return response;
         }
 
@@ -180,7 +177,7 @@ namespace CloudStoragePlatform.Core.Services
             file.IsFavorite = !file.IsFavorite;
 
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
-            return updatedFile!.ToFileResponse();
+            return updatedFile!.ToFileResponse(_thumbnailService.GetThumbnail(updatedFile.FileId));
         }
 
         public async Task<FileResponse> AddOrRemoveTrash(Guid fileId)
@@ -211,7 +208,7 @@ namespace CloudStoragePlatform.Core.Services
                 await UpdateFolderSizesOnAdd(parentFolder, fileSizeInMB);
             }
             
-            return updatedFile!.ToFileResponse();
+            return updatedFile!.ToFileResponse(_thumbnailService.GetThumbnail(updatedFile.FileId));
         }
 
         public async Task<bool> DeleteFile(Guid fileId)
@@ -227,7 +224,7 @@ namespace CloudStoragePlatform.Core.Services
             float fileSizeInMB = file.Size;
             
             // Delete the file from the file system
-            System.IO.File.Delete(Path.Combine(PHYSICAL_STORAGE_PATH, file.FileId.ToString()));
+            System.IO.File.Delete(Path.Combine(_ui.PhysicalStoragePath, file.FileId.ToString()));
             
             // Delete the file from database
             bool result = await _filesRepository.DeleteFile(file);
@@ -283,7 +280,7 @@ namespace CloudStoragePlatform.Core.Services
                 await UpdateFolderSizesOnAdd(newParent, fileSizeInMB);
             }
             
-            var response = finalMainFile!.ToFileResponse();
+            var response = finalMainFile!.ToFileResponse(_thumbnailService.GetThumbnail(finalMainFile.FileId));
             return response;
         }
 
@@ -308,12 +305,12 @@ namespace CloudStoragePlatform.Core.Services
 
             await Utilities.UpdateMetadataRename(file, _filesRepository);
             var updatedFile = await _filesRepository.UpdateFile(file, true, false, false, false);
-            return updatedFile!.ToFileResponse();
+            return updatedFile!.ToFileResponse(_thumbnailService.GetThumbnail(updatedFile.FileId));
         }
 
         private float GetFileSizeInMB(string id)
         {
-            var fileInfo = new System.IO.FileInfo(Path.Combine(PHYSICAL_STORAGE_PATH, id));
+            var fileInfo = new System.IO.FileInfo(Path.Combine(_ui.PhysicalStoragePath, id));
             return ConvertBytesToMegabytes(fileInfo.Length);
         }
     }

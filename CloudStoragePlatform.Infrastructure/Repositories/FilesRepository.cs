@@ -28,6 +28,16 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             if (_user == null) throw new InvalidOperationException("User context is not set.");
             file.UserId = _user.Id;
             file.User = _user;
+            if (file.Metadata != null)
+            {
+                file.Metadata.User = _user;
+                file.Metadata.UserId = _user.Id;
+            }
+            if (file.Sharing != null)
+            {
+                file.Sharing.User = _user;
+                file.Sharing.UserId = _user.Id;
+            }
             _db.Files.Add(file);
             await _db.SaveChangesAsync();
             return file;

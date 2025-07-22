@@ -24,9 +24,8 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public Guid ParentFolderId { get; set; }
         public virtual Folder ParentFolder { get; set; }
 
-        public FileResponse ToFileResponse()
+        public FileResponse ToFileResponse(byte[]? thumbnail = null)
         {
-            byte[]? bytes = ThumbnailService.GetThumbnail(FileId);
             return new FileResponse()
             {
                 FileId = FileId,
@@ -35,7 +34,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
                 IsFavorite = IsFavorite,
                 IsTrash = IsTrash, 
                 FileType = FileType,
-                Thumbnail = bytes,
+                Thumbnail = thumbnail,
                 Size = Size
             };
         }

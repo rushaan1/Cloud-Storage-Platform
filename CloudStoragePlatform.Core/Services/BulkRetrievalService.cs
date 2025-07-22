@@ -21,11 +21,15 @@ namespace CloudStoragePlatform.Core.Services
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
         private readonly IConfiguration _configuration;
-        public BulkRetrievalService(IFoldersRepository foldersRepository, IConfiguration configuration, IFilesRepository filesRepository)
+        private readonly UserIdentification _userIdentification;
+        private readonly ThumbnailService _thumbnailService;
+        public BulkRetrievalService(IFoldersRepository foldersRepository, IConfiguration configuration, IFilesRepository filesRepository, UserIdentification userIdentification, ThumbnailService thumbnailService)
         {
             _foldersRepository = foldersRepository;
             _configuration = configuration;
             _filesRepository = filesRepository;
+            _userIdentification = userIdentification;
+            _thumbnailService = thumbnailService;
         }
 
         public async Task DownloadFolder(List<Guid> folderIds, List<Guid> fileIds, Stream outputStream)
@@ -51,7 +55,7 @@ namespace CloudStoragePlatform.Core.Services
                 var file = files.First();
                 if (file != null)
                 {
-                    await using var fileStream = System.IO.File.OpenRead(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, file.FileId.ToString()));
+                    await using var fileStream = System.IO.File.OpenRead(Path.Combine(_userIdentification.PhysicalStoragePath, file.FileId.ToString()));
                     await fileStream.CopyToAsync(outputStream);
                 }
                 return;
@@ -82,7 +86,7 @@ namespace CloudStoragePlatform.Core.Services
                         }
                         var entry = archive.CreateEntry(path);
                         using var entryStream = entry.Open();
-                        await using var fileStream = System.IO.File.OpenRead(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, subFile.FileId.ToString()));
+                        await using var fileStream = System.IO.File.OpenRead(Path.Combine(_userIdentification.PhysicalStoragePath, subFile.FileId.ToString()));
                         await fileStream.CopyToAsync(entryStream);
                     }
                 }
@@ -90,7 +94,7 @@ namespace CloudStoragePlatform.Core.Services
                 {
                     var entry = archive.CreateEntry(file.FileName);
                     using var entryStream = entry.Open();
-                    await using var fileStream = System.IO.File.OpenRead(Path.Combine(FileModificationService.PHYSICAL_STORAGE_PATH, file.FileId.ToString()));
+                    await using var fileStream = System.IO.File.OpenRead(Path.Combine(_userIdentification.PhysicalStoragePath, file.FileId.ToString()));
                     await fileStream.CopyToAsync(entryStream);
                 }
             }
@@ -236,11 +240,14 @@ namespace CloudStoragePlatform.Core.Services
 
         private (List<FolderResponse> Folders, List<FileResponse> Files) GetResponse(List<Folder> folders, List<File> files, SortOrderOptions sortOptions)
         {
-            List<Folder> sortedFolders = Utilities.Sort(folders, sortOptions);
+            // Exclude the user's home folder from the output
+            string homeFolderPath = Path.Combine(_configuration["InitialPathForStorage"], "home");
+            List<Folder> filteredFolders = folders.Where(f => !string.Equals(f.FolderPath, homeFolderPath, StringComparison.OrdinalIgnoreCase)).ToList();
+            List<Folder> sortedFolders = Utilities.Sort(filteredFolders, sortOptions);
             List<FolderResponse> folderResponses = sortedFolders.Select(f => f.ToFolderResponse()).ToList();
 
             List<File> sortedFiles = Utilities.Sort(files, sortOptions).ToList();
-            List<FileResponse> sortedFileResponses = sortedFiles.Select(f => f.ToFileResponse()).ToList();
+            List<FileResponse> sortedFileResponses = sortedFiles.Select(f => f.ToFileResponse(_thumbnailService.GetThumbnail(f.FileId))).ToList();
             return (folderResponses, sortedFileResponses);
         }
     }
