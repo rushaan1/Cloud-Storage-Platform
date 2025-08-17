@@ -30,8 +30,9 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IBulkRetrievalService _retrievalService;
         private readonly IFoldersModificationService _foldersModificationService;
         private readonly UserIdentification _ui;
+        private readonly IFoldersRepository _foldersRepository;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService, IFoldersModificationService foldersModificationService, UserIdentification ui)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService, IFoldersModificationService foldersModificationService, UserIdentification ui, IFoldersRepository foldersRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -41,6 +42,7 @@ namespace Cloud_Storage_Platform.Controllers
             _retrievalService = bulkRetrievalService;
             _foldersModificationService = foldersModificationService;
             _ui = ui;
+            _foldersRepository = foldersRepository;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool shouldExpire, bool httponly)
@@ -96,7 +98,7 @@ namespace Cloud_Storage_Platform.Controllers
                 await UserStorageLinking(user);
                 await _signInManager.SignInAsync(user, isPersistent: registerDTO.RememberMe);
 
-                AuthenticationResponse authenticationResponse = await ProcessAfterLogin(user.Email, registerDTO.RememberMe, true, user);
+                AuthenticationResponse authenticationResponse = (await ProcessAfterLogin(user.Email, registerDTO.RememberMe, true, user)).ar;
 
                 return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
             }
@@ -122,7 +124,7 @@ namespace Cloud_Storage_Platform.Controllers
             }
         }
 
-        private async Task<AuthenticationResponse> ProcessAfterLogin(string email, bool rememberMe, bool isRegisteredNow, ApplicationUser? user = null) 
+        private async Task<(AuthenticationResponse ar, float? homeFolderSize)> ProcessAfterLogin(string email, bool rememberMe, bool isRegisteredNow, ApplicationUser? user = null) 
         {
             if (user == null) 
             {
@@ -130,7 +132,7 @@ namespace Cloud_Storage_Platform.Controllers
             }
 
             AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user!);
-
+            float? homeFolderSize = null;
             if (!isRegisteredNow) 
             {
                 // Remove expired sessions
@@ -140,6 +142,10 @@ namespace Cloud_Storage_Platform.Controllers
                 {
                     await _userSessionsRepository.RemoveSessionAsync(expired);
                 }
+                var homeFolderPath = Path.Combine(_config["InitialPathForStorage"], "home");
+                _ui.User = user;
+                var homeFolder = await _foldersRepository.GetFolderByFolderPath(homeFolderPath);
+                homeFolderSize = homeFolder?.Size ?? 0;
             }
 
             var session = new UserSession()
@@ -156,7 +162,7 @@ namespace Cloud_Storage_Platform.Controllers
             SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, true);
             SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
             SetCookie("refresh_expiry", new DateTimeOffset(authenticationResponse.RefreshTokenExpirationDateTime).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
-            return authenticationResponse;
+            return (authenticationResponse, homeFolderSize);
         }
 
         [HttpPost("login")]
@@ -172,9 +178,8 @@ namespace Cloud_Storage_Platform.Controllers
 
             if (result.Succeeded)
             {
-                AuthenticationResponse authenticationResponse = await ProcessAfterLogin(loginDTO.Email, loginDTO.RememberMe, false);
-                
-                return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
+                var output = await ProcessAfterLogin(loginDTO.Email, loginDTO.RememberMe, false);
+                return Ok(new { PersonName = output.ar.PersonName, Email = output.ar.Email, output.homeFolderSize });
             }
             else
             {
@@ -219,12 +224,12 @@ namespace Cloud_Storage_Platform.Controllers
             if (payload == null) { return BadRequest(); }
             
             ApplicationUser? user = await _userManager.FindByEmailAsync(payload.Email);
-            AuthenticationResponse authenticationResponse;
+            (AuthenticationResponse ar, float? homeFolderSize) output;
             
             if (user != null)
             {
                 await _signInManager.SignInAsync(user, true);
-                authenticationResponse = await ProcessAfterLogin(payload.Email, true, false, user);
+                output = await ProcessAfterLogin(payload.Email, true, false, user);
             }
             else 
             {
@@ -237,10 +242,10 @@ namespace Cloud_Storage_Platform.Controllers
 
                 IdentityResult iResult = await _userManager.CreateAsync(createdUser);
                 await UserStorageLinking(createdUser);
-                authenticationResponse = await ProcessAfterLogin(createdUser.Email, true, true, createdUser);
+                output = await ProcessAfterLogin(createdUser.Email, true, true, createdUser);
             }
             
-            return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
+            return Ok(new { PersonName = output.ar.PersonName, Email = output.ar.Email, output.homeFolderSize });
         }
 
         [HttpPost("regenerate-jwt-token")]

@@ -19,8 +19,9 @@ export interface LoginDTO {
 }
 
 export interface ResponseWithNameAndEmail {
-  personName: string;
-  email: string;
+  PersonName: string;
+  Email: string;
+  homeFolderSize?: number;
 }
 
 export interface AccountDetailsAndAnalytics {

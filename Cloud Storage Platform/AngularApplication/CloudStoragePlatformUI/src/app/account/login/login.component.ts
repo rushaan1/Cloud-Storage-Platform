@@ -54,6 +54,13 @@ export class LoginComponent implements OnInit {
         next: (res) => {
           console.log('Login successful', res);
           localStorage.setItem('rememberMe', this.loginForm.value.rememberMe.toString());
+          // Store home folder size if present
+          if (res && typeof res.homeFolderSize !== 'undefined') {
+            const usedGB = +(res.homeFolderSize / 1024).toFixed(2);
+            const percentUsed = Math.min(100, (usedGB / 10) * 100);
+            localStorage.setItem('lastSizeInGb', usedGB.toString());
+            localStorage.setItem('lastSizePercentage', percentUsed.toString());
+          }
           this.tokenMonitor.startMonitoring();
           this.router.navigate(['/']);
           this.accountService.getUser().subscribe({

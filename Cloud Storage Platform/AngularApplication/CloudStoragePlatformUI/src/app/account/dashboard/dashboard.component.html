@@ -2,7 +2,7 @@
   <div class="pfp margin-left"></div>
   <h1 class="name">{{ accountDetails?.personName || 'Loading...' }}</h1>
   <div class="storage-bar-container">
-    <storage-bar></storage-bar>
+    <storage-bar [isDashboard]="true"></storage-bar>
   </div>
   <div class="analytics" #analyticsContainer>
     <ngx-charts-pie-chart

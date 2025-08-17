@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using File = CloudStoragePlatform.Core.Domain.Entities.File;
+using Microsoft.Extensions.Configuration;
 
 namespace CloudStoragePlatform.Core.Services
 {
@@ -22,58 +23,16 @@ namespace CloudStoragePlatform.Core.Services
         private readonly SSE _sse;
         private readonly UserIdentification _ui;
         private readonly ThumbnailService _thumbnailService;
+        private readonly IConfiguration _config;
 
-        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui, ThumbnailService thumbnailService)
+        public FileModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui, ThumbnailService thumbnailService, IConfiguration config)
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
             _sse = sse;
             _ui = ui;
             _thumbnailService = thumbnailService;
-        }
-
-        private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
-        {
-            if (folder == null)
-                return;
-
-            // Update with 2 decimal precision
-            folder.Size = (float)Math.Round(folder.Size + sizeInMB, 2);
-            await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
-            
-            // Send SSE notification about folder size update
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
-            
-            // Recursively update parent folders
-            if (folder.ParentFolder != null)
-            {
-                await UpdateFolderSizesOnAdd(folder.ParentFolder, sizeInMB);
-            }
-        }
-
-        private async Task UpdateFolderSizesOnDelete(Folder? folder, float sizeInMB)
-        {
-            if (folder == null)
-                return;
-
-            // Update with 2 decimal precision, ensuring it doesn't go below 0
-            folder.Size = (float)Math.Round(Math.Max(0, folder.Size - sizeInMB), 2);
-            await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
-            
-            // Send SSE notification about folder size update
-            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size }, _ui.User.Id);
-            
-            // Recursively update parent folders
-            if (folder.ParentFolder != null)
-            {
-                await UpdateFolderSizesOnDelete(folder.ParentFolder, sizeInMB);
-            }
-        }
-
-        private float ConvertBytesToMegabytes(long bytes)
-        {
-            // Convert bytes to megabytes with 2 decimal precision
-            return (float)Math.Round((float)bytes / (1024 * 1024), 2);
+            _config = config;
         }
 
         public async Task<FileResponse> UploadFile(FileAddRequest fileAddRequest, Stream stream)
@@ -151,7 +110,7 @@ namespace CloudStoragePlatform.Core.Services
             {
                 parent.Files.Add(file);
                 await _foldersRepository.UpdateFolder(parent, false, false, false, false, false, true);
-                await UpdateFolderSizesOnAdd(parent, fileSizeInMB);
+                await UpdateFolderSizesOnIncrease(parent, fileSizeInMB);
             }
 
             if (file.FileType == FileType.Image || file.FileType == FileType.GIF)
@@ -200,12 +159,12 @@ namespace CloudStoragePlatform.Core.Services
             // If file is being added to trash, subtract size from ancestors
             if (!wasInTrash && file.IsTrash && parentFolder != null)
             {
-                await UpdateFolderSizesOnDelete(parentFolder, fileSizeInMB);
+                await UpdateFolderSizesOnDecrease(parentFolder, fileSizeInMB);
             }
             // If file is being removed from trash, add size back to ancestors
             else if (wasInTrash && !file.IsTrash && parentFolder != null)
             {
-                await UpdateFolderSizesOnAdd(parentFolder, fileSizeInMB);
+                await UpdateFolderSizesOnIncrease(parentFolder, fileSizeInMB);
             }
             
             return updatedFile!.ToFileResponse(_thumbnailService.GetThumbnail(updatedFile.FileId));
@@ -230,10 +189,11 @@ namespace CloudStoragePlatform.Core.Services
             bool result = await _filesRepository.DeleteFile(file);
             
             // Update sizes of parent folder and its ancestors
-            if (result && parentFolder != null)
-            {
-                await UpdateFolderSizesOnDelete(parentFolder, fileSizeInMB);
-            }
+            //if (result && parentFolder != null)
+            //{
+            //    await UpdateFolderSizesOnDelete(parentFolder, fileSizeInMB);
+            //}
+            // because size already subtracted on trashing
             
             return result;
         }
@@ -274,10 +234,10 @@ namespace CloudStoragePlatform.Core.Services
             if (oldParent != null && newParent != null && oldParent.FolderId != newParent.FolderId)
             {
                 // Decrease size from old parent
-                await UpdateFolderSizesOnDelete(oldParent, fileSizeInMB);
+                await UpdateFolderSizesOnDecrease(oldParent, fileSizeInMB);
                 
                 // Increase size for new parent
-                await UpdateFolderSizesOnAdd(newParent, fileSizeInMB);
+                await UpdateFolderSizesOnIncrease(newParent, fileSizeInMB);
             }
             
             var response = finalMainFile!.ToFileResponse(_thumbnailService.GetThumbnail(finalMainFile.FileId));
@@ -308,10 +268,57 @@ namespace CloudStoragePlatform.Core.Services
             return updatedFile!.ToFileResponse(_thumbnailService.GetThumbnail(updatedFile.FileId));
         }
 
+        #region Files Size Updation Logic
+        private float ConvertBytesToMegabytes(long bytes)
+        {
+            // Convert bytes to megabytes with 2 decimal precision
+            return (float)Math.Round((float)bytes / (1024 * 1024), 2);
+        }
+
         private float GetFileSizeInMB(string id)
         {
             var fileInfo = new System.IO.FileInfo(Path.Combine(_ui.PhysicalStoragePath, id));
             return ConvertBytesToMegabytes(fileInfo.Length);
         }
+        private async Task UpdateFolderSizesOnIncrease(Folder? folder, float sizeInMB)
+        {
+            if (folder == null)
+                return;
+
+            // Update with 2 decimal precision
+            folder.Size = (float)Math.Round(folder.Size + sizeInMB, 2);
+            await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+
+            // Send SSE notification about folder size update
+            bool isHome = Utilities.IsHomeFolderPath(folder.FolderPath, _config);
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size, home = isHome }, _ui.User.Id);
+
+            // Recursively update parent folders
+            if (folder.ParentFolder != null)
+            {
+                await UpdateFolderSizesOnIncrease(folder.ParentFolder, sizeInMB);
+            }
+        }
+
+        private async Task UpdateFolderSizesOnDecrease(Folder? folder, float sizeInMB)
+        {
+            if (folder == null)
+                return;
+
+            // Update with 2 decimal precision, ensuring it doesn't go below 0
+            folder.Size = (float)Math.Round(Math.Max(0, folder.Size - sizeInMB), 2);
+            await _foldersRepository.UpdateFolder(folder, true, false, false, false, false, false);
+
+            // Send SSE notification about folder size update
+            bool isHome = Utilities.IsHomeFolderPath(folder.FolderPath, _config);
+            await _sse.SendEventAsync("size_updated", new { id = folder.FolderId, size = folder.Size, home = isHome }, _ui.User.Id);
+
+            // Recursively update parent folders
+            if (folder.ParentFolder != null)
+            {
+                await UpdateFolderSizesOnDecrease(folder.ParentFolder, sizeInMB);
+            }
+        }
+        #endregion
     }
 }

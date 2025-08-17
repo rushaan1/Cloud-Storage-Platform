@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using File = CloudStoragePlatform.Core.Domain.Entities.File;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace CloudStoragePlatform.Core
 {
@@ -215,6 +217,12 @@ namespace CloudStoragePlatform.Core
             }
 
             return folderNameToBeUsed + extension;
+        }
+
+        public static bool IsHomeFolderPath(string folderPath, IConfiguration config)
+        {
+            string homeFolderPath = Path.Combine(config["InitialPathForStorage"], "home");
+            return string.Equals(folderPath, homeFolderPath, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
