@@ -177,8 +177,8 @@ namespace CloudStoragePlatform.Core.Services
             }
             
             // Store parent folder and folder size before deletion
-            Folder? parentFolder = folder.ParentFolder;
-            float folderSizeInMB = folder.Size;
+            //Folder? parentFolder = folder.ParentFolder;
+            //float folderSizeInMB = folder.Size;
             
             // Delete the folder from filesystem
             
@@ -238,7 +238,7 @@ namespace CloudStoragePlatform.Core.Services
                     throw new ArgumentException();
                 }
                 parent = parent.ParentFolder;
-            }
+            } // checking if provided new parent is a subfolder of the folder being moved itself!
 
             folder.FolderPath = newPathOfFolder;
             folder.ParentFolder = newParent!;

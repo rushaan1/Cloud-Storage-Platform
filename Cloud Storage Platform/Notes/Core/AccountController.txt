@@ -1,0 +1,45 @@
+AccountController:
+
+SetCookie (private)
+ set secure, httponly, SameSite=None cookies, handle expiry based on rememberMe flag
+
+UserStorageLinking (private)
+ create physical directory for user (using user ID), set UserIdentification service so as to create home folder in db
+
+PostRegister
+ validate model, create ApplicationUser with email as username, create user via Identity
+ call UserStorageLinking, sign in user, call ProcessAfterLogin, return basic user info
+
+IsEmailAlreadyRegistered
+ check if email exists, return true if available (confusing: returns true when email NOT registered)
+
+ProcessAfterLogin (private)
+ create JWT token, for existing users: clean expired sessions, set useridentification to get home folder size (by default filter to set user identification stuff doesnt run here)
+ create new UserSession with refresh token, save to db
+ set 4 cookies: access_token, refresh_token, jwt_expiry, refresh_expiry, return auth response + home size
+
+PostLogin
+ validate model, use SignInManager for password auth, call ProcessAfterLogin, return user info + home size
+
+Logout
+ find session by refresh token cookie, remove from db, sign out via Identity, delete all auth cookies
+
+GoogleLogin
+ validate Google ID token, find existing user OR create new user with Google info
+ call UserStorageLinking for new users, ProcessAfterLogin, return user info + home size
+
+GenerateNewAccessToken
+ validate refresh token from cookie, check session exists & not expired, find user
+ generate new JWT, update access_token & jwt_expiry cookies only (not refresh token)
+
+GetAccountDetailsAndAnalytics
+ get user from JWT claims, call BulkRetrievalService.GetUsageAnalytics, combine with user details
+ format dates & phone number, return comprehensive analytics + account info
+
+UpdateAccount
+ get user from JWT claims, compare each field (Email, FullName, Country, PhoneNumber, Password)
+ for password: validate confirmation match, use Identity password reset flow
+ update user via Identity UserManager, return updated account info
+
+GetUser
+ get user from JWT claims, return basic user info (just PersonName)

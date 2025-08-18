@@ -1,0 +1,22 @@
+FoldersModificationService:
+
+AddFolder
+ check folder path if its home if home dont attach metadata+sharing
+ check parent exists & folder to be added path is duplicate if either true abort
+ enter correct details for entity, add to db via repo, convert to DTO send res
+
+AddOrRemoveTrash
+ Flip the current boolean val of Folder
+ Get parent, update size based on current input Folder's size, increase/decrease size based on current & previous bool val, send res of updated input Folder in DTO
+
+DeleteFolder
+ Get Folder, delete, return whether deleted status
+
+MoveFolder (M)
+ Takes folder id, new parent's path, parent path already contains folder w same name as one being moved? abort
+ Store old parent, folder size, subtract at end, loop back from new parent to alll its parents & abort if any matches id of Folder being moved (mean new parent is subfolder of folder)
+ set new links, update sizes of new & old parents, update paths of subfolders of folder (& folder's too), send folder response of folder
+
+RenameFolder (M)
+ Takes renamereq (has id, newname), checks duplicate, updates path+name
+ updates subfolders paths, send folder response

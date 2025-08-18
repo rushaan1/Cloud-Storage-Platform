@@ -1,0 +1,32 @@
+FilesModificationService:
+
+UploadFile
+ check if parent not exists & file path duplicate, abort if either true
+ create metadata+sharing entities, determine FileType from extension (jpg/jpeg/png/webp->Image, mp3/wav->Audio, gif->GIF, mp4/avi->Video, rest->Document)
+ handle edge case: filename contains \ (replace with -)
+ create File entity, save stream to physical storage using FileId as filename, calculate size in MB
+ add to db, update parent folder's Files collection, update parent folder sizes up the hierarchy, generate thumbnails for images/videos
+
+AddOrRemoveFavorite
+ flip IsFavorite boolean, update file, return response
+
+AddOrRemoveTrash
+ store old trash state, flip IsTrash boolean, update parent folder sizes (subtract when trashing, add when untrashing), return response
+
+DeleteFile
+ get parent & file size before deletion, delete from physical storage using FileId, delete from db
+ (commented size update as already handled during trash)
+
+MoveFile (M)
+ check new parent not exists & duplicate destination path, abort if either true
+ store old parent & file size, update FilePath & file's Parent Folder, update metadata move count
+ update sizes: subtract from old parent hierarchy, add to new parent hierarchy
+
+RenameFile (M)
+ check duplicate new path, update FileName & FilePath, update metadata rename count, return response
+
+UpdateFolderSizesOnIncrease/Decrease (identical to FoldersModificationService)
+ recursively update parent folder sizes up hierarchy, send SSE notifications, 2 decimal precision
+
+GetFileSizeInMB
+ convert physical file size from bytes to MB with 2 decimal precision

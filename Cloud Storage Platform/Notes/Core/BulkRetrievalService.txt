@@ -1,0 +1,39 @@
+BulkRetrievalService:
+
+DownloadFolder
+ validate all folder & file IDs exist, abort if any null
+ special case: single file download -> direct stream copy without zip
+ create zip archive, for each folder get all subfiles & subfolders using path contains query
+ zip structure: if only 1 folder: folder name + relative paths ELSE handles multiple folders with "X folders inside/" prefix
+ add individual files to zip root with original filenames
+
+GetAllInHome
+ get home folder from config path, return empty if not found
+ return subfolders & files from home, apply sorting
+
+GetAllChildren (M)
+ get parent folder, update metadata open count, return subfolders & files with sorting
+
+GetAllFilteredChildren
+ search folders & files by name contains (case insensitive), return with sorting
+
+GetAllFavorites
+ filter folders & files where IsFavorite=true, return with sorting
+
+GetAllTrashes
+ filter folders & files where IsTrash=true, return with sorting
+
+GetAllRecents
+ get all items with LastOpened not null, order by LastOpened desc, take 15 each, force LASTOPENED_DESCENDING sort
+
+GetAllMediaFiles
+ filter files where FileType != Document (gets Image, Audio, Video, GIF), return empty folders list
+
+GetUsageAnalytics
+ group files by extension, sum sizes, take top 10
+ get top 10 files by size
+ count totals, favorites, active shared items (non-expired share links)
+ return comprehensive analytics DTO
+
+GetResponse (private)
+ exclude home folder from output, apply sorting via Utilities.Sort, convert to response DTOs with thumbnails
