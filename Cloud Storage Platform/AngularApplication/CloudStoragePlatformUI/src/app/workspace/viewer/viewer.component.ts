@@ -144,6 +144,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
       }
     }));
 
+    // send req to sever, get the token to access sse, establish sse connection & listening
+
+    // TODO Do not establish SSE in case of shared viewing
     this.foldersService.ssetoken().subscribe({
       next: (res) => {
         this.sse = new EventSource('https://localhost:7219/api/Modifications/sse?token=' + res.sseToken);
@@ -160,6 +163,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 }
                 for (let i = 0; i<data.content.res.length; i++){
                   const processedFile = Utils.processFileModel(data.content.res[i]);
+                  // get the file or folder in its unified File type
                   if (this.extractCleanParentPath(processedFile.filePath)==path){
                     this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(), processedFile]);
                   }
@@ -171,17 +175,17 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 const newSize = data.content.size;
 
                 // Update files in the viewer
-                let allFilesUpdated = false;
+                let anyFileUpdated = false;
                 let filesInState = this.filesState.getFilesInViewer();
 
                 filesInState.forEach((file, index) => {
                   if (file.fileId === fileId) {
                     filesInState[index].size = newSize;
-                    allFilesUpdated = true;
+                    anyFileUpdated = true;
                   }
                 });
-
-                if (allFilesUpdated) {
+                // if any file was updated, set the new files in viewer
+                if (anyFileUpdated) {
                   // Update state with the modified files
                   this.filesState.setFilesInViewer([...filesInState]);
 
@@ -196,6 +200,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
               case "favorite_updated" :
                 let updated = false;
                 let allFiles = this.filesState.getFilesInViewer();
+                // if file exists in viewer update its fav status
                 allFiles.forEach((f,i)=>{
                   if (f.fileId==data.content.id as string){
                     allFiles[i].isFavorite = data.content.res.isFavorite as boolean;
@@ -205,6 +210,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
                     updated = true
                   }
                 });
+                // else if user is in favorite page & file not there but favorited then add to viewer
                 if (!updated && this.crumbs[0].toLowerCase() == "favorites" && data.content.res.isFavorite as boolean){
                   const processedFile = Utils.processFileModel(data.content.res);
                   this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),processedFile]);
@@ -214,7 +220,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
               case "trash_updated":
                 const items:File[] = [];
                 let allFiles2 = this.filesState.getFilesInViewer();
+
                 for (let i = 0; i<data.content.updatedFolders.length; i++){
+                  // all thats happening here is that all files in viewer are being searched to find if any matches with processed file if yes update trash status
                   const processedFile = Utils.processFileModel(data.content.updatedFolders[i]);
                   items.push(processedFile);
                   const ind = allFiles2.findIndex((f)=>{return f.fileId==processedFile.fileId});
@@ -222,7 +230,9 @@ export class ViewerComponent implements OnInit, OnDestroy{
                     allFiles2[ind].isTrash = processedFile.isTrash;
                   }
                 }
+
                 for (let i = 0; i<data.content.updatedFiles.length; i++){
+                  // same as above
                   const processedFile = Utils.processFileModel(data.content.updatedFiles[i]);
                   items.push(processedFile);
                   const ind = allFiles2.findIndex((f,i)=>{return f.fileId==processedFile.fileId});
@@ -235,6 +245,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
                   if (!this.containsId(items[i].fileId)){
                     if (this.crumbs[0].toLowerCase() == "trash" && items[i].isTrash){
                       allFiles2.push(items[i]);
+                      // if user is in trash page & latest status of item is trash true but item is not in visible files then add the item to all files this is because in trash page visible files returns all files
                     }
                   }
                   else{
@@ -256,6 +267,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 break;
               case "renamed":
                 this.filesState.getFilesInViewer().forEach((f,i)=>{
+                  // dont forget its inside a loop
                   if (this.renameFocus){
                     const queryParams = { ...this.route.snapshot.queryParams };
                     delete queryParams["renameFocus"];
@@ -267,7 +279,8 @@ export class ViewerComponent implements OnInit, OnDestroy{
                       if (f.fileId==data.content.id as string) {
                         this.renameUpdation(f, data, i);
                       }
-                    });
+                    }); // IF rename focus is already focused and rename happens remove the rename focus query param immedtly
+                    // update rename in either case cuz this sse confirms a successful rename completion
                   }
                   else{
                     this.renameUpdation(f, data, i);
@@ -276,12 +289,15 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 break;
               case "moved":
                 for (let i = 0; i<data.content.length; i++){
+                  // looping through updated data content
                   if (this.containsId(data.content[i].id)){
                     if (path != Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                      // THIS MEANS ITS IN VISIBLE FILES BUT PATH DONT MATCH, MEANS ITS MOVED OUT OF HERE
                       this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(file => { return data.content[i].id != file.fileId }));
                     }
                   }
                   else if (path == Utils.constructFilePathForApi(Utils.cleanPath(decodeURIComponent(data.content[i].movedTo as string)))){
+                    // THIS MEANS ITS NOT IN VISIBLE FILES BUT MOVED TO HERE
                     this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),Utils.processFileModel(data.content[i].res)]);
                   }
                   console.log("visible ones:");
@@ -291,9 +307,11 @@ export class ViewerComponent implements OnInit, OnDestroy{
                 }
             }
             this.cdRef.detectChanges();
+
             if (this.crumbs[0].toLowerCase()!="home"){
               this.handleEmptyTxt();
             }
+
             else if (localStorage.getItem("list")=="Y"){
               this.handleEmptyTxt();
             }
@@ -326,12 +344,18 @@ export class ViewerComponent implements OnInit, OnDestroy{
   }
 
   renameUpdation(f:File, data:any, i:number){
+    // THIS FN DOES NOT GURANTEE RENAME, ONLY IF f & data ids match
+
+    // f is stale file, data contains updated file, i is the index of file in filesInViewer
     if (f.fileId==data.content.id as string) {
-      const file:File = {...f};
-      file.fileName = data.content.val as string;
+      const file:File = {...f}; // copy stale file in its full form
+      file.fileName = data.content.val as string; //update file name property
+
       const fullPath = file.filePath.split("\\");
       fullPath[fullPath.length-1] = data.content.val as string;
-      file.filePath = fullPath.join("\\");
+      file.filePath = fullPath.join("\\"); // update file path property w new name
+
+      // apply the changes
       let files = this.filesState.getFilesInViewer();
       files.splice(i, 1, file);
       this.filesState.setFilesInViewer(files);

@@ -1,0 +1,59 @@
+ViewerComponent (Angular):
+
+Routing & Navigation
+ - Watches route.url and queryParams; maintains appUrl and crumbs (breadcrumbs)
+ - On missing base route, redirects to filter/home
+ - Manually re-initializes BreadcrumbsComponent on each route change to refresh breadcrumbs
+ - Supports routes: filter/home|gallery|recents|favorites|trash, folder/<path>, preview/<path>, searchFilter
+
+Data Fetching (lists/detail)
+ - Home/Favorites/Trash/Recents/Media: calls FilesAndFoldersService endpoints; sets FilesState.filesInViewer; ends loader; handles empty text
+ - Folder by path: calls getAllFilesAndSubFoldersByParentFolderPath; updates state; emits "home folder set active" when path ends with home
+ - Preview file: calls getFileOrFolderByPath; sets fileBeingPreviewd; toggles loader
+
+Real-time updates (SSE)
+ - Requests SSE auth token then opens EventSource to Modifications/sse with token
+ - Handles events:
+   - added: when path starts from home in crumbs: append processed items whose parent matches current path
+   - size_updated: in-place update of file size in state and visible list
+   - favorite_updated: toggle favorite in-place; if in Favorites and item newly favored, append
+   - trash_updated: batch-update trash state; add to view if in Trash and item became trashed; remove from Trash view when untrashed
+   - deleted: remove items by id from state
+   - renamed: updates name and path; clears renameFocus query param after first completion
+   - moved: remove from view if moved away; add if moved into current path
+ - Triggers change detection and recalculates empty state after updates
+
+State Management
+ - FilesStateService: consumes filesInViewer$, isRenaming$, uncreatedFolderExists$; provides setters
+ - Keeps visibleFiles synchronized with state, excluding trashed items unless in Trash
+ - Filters out items currently being moved (FilesState.getItemsBeingMoved)
+
+UI & UX Behaviors
+ - LoadingService guards all fetch operations (start/end)
+ - Empty-state message logic with configurable text per view (home, recents, media, search)
+ - List/grid adjustments: reacts to EventService "list-style-changed" and home special-case
+ - Rename flow: renameFocus query param triggers focus; removed post-rename via router
+
+Search
+ - searchFilter route or query param q triggers getFilteredFolders
+ - Trims and validates query; sets empty text if no results
+
+Network Resilience
+ - Subscribes to NetworkStatusService; on reconnect emits "reload viewer list" and reloads
+ - Prevents local create when offline; notifies user via EventService
+
+Folder Creation (local optimistic)
+ - Blocks when a rename is active; sets uncreatedFolderExists true
+ - Creates a local uncreated Folder (FileType.Folder) with unique name and current path
+ - Appends to state; removal/commit handled by other flows
+
+Lifecycle & Cleanup
+ - Subscriptions tracked in an array; unsubscribes on destroy
+ - EventSource closed on destroy
+
+Helpers
+ - extractCleanParentPath: derive parent path; compare normalized API paths
+ - containsId: membership check in visible files
+ - renameUpdation: apply rename to a specific item and mark renaming false
+
+If file component emits hidden due to filter being cached by <file-item> then corresponding guid added to list & if list not empty and no files displayed then shows No files matching filter

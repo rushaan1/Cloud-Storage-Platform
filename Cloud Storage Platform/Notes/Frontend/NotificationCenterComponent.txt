@@ -1,0 +1,38 @@
+NotificationCenterComponent (Angular):
+
+Purpose
+ - Central hub for transient/sticky notifications, selection/move panels, and upload progress
+ - Coordinates UI alerts across app via EventService and FilesStateService
+
+Initialization & Layout
+ - Standalone component; collects panel refs (upload, selection, delete-confirm, move)
+ - Keeps ordered list of panels to manage stacking and sticky behavior
+ - Restores upload progress from localStorage on init
+
+Sticky/Alert Behavior
+ - Tracks mostRecentNonStickyNotification; makes it sticky and shows "+N notifications" alert when scrolled
+ - Updates sticky timestamps to current HH:MM on activation
+ - Dismiss logic cascades to previous alerts in LIFO order
+
+Event Wiring
+ - Subscribes to FilesState.selectedItems$: toggles selection info panel visibility and count
+ - Subscribes to FilesState.itemsBeingMoved$: shows/hides move panel and counts items
+ - Listens to EventService:
+   - "deleteConfirmNotif": shows confirm panel with message and callback
+   - "addNotif": creates ephemeral text notification (deduplicates identical active text), auto-dismiss after timeout
+   - "uploadProgress": updates progress bar and text; when -1, finalizes and emits completion notif (uses localStorage counters and target path)
+
+Scrolling/Sticky Positioning
+ - Computes sticky top offsets dynamically using heights of .top-panel and .breadcrumbs; adjusts for non-viewer contexts
+ - Recomputes on view checks and window scroll
+
+Bulk Actions
+ - moveToTrash/restore/delete: splits selected files/folders; calls batch APIs; emits success toasts; clears selection
+ - activateMoveState: sets selected items to move, navigates to home if needed, or reloads
+ - move: resolves destination from breadcrumbs (only home allowed from filter routes), batches move for files/folders, emits success toast
+ - download: composes download URL for mixed selection and opens new tab; then clears selection
+
+Helpers
+ - getScrollableParent: finds nearest scrollable ancestor for alert logic
+ - createNotificationDiv: builds DOM for alert with close icon and scroll-to-top link
+ - setLatestAlertNotification/dismiss* manage sticky queue and DOM cleanup

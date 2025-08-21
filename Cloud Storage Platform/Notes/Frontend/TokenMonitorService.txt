@@ -1,0 +1,67 @@
+TokenMonitorService (Angular):
+
+Purpose
+ - Proactive JWT token monitoring and automatic refresh to prevent authentication failures
+ - Runs outside Angular zone for performance, coordinates with RefreshedService for state management
+ - Prevents multiple simultaneous refresh attempts across browser tabs
+
+Initialization & Lifecycle
+ - startMonitoring(): clears existing interval, runs monitor() immediately, sets 1-second interval outside NgZone
+ - stopMonitoring(): clears interval and resets to null
+ - Called from AppComponent.ngOnInit() to start monitoring on app initialization
+
+Token Expiry Detection
+ - Reads jwt_expiry and refresh_expiry cookies (Unix timestamps)
+ - Validates both cookies exist and are valid numbers > 0
+ - Calculates refresh time: (expiry - 15 seconds) - current time
+ - Triggers refresh when refreshTime <= 0 (15 seconds before actual expiry)
+
+Safe Refresh Logic (Prevents Race Conditions)
+ - Checks localStorage "isRefreshing" flag to prevent concurrent refreshes
+ - Enforces 4-second cooldown between refresh attempts using "jwt_last_refreshed" timestamp in order to prevent a tab who missed the lock from executing refresh right after a refresh from another tab
+ - Sets "isRefreshing" = "y" and currentTabRefreshing = true before API call
+ - Uses finalize() to reset flags regardless of success/failure
+
+Refresh Process
+ - Calls AccountService.refreshToken() with rememberMe from localStorage
+ - On success: updates "jwt_last_refreshed" timestamp, calls RefreshedService.setHasRefreshed(true)
+ - On error: logs to console, flags remain reset via finalize()
+ - RefreshedService emits hasRefreshed$ = true for 1 second then auto-resets
+
+
+
+
+
+Cross-Tab Coordination & Cleanup
+ - Uses localStorage flags ("isRefreshing", "jwt_last_refreshed") for tab synchronization
+ - RefreshedService.currentTabRefreshing tracks current tab's refresh state
+ - Prevents multiple tabs from simultaneously refreshing tokens
+ - *(MORE BELOW) handleBeforeUnload(): if currentTabRefreshing=true when tab closes, resets "isRefreshing"="n" to prevent stuck locks
+
+Performance Considerations
+ - Runs outside NgZone to avoid unnecessary change detection cycles
+ - 1-second interval balances responsiveness with performance
+ - Minimal DOM/cookie access during monitoring
+
+Dependencies
+ - AccountService: for refreshToken() API call
+ - NgZone: for runOutsideAngular() performance optimization
+ - RefreshedService: for cross-component refresh state coordination
+ - Utils: for cookie reading utilities
+
+
+
+*(
+Tracks Current Tab State: currentTabRefreshing is a boolean flag in
+ RefreshedService that tracks whether the current tab is 
+ actively refreshing a token.
+
+Prevents Stuck Locks: When a user closes a browser tab 
+while a token refresh is in progress, the beforeunload 
+event handler in AppComponent checks if currentTabRefreshing is true.
+
+Cleanup Logic: If the tab is refreshing when closed, it 
+resets the localStorage "isRefreshing" flag to "n" to 
+prevent other tabs from getting stuck waiting for a refresh that 
+will never complete.
+)

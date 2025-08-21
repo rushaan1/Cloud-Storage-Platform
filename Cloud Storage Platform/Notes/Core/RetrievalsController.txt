@@ -1,0 +1,49 @@
+RetrievalsController:
+
+GetFileForPreview
+ determine MIME from extension, reject unsupported
+ stream file from service, set X-Accel-Buffering=no, return inline
+
+Download
+ normalize null lists, early return if none
+ compose download name based on counts, set Content-Type (single file: octet-stream, else zip)
+ set Content-Disposition header, stream via service (zip or raw)
+
+GetFolderById
+ fetch by id, return 200 or 404
+
+GetFolderByPath
+ fetch by path (AppendToPath binder), return 200 or 404
+
+GetFileById
+ fetch by id, return 200 or 404
+
+GetFileByPath
+ fetch by path (AppendToPath binder), return 200 or 404
+
+GetMetadata
+ toggle by isFolder flag, fetch appropriate metadata, return 200 or 404
+
+GetAllInHome
+ call bulk service, return folders+files (BulkResponse)
+
+GetAllChildrenById
+ call bulk service with parent id, return BulkResponse
+
+GetAllChildrenByPath
+ resolve parent via path, 404 if missing, then call child-by-id, return BulkResponse
+
+GetAllFiltered
+ trim search string (RemoveInvalidFileFolderNameCharactersBinder), call bulk filter, return BulkResponse
+
+GetAllFavorites
+ call favorites, return BulkResponse
+
+GetAllTrashes
+ call trashes, return BulkResponse
+
+GetAllRecents
+ call recents, return BulkResponse
+
+GetAllMediaFiles
+ call media files; if none, return 404; else BulkResponse

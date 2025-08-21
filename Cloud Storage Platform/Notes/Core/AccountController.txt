@@ -14,7 +14,7 @@ IsEmailAlreadyRegistered
  check if email exists, return true if available (confusing: returns true when email NOT registered)
 
 ProcessAfterLogin (private)
- create JWT token, for existing users: clean expired sessions, set useridentification to get home folder size (by default filter to set user identification stuff doesnt run here)
+ create JWT token, for existing users: clean expired sessions, set useridentification to get home folder size (bcz default filter to set user identification stuff doesnt run here)
  create new UserSession with refresh token, save to db
  set 4 cookies: access_token, refresh_token, jwt_expiry, refresh_expiry, return auth response + home size
 

@@ -1,0 +1,41 @@
+ModificationsController:
+
+Add
+ prefix path with InitialPathForStorage, create folder via service
+ emit SSE "added" with list containing created folder, return FolderResponse
+
+UploadFiles
+ multipart reader with manual boundary, parse repeated fields for multiple files
+ build array of FileAddRequest (fileName,filePath), stream each file part to service
+ collect FileResponse list, emit SSE "added", return list
+
+Rename
+ switch by isFolder, call rename service, emit SSE "renamed" with id and new name, 204
+
+AddOrRemoveFromFavorite
+ switch by isFolder, call toggle service, emit SSE "favorite_updated" with id and response, 204
+
+BatchAddOrRemoveFromTrash
+ pre-size list by ids count, loop ids and toggle per type
+ emit SSE "trash_updated" with updated folders/files, 204
+
+BatchFoldersAdd
+ loop paths, expand to full path, split last segment as name
+ call add folder per path, emit SSE "added", 204
+
+BatchDelete
+ loop ids, delete per type, count successes
+ emit SSE "deleted" with ids, return 204 if all deleted else 500
+
+BatchMove
+ early return if no ids
+ loop ids and move per type to newFolderPath (AppendToPath),
+ build movedList entries with movedTo (parent path), id, res
+ emit SSE "moved" with movedList, 204
+
+SSEAuth
+ generate short-lived token, store with userId, return token json
+
+SSE
+ anonymous, verify token from query against store, 403 if invalid
+ set SSE headers, register response in SSE manager, keep connection open until disposed

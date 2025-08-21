@@ -18,7 +18,10 @@ export class Utils {
     }
   }
 
-  // MAIN Purpose is to combine an array of strings into a string containing \ before every element string
+  /**
+   * MAIN Purpose is to combine an array of strings into a string containing \ before every element string
+   * @param str - The string array to be combined
+   */
   public static constructFilePathForApi(url:string[]):string{
     let constructedPathForApi = "";
     for (let i = url.indexOf("home"); i< url.length; i++) {
@@ -27,6 +30,10 @@ export class Utils {
     return constructedPathForApi;
   }
 
+  /**
+   * JUST TAKES PATH INTO ARRAY INPUT THENN FINDS FIRST INDEX OF home AND RETURNS NEW ARRAY STARTING FROM HOME TO END
+   * @param crumbs
+   */
   public static obtainBreadCrumbs(crumbs:string[]):string[] {
     let breadCrumbs:string[] = [];
     for (let i = crumbs.indexOf("home"); i < crumbs.length; i++) {
@@ -35,6 +42,10 @@ export class Utils {
     return breadCrumbs;
   }
 
+  /**
+  * TAKES A PATH STRING AND SPLITS IT INTO AN ARRAY OF STRINGS STARTING FROM FIRST home occurance till end
+  * @param path - The path string to be cleaned
+  */
   public static cleanPath(path:string):string[]{
     let constructedPath = path.split("\\");
     let index = constructedPath.indexOf("home");

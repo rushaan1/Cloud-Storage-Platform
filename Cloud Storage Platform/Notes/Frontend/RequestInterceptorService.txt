@@ -1,0 +1,62 @@
+RequestInterceptorService (Angular):
+
+Purpose
+ - HTTP interceptor for automatic authentication handling and request modification
+ - Ensures all API requests include credentials and handles expired JWT tokens
+ - Coordinates with TokenMonitorService and RefreshedService for seamless token refresh
+
+Request Filtering & Modification
+ - Intercepts only requests to 'https://localhost:7219/api/' (API calls)
+ - Adds withCredentials: true to all API requests for cookie transmission
+ - Passes through non-API requests unchanged
+
+Authentication Exception Handling
+ - Exempts specific endpoints from JWT validation: regenerate-jwt-token, login, logout, register
+ - These endpoints handle their own authentication or don't require JWT tokens
+ - Uses case-insensitive URL matching with .includes() for flexibility
+
+JWT Expiry Detection
+ - hasJwtExpired(): reads jwt_expiry cookie (Unix timestamp)
+ - Compares with current time (Math.floor(Date.now() / 1000))
+ - Returns true if cookie missing, invalid number, or expired
+ - Handles edge cases: missing cookie, NaN values, past expiry
+
+Expired Token Handling
+ - When JWT expired: subscribes to RefreshedService.hasRefreshed$ observable
+ - Uses filter() to wait for refresh completion (hasRefreshed = true)
+ - Uses take(1) to complete after first refresh event
+ - switchMap() to proceed with original request after refresh
+ - This creates a blocking mechanism: request waits until token is refreshed
+
+Refresh Coordination Flow
+ - TokenMonitorService detects expiry and calls refreshToken()
+ - RefreshedService.setHasRefreshed(true) emits hasRefreshed$ = true
+ - RequestInterceptor receives the event and proceeds with original request
+ - RefreshedService auto-resets hasRefreshed$ = false after 1 second
+
+Request Flow Examples
+ - Valid JWT: request proceeds immediately
+ - Expired JWT: request blocks until refresh completes, then proceeds
+ - Auth endpoints: bypass JWT check entirely
+ - Non-API requests: pass through unchanged
+
+Error Handling
+ - If refresh fails, request will still proceed (may result in 401)
+ - TokenMonitorService handles refresh errors independently
+ - Interceptor focuses on request flow, not refresh logic
+
+
+
+
+
+
+
+Security Considerations
+ - withCredentials ensures cookies are sent with cross-origin requests
+ - JWT validation happens on every API request
+ - Exception list prevents infinite loops on auth endpoints
+
+Dependencies
+ - RefreshedService: for refresh state coordination
+ - Utils: for cookie reading utilities
+ - Angular HttpInterceptor interface

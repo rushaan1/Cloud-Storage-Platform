@@ -1,0 +1,51 @@
+FileItemComponent (Angular):
+
+Inputs/Outputs & Identity
+ - Inputs: type (FileType), FileFolder (unified file/folder model)
+ - Outputs: destroy (notify parent to remove temp item), hiddenDueToFileFilter (emit visibility due to filters)
+ - Generates unique UUID per instance to coordinate options menu toggling
+
+Selection & Options Menu
+ - Reacts to global "file options expanded" event to collapse others
+ - Tracks selection state via FilesState.selectedItems$; shows/hides checkbox and syncs checked status
+ - Toggles per-item options menu with highlight and visibility animations
+ - Click-away and resize listeners to close/update UI
+
+Renaming & Creation
+ - Uses FormControl with required, non-whitespace, invalidCharacter validators
+ - setupInput: guards (online, only one rename at a time), focuses input, pre-fills; preserves extension for files
+ - renameEnter: if uncreated -> createFolder; else call API rename with preserved extension; success -> finishRenaming
+ - finishRenaming: resets state/UI; global FilesState.isRenaming set false
+ - createFolder: calls API addFolder using current path + name; on success removes temp item and clears uncreated state
+
+Filtering & Visibility
+ - Reads queryParams for fileFilters; maps to FileType[]; hides DOM (display:none) if not matching and not uncreated
+ - Emits hiddenDueToFileFilter changes so parent can compute empty-state
+
+Navigation
+ - fetchSubFoldersRedirect: if options open/renaming/selection active -> selection toggle; else route to folder/<path> or preview/<path>
+
+Favorite/Trash/Delete/Restore
+ - toggleFavorite: calls API to flip favorite; server SSE updates state elsewhere
+ - trash: moves to trash; notifies success
+ - delete: shows confirm via EventService; on accept, calls delete API; notifies success
+ - restore: flips trash status; notifies success
+
+Move Flow
+ - activateMoveState: sets current item as being moved; navigates to home (or reloads home) to choose destination
+ - move: batches files and folders separately; calls batch move APIs; clears move state; navigates into destination
+
+Download
+ - Builds download URL for folderIds/fileIds and opens in new tab
+
+Responsive Name Truncation
+ - updateNameTruncation: adjusts visible name length based on viewport, list mode, move state, and item type; triggers ChangeDetectorRef
+
+State & Services
+ - Uses FilesStateService (selection, renaming, moved items, filesInViewer), FilesAndFoldersService (API), BreadcrumbService, EventService, NetworkStatusService, LoadingService
+ - Subscribes to breadcrumbs & state to keep local flags up to date
+
+Helpers
+ - showCheckbox/hideCheckbox: imperative visibility control
+ - getFileTypeSpanContent: returns extension text for non-folders
+ - Local copies of Utils, FileType, localStorage for templates

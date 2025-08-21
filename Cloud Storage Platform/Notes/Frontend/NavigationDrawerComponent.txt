@@ -1,0 +1,36 @@
+NavigationDrawerComponent (Angular):
+
+Purpose
+ - Main/mini side drawers for navigation and type filtering
+ - Emits mini-drawer state and coordinates with breadcrumbs/selection/renaming
+
+Initialization
+ - Hides mini-drawer initially (translate -100%)
+ - Subscribes to breadcrumbs and isRenaming$ to track state
+ - Marks Home tab active when "home folder set active" event is received
+
+Hover/Selection UX
+ - hoverTransitionTrigger/hoverTransitionOppositeTrigger: reveal checkboxes, adjust padding, and background colors when hovering
+ - topCategoryLiHover/Away: highlight non-active top-level tabs on hover
+ - Visual state updated across corresponding <a>, <li>, and <i> elements
+
+Type Filters
+ - itemSelection: toggles a type (e.g., Document/Audio/Video/Image/GIF); updates selectedTypeItems list
+ - Syncs checkbox state (full drawer only) and background colors; updates query param fileFilters via router
+ - typeItemSelected/typeItemSelectedMini: handlers for full/mini drawer variants
+ - isSelected: checks membership
+ - retainingSelection: on drawer switch, reapplies visual state and checkbox checkedness for currently selected filters
+
+Drawer Transitions
+ - drawerClick: transitions to mini drawer (translates main out, shows mini), emits miniSet(true), updates visibility, retains filter selection visuals in mini
+ - miniDrawerClick: transitions back to full drawer, emits miniSet(false), restores selection visuals in full
+ - visibilityToggle: toggles visibility for top/mid/bottom drawer sections
+
+Actions
+ - createFolderClick: emits "create new folder" event
+ - createFolderCheck: only enable when not renaming, in home, no items being moved, and not in outsideFilesAndFoldersMode
+
+Dependencies
+ - Uses Router/ActivatedRoute for query param updates
+ - Uses EventService for cross-component events
+ - Uses BreadcrumbService and FilesStateService for context/state
