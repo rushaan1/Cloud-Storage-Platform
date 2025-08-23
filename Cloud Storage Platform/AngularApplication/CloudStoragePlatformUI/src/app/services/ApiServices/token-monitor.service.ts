@@ -40,7 +40,7 @@ export class TokenMonitorService {
       return;
     }
     const now = Math.floor(Date.now() / 1000);
-    const refreshTime = (expiry - 15) - now; // 
+    const refreshTime = (expiry - 15) - now; //
     if (refreshTime <= 0) {
       this.safeRefresh();
     }

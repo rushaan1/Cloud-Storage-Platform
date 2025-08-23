@@ -1,0 +1,127 @@
+.NET 8 Migration Analysis - Potential Breaking Changes
+
+CURRENT STATE:
+- Target Framework: net6.0 across all projects
+- ASP.NET Core 6.0.35 packages
+- Entity Framework Core 6.0.35
+- JWT Bearer 6.0.35
+
+CRITICAL BREAKING CHANGES:
+
+1. ALLOWSYNCHRONOUSIO DEPRECATION (HIGH PRIORITY)
+   - Current: opts.AllowSynchronousIO = true in Program.cs
+   - Issue: Deprecated in .NET 7, removed in .NET 8
+   - Impact: File streaming operations in RentedStreamResult.cs and file previews
+   - Solution: Replace synchronous operations with async alternatives
+   - Files affected: RentedStreamResult.cs, FileRetrievalService.cs, ThumbnailService.cs
+
+2. MICROSOFT.VISUALBASIC DEPENDENCY (MEDIUM PRIORITY)
+   - Current: Microsoft.VisualBasic 10.3.0 in Core project
+   - Usage: Only using Microsoft.VisualBasic.FileIO namespace (imported but not used)
+   - Impact: Minimal - appears to be unused dependency
+   - Solution: Remove the package reference entirely
+   - Files affected: CloudStoragePlatform.Core.csproj
+
+3. PACKAGE VERSION COMPATIBILITY (HIGH PRIORITY)
+   - Current packages need major version updates:
+     * Microsoft.AspNetCore.Authentication.JwtBearer: 6.0.35 → 8.0.x
+     * Microsoft.AspNetCore.Identity.EntityFrameworkCore: 6.0.35 → 8.0.x
+     * Microsoft.EntityFrameworkCore.*: 6.0.35 → 8.0.x
+     * Microsoft.Extensions.Configuration: 6.0.2 → 8.0.x
+   - Impact: Potential breaking changes in Identity, EF Core APIs
+   - Solution: Update all packages to .NET 8 compatible versions
+
+4. SIXLABORS.IMAGESHARP COMPATIBILITY (MEDIUM PRIORITY)
+   - Current: SixLabors.ImageSharp 3.1.7
+   - Usage: ThumbnailService.cs for image processing
+   - Impact: API changes between versions
+   - Solution: Update to latest .NET 8 compatible version
+   - Files affected: ThumbnailService.cs
+
+5. PDFIUMVIEWER COMPATIBILITY (LOW PRIORITY)
+   - Current: PdfiumViewer 2.13.0
+   - Usage: Not directly used in code (likely for PDF preview functionality)
+   - Impact: May need updates for .NET 8 compatibility
+   - Solution: Check for .NET 8 compatible version or alternatives
+
+6. JSON SERIALIZATION CHANGES (MEDIUM PRIORITY)
+   - Current: System.Text.Json usage in SSE.cs
+   - Impact: .NET 8 may have different default behaviors
+   - Solution: Review JsonSerializerOptions and ensure compatibility
+   - Files affected: SSE.cs
+
+7. IDENTITY FRAMEWORK CHANGES (HIGH PRIORITY)
+   - Current: ASP.NET Core Identity with custom ApplicationUser/ApplicationRole
+   - Impact: Potential breaking changes in Identity APIs
+   - Areas to review:
+     * UserManager/SignInManager usage in AccountController
+     * Custom user/role entities
+     * Password validation rules
+   - Files affected: AccountController.cs, ApplicationUser.cs, ApplicationRole.cs
+
+8. ENTITY FRAMEWORK CORE CHANGES (HIGH PRIORITY)
+   - Current: EF Core 6 with lazy loading proxies
+   - Impact: Potential breaking changes in:
+     * Lazy loading behavior
+     * Query translation
+     * Migration generation
+   - Areas to review:
+     * Repository patterns
+     * Navigation properties
+     * Query optimizations
+   - Files affected: All repository classes, DbContext
+
+9. JWT BEARER AUTHENTICATION CHANGES (MEDIUM PRIORITY)
+   - Current: JWT Bearer with custom cookie reading
+   - Impact: Potential changes in token validation behavior
+   - Areas to review:
+     * TokenValidationParameters
+     * Cookie handling
+     * Claims processing
+   - Files affected: Program.cs, JwtService.cs, AccountController.cs
+
+10. HTTP PIPELINE CHANGES (LOW PRIORITY)
+    - Current: Custom middleware for SSE and protocol handling
+    - Impact: Potential changes in middleware behavior
+    - Files affected: Program.cs (SSE middleware)
+
+11. CONFIGURATION SYSTEM CHANGES (LOW PRIORITY)
+    - Current: IConfiguration usage throughout
+    - Impact: Minimal - mostly compatible
+    - Areas to review: Configuration binding and validation
+
+12. CORS POLICY CHANGES (LOW PRIORITY)
+    - Current: Custom CORS policy for Angular localhost
+    - Impact: Minimal - should remain compatible
+    - Files affected: Program.cs
+
+MIGRATION STEPS RECOMMENDATION:
+
+1. IMMEDIATE ACTIONS:
+   - Remove Microsoft.VisualBasic dependency
+   - Update all NuGet packages to .NET 8 versions
+   - Test Identity framework compatibility
+
+2. CRITICAL FIXES:
+   - Replace AllowSynchronousIO usage with async alternatives
+   - Update SixLabors.ImageSharp to compatible version
+   - Review and test EF Core queries
+
+3. TESTING PRIORITIES:
+   - File upload/download functionality
+   - Authentication/authorization flows
+   - Database operations and migrations
+   - Image thumbnail generation
+   - SSE (Server-Sent Events) functionality
+
+4. PERFORMANCE CONSIDERATIONS:
+   - .NET 8 has improved performance but may expose existing bottlenecks
+   - Review async/await patterns throughout the codebase
+   - Consider using new .NET 8 features for optimization
+
+RISK ASSESSMENT:
+- HIGH RISK: AllowSynchronousIO removal, package compatibility
+- MEDIUM RISK: Identity/EF Core API changes, ImageSharp updates
+- LOW RISK: Configuration, CORS, middleware changes
+
+ESTIMATED MIGRATION EFFORT: 2-3 days for critical fixes, 1 week for comprehensive testing

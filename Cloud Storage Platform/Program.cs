@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace CloudStoragePlatform.Web
 {
@@ -29,11 +31,13 @@ namespace CloudStoragePlatform.Web
             {
                 serverOptions.Limits.MaxRequestBodySize = long.MaxValue;
             });
+            //builder.WebHost.UseUrls("http://*:80");
             string defaultDirectory = builder.Configuration.GetValue<string>("InitialPathForStorage");
             if (!Directory.Exists(defaultDirectory)) 
             {
                 Directory.CreateDirectory(Path.Combine(defaultDirectory, "home"));
             }
+            var keyVaultUrl = new Uri($"https://kv-mystoraeg.vault.azure.net/");
 
             builder.Services.AddControllers(options => 
             {
@@ -51,7 +55,18 @@ namespace CloudStoragePlatform.Web
                                .AllowAnyHeader()
                                .AllowCredentials();
                     });
+                
+                options.AddPolicy("AllowAzureAppService",
+                    builder =>
+                    {
+                        builder.WithOrigins("https://localhost:4200", "https://192.168.29.161:4200", "https://cloudstoraeg.azurewebsites.net")
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .AllowCredentials();
+                    });
             });
+
+            builder.Configuration.AddAzureKeyVault(keyVaultUrl, new DefaultAzureCredential());
 
             builder.Services.AddScoped<UserIdentification>();
             builder.Services.AddScoped<IdentifyUser>();
@@ -128,19 +143,36 @@ namespace CloudStoragePlatform.Web
 
 
             var app = builder.Build();
+            
+            // Add startup logging
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("Application starting up...");
+            logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
+            logger.LogInformation($"Content Root: {app.Environment.ContentRootPath}");
+            
             app.UseStaticFiles();
 
             // Configure the HTTP request pipeline.
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            app.UseRouting();
+            // Use appropriate CORS policy based on environment
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseCors("AllowAngularLocalhost");
             }
-            app.UseRouting();
-            app.UseCors("AllowAngularLocalhost");
+            else
+            {
+                app.UseCors("AllowAzureAppService");
+            }
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+            
+            // Add a simple root endpoint for testing
+            app.MapGet("/", () => "Cloud Storage Platform API is running!");
+            app.MapGet("/test", () => new { message = "API is working", timestamp = DateTime.UtcNow });
             app.Use(async (context, next) =>
             {
                 if (context.Request.Path.StartsWithSegments("/api/Folders/sse"))
