@@ -19,12 +19,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Azure.Core;
+using Cloud_Storage_Platform;
 
 namespace CloudStoragePlatform.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -68,6 +70,8 @@ namespace CloudStoragePlatform.Web
 
             builder.Configuration.AddAzureKeyVault(keyVaultUrl, new DefaultAzureCredential());
 
+            builder.Services.AddSingleton<TokenCredential, DefaultAzureCredential>();
+            builder.Services.AddSingleton<AzureAdAuthenticationDbConnectionInterceptor>();
             builder.Services.AddScoped<UserIdentification>();
             builder.Services.AddScoped<IdentifyUser>();
             builder.Services.AddScoped<ThumbnailService>();
@@ -86,12 +90,24 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddScoped<IModelBinder, AppendToPath>();
             builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            if (builder.Environment.EnvironmentName == "Production")
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-                options.UseLazyLoadingProxies();
-            });
-            
+                builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+                {
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+                    options.AddInterceptors(serviceProvider.GetRequiredService<AzureAdAuthenticationDbConnectionInterceptor>());
+                    options.UseLazyLoadingProxies();
+                });
+            }
+            else
+            {
+                builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                {
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+                    options.UseLazyLoadingProxies();
+                });
+            }
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.Configure<KestrelServerOptions>(opts =>
@@ -171,7 +187,20 @@ namespace CloudStoragePlatform.Web
             app.MapControllers();
             
             // Add a simple root endpoint for testing
-            app.MapGet("/", () => "Cloud Storage Platform API is running!");
+            app.MapGet("/", async () => {
+                bool? canConnect = null;
+                using (var scope = app.Services.CreateScope()) 
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    try
+                    {
+                        await dbContext.Database.OpenConnectionAsync();
+                    }
+                    catch (Exception ex) { Console.WriteLine($"Error opening connection, {ex.Message}\n{ex.InnerException}"); }
+                    canConnect = await dbContext.Database.CanConnectAsync();
+                }
+                return $"Cloud Storage Platform API is running! Shots fired AP to {app.Environment.EnvironmentName}\nRedundant confirmation: {app.Configuration["EnvConfirmationRedundancy"]}\nCan connect to database: {canConnect}"; 
+            });
             app.MapGet("/test", () => new { message = "API is working", timestamp = DateTime.UtcNow });
             app.Use(async (context, next) =>
             {

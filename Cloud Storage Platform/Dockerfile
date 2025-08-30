@@ -8,7 +8,6 @@ EXPOSE 443
 
 # Set environment variables for Azure App Service
 ENV ASPNETCORE_URLS=http://+:80
-ENV ASPNETCORE_ENVIRONMENT=Production
 
 
 # This stage is used to build the service project
