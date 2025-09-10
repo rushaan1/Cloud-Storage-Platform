@@ -1,5 +1,6 @@
 ﻿using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
+using CloudStoragePlatform.Core;
 using CloudStoragePlatform.Core.DTO;
 using CloudStoragePlatform.Core.Enums;
 using CloudStoragePlatform.Core.ServiceContracts;
@@ -27,27 +28,13 @@ namespace Cloud_Storage_Platform.Controllers
             _filesRetrievalService = filesRetrievalService;
         }
 
+
         [HttpGet("filePreview")]
         public async Task<IActionResult> GetFileForPreview(string filePath)
         {
             // TODO After Azure integration ensure file being opened's metadata is being updated
             // BUT WAIT A MIN IT'S ALREADY BEING UPDATED IN THE SERVICE BEING CALLED erm what the sigma
-            var extension = Path.GetExtension(filePath).ToLowerInvariant();
-            var mimeType = extension switch
-            {
-                ".txt" => "text/plain",
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".mp4" => "video/mp4",
-                ".webm" => "video/webm",
-                ".mp3" => "audio/mpeg",
-                ".wav" => "audio/wav",
-                ".webp" => "image/webp",
-                ".pdf" => "application/pdf",
-                _ => null
-            };
-
+            string? mimeType = Utilities.GetMimeType(filePath);
             if (mimeType == null)
             {
                 return BadRequest("Unsupported file type");

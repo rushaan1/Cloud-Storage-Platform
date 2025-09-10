@@ -57,10 +57,6 @@ namespace CloudStoragePlatform.Core.Services
                 OpenCount = 0,
                 ShareCount = 0
             };
-            Sharing sharing = new Sharing()
-            {
-                SharingId = Guid.NewGuid(),
-            };
 
             string extension = fileAddRequest.FileName.Split('.').Last().ToLower();
             FileType fileType = extension switch
@@ -90,7 +86,6 @@ namespace CloudStoragePlatform.Core.Services
                 FilePath = fileAddRequest.FilePath,
                 ParentFolder = parent,
                 Metadata = metadata,
-                Sharing = sharing,
                 CreationDate = DateTime.Now,
                 FileType = fileType
             };
@@ -103,7 +98,6 @@ namespace CloudStoragePlatform.Core.Services
             file.Size = fileSizeInMB;
 
             metadata.File = file;
-            sharing.File = file;
             await _filesRepository.AddFile(file);
 
             if (parent != null)

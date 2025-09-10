@@ -39,7 +39,6 @@ namespace CloudStoragePlatform.Web
             {
                 Directory.CreateDirectory(Path.Combine(defaultDirectory, "home"));
             }
-            var keyVaultUrl = new Uri($"https://kv-mystoraeg.vault.azure.net/");
 
             builder.Services.AddControllers(options => 
             {
@@ -57,21 +56,9 @@ namespace CloudStoragePlatform.Web
                                .AllowAnyHeader()
                                .AllowCredentials();
                     });
-                
-                options.AddPolicy("AllowAzureAppService",
-                    builder =>
-                    {
-                        builder.WithOrigins("https://localhost:4200", "https://192.168.29.161:4200", "https://cloudstoraeg.azurewebsites.net")
-                               .AllowAnyMethod()
-                               .AllowAnyHeader()
-                               .AllowCredentials();
-                    });
             });
 
-            builder.Configuration.AddAzureKeyVault(keyVaultUrl, new DefaultAzureCredential());
-
             builder.Services.AddSingleton<TokenCredential, DefaultAzureCredential>();
-            builder.Services.AddSingleton<AzureAdAuthenticationDbConnectionInterceptor>();
             builder.Services.AddScoped<UserIdentification>();
             builder.Services.AddScoped<IdentifyUser>();
             builder.Services.AddScoped<ThumbnailService>();
@@ -87,26 +74,15 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddScoped<IFilesModificationService, FileModificationService>();
             builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
             builder.Services.AddScoped<ISharingRepository, SharingRepository>();
+            builder.Services.AddScoped<ISharingService, SharingService>();
             builder.Services.AddScoped<IModelBinder, AppendToPath>();
             builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
 
-            if (builder.Environment.EnvironmentName == "Production")
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
-                {
-                    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-                    options.AddInterceptors(serviceProvider.GetRequiredService<AzureAdAuthenticationDbConnectionInterceptor>());
-                    options.UseLazyLoadingProxies();
-                });
-            }
-            else
-            {
-                builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                {
-                    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-                    options.UseLazyLoadingProxies();
-                });
-            }
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+                options.UseLazyLoadingProxies();
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -185,23 +161,7 @@ namespace CloudStoragePlatform.Web
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
-            
-            // Add a simple root endpoint for testing
-            app.MapGet("/", async () => {
-                bool? canConnect = null;
-                using (var scope = app.Services.CreateScope()) 
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    try
-                    {
-                        await dbContext.Database.OpenConnectionAsync();
-                    }
-                    catch (Exception ex) { Console.WriteLine($"Error opening connection, {ex.Message}\n{ex.InnerException}"); }
-                    canConnect = await dbContext.Database.CanConnectAsync();
-                }
-                return $"Cloud Storage Platform API is running! Shots fired AP to {app.Environment.EnvironmentName}\nRedundant confirmation: {app.Configuration["EnvConfirmationRedundancy"]}\nCan connect to database: {canConnect}"; 
-            });
-            app.MapGet("/test", () => new { message = "API is working", timestamp = DateTime.UtcNow });
+           
             app.Use(async (context, next) =>
             {
                 if (context.Request.Path.StartsWithSegments("/api/Folders/sse"))

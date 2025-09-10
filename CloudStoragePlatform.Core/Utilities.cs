@@ -224,5 +224,25 @@ namespace CloudStoragePlatform.Core
             string homeFolderPath = Path.Combine(config["InitialPathForStorage"], "home");
             return string.Equals(folderPath, homeFolderPath, StringComparison.OrdinalIgnoreCase);
         }
+
+        public static string? GetMimeType(string filePath) 
+        {
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            var mimeType = extension switch
+            {
+                ".txt" => "text/plain",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".mp4" => "video/mp4",
+                ".webm" => "video/webm",
+                ".mp3" => "audio/mpeg",
+                ".wav" => "audio/wav",
+                ".webp" => "image/webp",
+                ".pdf" => "application/pdf",
+                _ => null
+            };
+            return mimeType;
+        }
     }
 }

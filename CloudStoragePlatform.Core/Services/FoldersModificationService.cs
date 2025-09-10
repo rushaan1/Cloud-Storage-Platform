@@ -63,10 +63,6 @@ namespace CloudStoragePlatform.Core.Services
                     OpenCount = 0,
                     ShareCount = 0
                 };
-                Sharing sharing = new Sharing()
-                {
-                    SharingId = Guid.NewGuid(),
-                };
 
                 if (folderAddRequest.FolderName.Contains("\\"))
                 {
@@ -82,17 +78,13 @@ namespace CloudStoragePlatform.Core.Services
                     FolderPath = folderAddRequest.FolderPath, 
                     ParentFolder = parent, 
                     Metadata = metadata, 
-                    Sharing = sharing, 
                     CreationDate = DateTime.Now,
                     Size = 0.0f
                 };
                 metadata.Folder = folder;
-                sharing.Folder = folder;
                 if (isHomeCreation) 
                 {
                     metadata.Folder = null;
-                    sharing.Folder = null;
-                    folder.Sharing = null;
                     folder.Metadata = null;
                 }
                 await _foldersRepository.AddFolder(folder);

@@ -18,14 +18,16 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             _db = db;
         }
 
+        public async Task<Sharing> CreateSharing(Sharing sharing)
+        {
+            _db.Shares.Add(sharing);
+            await _db.SaveChangesAsync();
+            return sharing;
+        }
+
         public async Task<Sharing?> GetSharingById(Guid id)
         {
             return await _db.Shares.FirstOrDefaultAsync(s => s.SharingId == id);
-        }
-
-        public async Task<Sharing?> GetSharingByUrl(string url) 
-        {
-            return await _db.Shares.FirstOrDefaultAsync(s => s.ShareLinkUrl == url);
         }
 
         public async Task<Sharing?> UpdateSharing(Sharing sharing) 
@@ -38,6 +40,12 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             _db.Entry(matchingSharing).CurrentValues.SetValues(sharing);
             await _db.SaveChangesAsync();
             return matchingSharing;
+        }
+
+        public async Task<bool> DeleteSharing(Sharing sharing)
+        {
+            _db.Shares.Remove(sharing);
+            return await _db.SaveChangesAsync() > 0;
         }
     }
 }

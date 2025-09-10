@@ -114,7 +114,10 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             if (_user == null) throw new InvalidOperationException("User context is not set.");
             if (file.UserId != _user.Id) return false;
 
-            _db.Shares.Remove(file.Sharing);
+            if (file.Sharing != null)
+            {
+                _db.Shares.Remove(file.Sharing);
+            }
             _db.MetaDatasets.Remove(file.Metadata);
 
             _db.Files.Remove(file);
