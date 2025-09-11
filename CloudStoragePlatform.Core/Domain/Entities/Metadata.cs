@@ -26,7 +26,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public DateTime? LastOpened { get; set; }
         public int OpenCount { get; set; } = 0;
 
-        public int ShareCount { get; set; } = 0;
+        public int ShareCount { get; set; } = 0; // not utilized till now, can be used for the amount the same item was made public
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 

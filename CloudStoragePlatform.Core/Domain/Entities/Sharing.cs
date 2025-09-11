@@ -16,7 +16,7 @@ namespace CloudStoragePlatform.Core.Domain.Entities
         public virtual Folder? Folder { get; set; }
         public string? ShareLinkUrl { get; set; }
         public DateTime? ShareLinkExpiry { get; set; } 
-        public int? CurrentShareLinkTimesSeen { get; set; } 
+        public int? Visits { get; set; } 
         public DateTime? ShareLinkCreateDate { get; set; }
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }

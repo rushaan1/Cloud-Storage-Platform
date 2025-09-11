@@ -108,7 +108,9 @@ namespace Cloud_Storage_Platform.Controllers
             try
             {
                 var result = await _sharingService.ValidateShareFetchSubject(sharingId, fileFolderSubjectId);
-                
+
+                /////////// P U B L I C  D A T A  B E I N G  A C C E S S E D //////////////////////////////////
+
                 if (result == null)
                 {
                     return NotFound("Share not found, expired, or subject not accessible");
@@ -159,6 +161,8 @@ namespace Cloud_Storage_Platform.Controllers
             try
             {
                 var result = await _sharingService.ValidateShareFetchSubject(sharingId, fileFolderSubjectId);
+                
+                /////////// P U B L I C  D A T A  B E I N G  A C C E S S E D //////////////////////////////////
                 
                 if (result == null)
                 {

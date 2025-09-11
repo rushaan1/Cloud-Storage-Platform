@@ -27,6 +27,21 @@ namespace CloudStoragePlatform.Core.Domain.RepositoryContracts
         Task<bool> DeleteSharing(Sharing sharing);
 
         /// <summary>
+        /// Increments the visit count for a sharing entry by 1 and saves.
+        /// </summary>
+        /// <param name="sharingId">The sharing Guid.</param>
+        /// <returns>The updated visits count.</returns>
+        Task<int> IncrementVisits(Guid sharingId);
+
+        /// <summary>
+        /// Sets the visit count for a sharing entry and saves.
+        /// </summary>
+        /// <param name="sharingId">The sharing Guid.</param>
+        /// <param name="visits">The new visits count.</param>
+        /// <returns>A task.</returns>
+        Task SetVisits(Guid sharingId, int visits);
+
+        /// <summary>
         /// Updates an existing sharing entity.
         /// </summary>
         /// <param name="sharing">The sharing entity with updated values.</param>

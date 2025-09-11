@@ -47,5 +47,28 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             _db.Shares.Remove(sharing);
             return await _db.SaveChangesAsync() > 0;
         }
+
+        public async Task<int> IncrementVisits(Guid sharingId)
+        {
+            var sharing = await _db.Shares.FirstOrDefaultAsync(s => s.SharingId == sharingId);
+            if (sharing == null)
+            {
+                return 0;
+            }
+            sharing.Visits = (sharing.Visits ?? 0) + 1;
+            await _db.SaveChangesAsync();
+            return sharing.Visits.Value;
+        }
+
+        public async Task SetVisits(Guid sharingId, int visits)
+        {
+            var sharing = await _db.Shares.FirstOrDefaultAsync(s => s.SharingId == sharingId);
+            if (sharing == null)
+            {
+                return;
+            }
+            sharing.Visits = visits;
+            await _db.SaveChangesAsync();
+        }
     }
 }

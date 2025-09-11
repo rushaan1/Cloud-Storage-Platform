@@ -108,7 +108,7 @@ namespace CloudStoragePlatform.Core.Services
         public async Task<(File? file, Folder? folder, bool childFile, string relativeSubjectPath)?> ValidateShareFetchSubject(Guid sharingId, Guid fileFolderSubjectId) 
         { // subject is essentially the file/folder being fetched, it may be the shared file itself or a shared folder itself or child of a shared folder
             Sharing? share = await _sharingRepository.GetSharingById(sharingId);
-            if (share == null || share.ShareLinkExpiry > DateTime.UtcNow) 
+            if (share == null || (share.ShareLinkExpiry.HasValue && share.ShareLinkExpiry.Value < DateTime.UtcNow))
             {
                 return null;
             }
