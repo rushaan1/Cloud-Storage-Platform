@@ -8,6 +8,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using CloudStoragePlatform.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Cloud_Storage_Platform.Controllers
 {
@@ -101,9 +102,9 @@ namespace Cloud_Storage_Platform.Controllers
 
 
 
-
+        [AllowAnonymous]
         [HttpGet("FetchSharedContent")]
-        public async Task<IActionResult> FetchSharedContent([FromQuery] Guid sharingId, [FromQuery] Guid fileFolderSubjectId)
+        public async Task<IActionResult> FetchSharedContent([FromQuery] Guid sharingId, [FromQuery] Guid fileFolderSubjectId, [FromQuery] bool previewSignal = false, SortOrderOptions sort = SortOrderOptions.DATEADDED_ASCENDING)
         {
             try
             {
@@ -124,6 +125,12 @@ namespace Cloud_Storage_Platform.Controllers
 
                 if (file != null)
                 {
+                    if (previewSignal)
+                    {
+                        // Return ext for file preview signal
+                        return Content(file.FilePath.Split(".").Last());
+                    }
+                    
                     // Get file stream for preview
                     var stream = await _filesRetrievalService.GetFilePreview(file.FilePath);
                     var mimeType = Utilities.GetMimeType(file.FilePath);
@@ -139,7 +146,7 @@ namespace Cloud_Storage_Platform.Controllers
                 else if (folder != null)
                 {
                     // Handle folder children
-                    var children = await _bulkRetrievalService.GetAllChildren(folder.FolderId, SortOrderOptions.DATEADDED_ASCENDING);
+                    var children = await _bulkRetrievalService.GetAllChildren(folder.FolderId, sort);
                     return Ok(new BulkResponse { folders = children.Folders, files = children.Files });
                 }
 
@@ -154,7 +161,7 @@ namespace Cloud_Storage_Platform.Controllers
 
 
 
-
+        [AllowAnonymous]
         [HttpGet("DownloadSharedContent")]
         public async Task DownloadSharedContent([FromQuery] Guid sharingId, [FromQuery] Guid fileFolderSubjectId)
         {
@@ -218,6 +225,34 @@ namespace Cloud_Storage_Platform.Controllers
             catch (Exception)
             {
                 Response.StatusCode = 500;
+            }
+        }
+
+
+        [AllowAnonymous]
+        [HttpGet("OpenPublicFolderByPath")]
+        public async Task<IActionResult> OpenPublicFolderByPath([FromQuery] Guid sharingId, [FromQuery] string relativePath, SortOrderOptions sort = SortOrderOptions.DATEADDED_ASCENDING)
+        {
+            try
+            {
+                var publicFolder = await _sharingService.FetchPublicFolder(sharingId, relativePath);
+
+                /////////// P U B L I C  D A T A  B E I N G  A C C E S S E D //////////////////////////////////
+                
+
+                if (publicFolder == null)
+                {
+                    return NotFound("Share not found, expired, or folder not accessible");
+                }
+
+                // Get all children of the public folder
+                var children = await _bulkRetrievalService.GetAllChildren(publicFolder.FolderId, sort);
+                
+                return Ok(new BulkResponse { folders = children.Folders, files = children.Files });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while opening public folder", Error = ex.Message });
             }
         }
     }

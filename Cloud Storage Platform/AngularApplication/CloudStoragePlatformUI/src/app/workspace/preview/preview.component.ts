@@ -14,11 +14,28 @@ import {FilesStateService} from "../../services/StateManagementServices/files-st
   styleUrl: './preview.component.css'
 })
 export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
-  @Input() file!: File;
+  @Input() file?: File;
+  @Input() publicfileurl?: string;
+  @Input() publicdownloadurl?: string;
+  @Input() publicfextension?: string;
   fileText: string = '';
   trustedUrl: SafeResourceUrl = '';
+  PRIVATE_PREVIEW_URL = "https://localhost:7219/api/Retrievals/filePreview"
+  PRIVATE_DOWNLOAD_URL = "https://localhost:7219/api/Retrievals/download"
   protected readonly FileType = FileType;
   constructor(private cd:ChangeDetectorRef,protected router:Router, private http: HttpClient, private loader:LoadingService, protected sanitizer: DomSanitizer, private filesState:FilesStateService) {}
+
+  ngOnInit(): void {
+    this.filesState.outsideFilesAndFoldersMode = true;
+
+    if (this.publicfileurl) {
+      // For public files, use the provided URL
+      this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.publicfileurl);
+    } else if (this.file) {
+      // For regular files, construct the preview URL
+      this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`${this.PRIVATE_PREVIEW_URL}?filePath=` + this.file.filePath);
+    }
+  }
 
   ngAfterViewInit(): void {
     this.loadTxtFile();
@@ -29,30 +46,42 @@ export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
   }
 
   loadTxtFile() {
-    if (!this.file.filePath.endsWith(".txt")){return;}
-    const url = `https://localhost:7219/api/Retrievals/filePreview`;
-    const httpParams = new HttpParams()
-      .set('filePath', this.file.filePath);
+    if (this.publicfextension != "txt" && !this.file?.filePath.endsWith(".txt")){return;}
     this.loader.loadingStart();
-    this.http.get(url, { responseType: 'blob', observe: 'response', params: httpParams}).pipe(finalize(()=>{this.loader.loadingEnd();})).subscribe({
-      next: (res) => {
-        const reader = new FileReader();
-        reader.onload = () => this.fileText = reader.result as string;
-        reader.readAsText(res.body!);
-      }
-    });
+    if (this.file){
+      const url = this.PRIVATE_PREVIEW_URL;
+      const httpParams = new HttpParams()
+        .set('filePath', this.file.filePath);
+
+      this.http.get(url, { responseType: 'blob', observe: 'response', params: httpParams}).pipe(finalize(()=>{this.loader.loadingEnd();})).subscribe({
+        next: (res) => {
+          const reader = new FileReader();
+          reader.onload = () => this.fileText = reader.result as string;
+          reader.readAsText(res.body!);
+        }
+      });
+    }
+    else if (this.publicfileurl){
+      this.http.get(this.publicfileurl, { responseType: 'blob', observe: 'response'}).pipe(finalize(()=>{this.loader.loadingEnd();})).subscribe({
+        next: (res) => {
+          const reader = new FileReader();
+          reader.onload = () => this.fileText = reader.result as string;
+          reader.readAsText(res.body!);
+        }
+      });
+    }
   }
 
   download(){
-    let url = "https://localhost:7219/api/Retrievals/download";
-    url = url+"?fileIds="+this.file.fileId;
-    url += "&name="+this.file.fileName;
-    window.open(url, "_blank");
-  }
-
-  ngOnInit(): void {
-    this.filesState.outsideFilesAndFoldersMode = true;
-    this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl('https://localhost:7219/api/Retrievals/filePreview?filePath=' + this.file.filePath);
+    if (this.publicfileurl) {
+      // For public files, use the provided URL
+      window.open(this.publicfileurl, "_blank");
+    } else if (this.file) {
+      let url = this.PRIVATE_DOWNLOAD_URL;
+      url = url+"?fileIds="+this.file.fileId;
+      url += "&name="+this.file.fileName;
+      window.open(url, "_blank");
+    }
   }
 
   protected readonly window = window;

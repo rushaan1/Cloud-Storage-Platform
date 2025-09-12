@@ -442,6 +442,11 @@ export class ViewerComponent implements OnInit, OnDestroy{
         this.crumbs = ["Search Results"];
         this.handleSearchOperation();
         break;
+      case "shared":
+        this.breadcrumbService.setBreadcrumbs(["Loading..."]);
+        this.crumbs = ["Loading..."];
+        
+        break;
       default:
         this.router.navigate(["filter", "home"]);
         break;

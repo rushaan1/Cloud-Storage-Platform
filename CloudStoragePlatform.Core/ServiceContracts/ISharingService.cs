@@ -14,6 +14,8 @@ namespace CloudStoragePlatform.Core.ServiceContracts
         Task<bool> RemoveShareForFolder(Guid folderId);
 
         Task<(File? file, Folder? folder, bool childFile, string relativeSubjectPath)?> ValidateShareFetchSubject(Guid sharingId, Guid fileFolderSubjectId);
+
+        Task<Folder?> FetchPublicFolder(Guid sharingId, string relativePath);
     }
 }
 

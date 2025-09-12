@@ -160,6 +160,50 @@ namespace CloudStoragePlatform.Core.Services
             }
             return null;
         }
+
+        public async Task<Folder?> FetchPublicFolder(Guid sharingId, string relativePath)
+        {
+            Sharing? share = await _sharingRepository.GetSharingById(sharingId);
+            if (share == null || (share.ShareLinkExpiry.HasValue && share.ShareLinkExpiry.Value < DateTime.UtcNow))
+            {
+                return null;
+            }
+
+            // Increment visits BEFORE switching user context
+            await _sharingRepository.IncrementVisits(sharingId);
+
+            ApplicationUser? sharedByUser = share.User;
+            if (sharedByUser == null) { return null; }
+            _userIdentification.User = sharedByUser;
+
+            // Switch user context
+
+            Folder? sharedFolder = share.Folder;
+            if (sharedFolder == null)
+            {
+                return null;
+            }
+
+            // If path is same as shared folder's path, return the shared folder
+            if (string.IsNullOrEmpty(relativePath) || relativePath == sharedFolder.FolderPath)
+            {
+                return sharedFolder;
+            }
+
+            // Split relative path by \ and remove first element
+            string[] pathParts = relativePath.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+            if (pathParts.Length == 0)
+            {
+                return sharedFolder;
+            }
+
+            // Remove first element and combine with shared folder path
+            string mutatedPath = string.Join("\\", pathParts.Skip(1));
+            string combinedPath = Path.Combine(sharedFolder.FolderPath, mutatedPath);
+
+            // Find and return the matching folder
+            return await _foldersRepository.GetFolderByFolderPath(combinedPath);
+        }
     }
 }
 

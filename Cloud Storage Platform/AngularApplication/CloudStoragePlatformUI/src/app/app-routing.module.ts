@@ -16,6 +16,7 @@ const routes: Routes = [
   {path:'account/login', component:LoginComponent},
   {path:'account/register', component:RegisterComponent},
   {path:'account/dashboard', component:DashboardComponent, canActivate: [authGuard]},
+  {path:'shared/:id/:id', component: ViewerComponent},
   {path:'foldermetadata/:id', component:InfoComponent, canActivate: [authGuard]},
   {path:'filemetadata/:id', component:InfoComponent, canActivate: [authGuard]},
   {path:'', component:ViewerComponent, canActivate: [authGuard]},
