@@ -62,7 +62,7 @@ export class PublicService {
    * @param sort - Sort order for folder contents
    * @returns Observable with folder contents or No Content for files
    */
-  public fetchSharedContent(sharingId: string, fileFolderSubjectId: string, sort: SortOrderOptions = SortOrderOptions.DATEADDED_ASCENDING): Observable<File[]> {
+  public fetchSharedContent(sharingId: string, fileFolderSubjectId: string, sort: SortOrderOptions = SortOrderOptions.DATEADDED_ASCENDING): Observable<{files: File[], relativePath: string, file?:File}> {
     Utils.handleStringInvalidError(sharingId);
     Utils.handleStringInvalidError(fileFolderSubjectId);
     let params = new HttpParams()
@@ -73,17 +73,21 @@ export class PublicService {
 
     return this.httpClient.get(`${PUBLIC_BASE_URL}/FetchSharedContent`, {
       params,
-      responseType: 'json'
+      observe: 'response'
     }).pipe(
       map((response: any) => {
+        const relativePath = this.getRelativePathFromHeaders(response);
+
         // Manually transform the response since the interceptor won't process Shares endpoints
-        if (response.folders && response.files) {
+        if (response.body && response.body.folders && response.body.files) {
           // Combine folders and files into a single File[] array
-          const folders = response.folders.map((folder: any) => Utils.processFileModel(folder));
-          const files = response.files.map((file: any) => Utils.processFileModel(file));
-          return [...folders, ...files];
+          const folders = response.body.folders.map((folder: any) => Utils.processFileModel(folder));
+          const files = response.body.files.map((file: any) => Utils.processFileModel(file));
+          return { files: [...folders, ...files], relativePath };
         }
-        return response;
+        else {
+          return { files: [], relativePath: "" };
+        }
       })
     );
   }

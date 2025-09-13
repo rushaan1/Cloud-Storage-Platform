@@ -128,7 +128,7 @@ namespace Cloud_Storage_Platform.Controllers
                     if (previewSignal)
                     {
                         // Return ext for file preview signal
-                        return Content(file.FilePath.Split(".").Last());
+                        return Ok(file.ToFileResponse());
                     }
                     
                     // Get file stream for preview

@@ -13,6 +13,7 @@ import {EventService} from '../../services/event-service.service';
 import {ActivatedRoute, Router} from "@angular/router";
 import {File} from "../../models/File";
 import {FilesAndFoldersService} from "../../services/ApiServices/files-and-folders.service";
+import {PublicService, SortOrderOptions} from "../../services/ApiServices/public.service";
 import {Utils} from "../../Utils";
 import {BreadcrumbsComponent} from "../../items/breadcrumbs/breadcrumbs.component";
 import {LoadingService} from "../../services/StateManagementServices/loading.service";
@@ -50,6 +51,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
     private router: Router,
     private route: ActivatedRoute,
     private foldersService:FilesAndFoldersService,
+    private publicService:PublicService,
     private eventService:EventService,
     protected loaderService:LoadingService,
     private breadcrumbService:BreadcrumbService,
@@ -59,13 +61,14 @@ export class ViewerComponent implements OnInit, OnDestroy{
 
   ngOnInit(): void {
     this.filesState.setUncreatedFolderExists(false);
-    // this.foldersService.test();
+    ///////////  NETWORK SERVICE  ////////////
     this.subscriptions.push(this.networkStatusService.getStatus().pipe(skip(1)).subscribe(status => {
       if (status) {
         this.eventService.emit("reload viewer list");
         console.log("Should reload");
       }
     }));
+    ///////////  FILES STATE  ////////////
     this.subscriptions.push(this.filesState.filesInViewer$.pipe(skip(1)).subscribe(files => {
 
       if (this.crumbs[0]!="Trash"){
@@ -76,6 +79,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
       }
       this.filterOutFoldersBeingMoved();
     }));
+    ///////////  QUERY PARAMS  ////////////
     this.subscriptions.push(this.route.queryParams.subscribe(params => {
       const searchQuery = params['q'];
       const sort = params["sort"];
@@ -91,19 +95,21 @@ export class ViewerComponent implements OnInit, OnDestroy{
       if(this.crumbs[0]=="Search Results"){
         this.handleSearchOperation();
       }
-      // use !queryName to see if query param is valid or empty/null/undefined
     }));
 
-
+    ///////////  APP URL  ////////////
     this.subscriptions.push(this.route.url.subscribe(url => {
       let appUrl = this.router.url.split("?")[0].split("/");
       // subscribing to this.route to handle routing and this.router.url is used instead of url here to ensure it's not relative but global url is accessed to ensure usability of program structure
+
+      //---CLEANING EMPTY ELEMENTS FROM APP URL DUE TO TRAILING / AS A RESULT OF SPLIT  TO ENSURE CONSISTENCY AHEAD
       if (appUrl[0]==""){
         appUrl.shift();
       }
       if (appUrl[appUrl.length-1]==""){
         appUrl.pop();
       }
+      //---
 
       if (!appUrl[0]){
         this.router.navigate(["filter", "home"]);
@@ -118,6 +124,10 @@ export class ViewerComponent implements OnInit, OnDestroy{
         console.log("manually initialized breadcrumbs");
       }
     }));
+
+
+    ///////////  EVENTS  ////////////
+
 
     this.subscriptions.push(this.eventService.listen("create new folder", () => {
       this.createNewFolder();
@@ -321,10 +331,6 @@ export class ViewerComponent implements OnInit, OnDestroy{
     });
   }
 
-  filterOutFoldersBeingMoved(){
-    this.visibleFiles = this.visibleFiles.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
-  }
-
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     if (this.sse){
@@ -332,39 +338,18 @@ export class ViewerComponent implements OnInit, OnDestroy{
     }
   }
 
-  containsId(id:string){
-    return this.visibleFiles.map(f=>f.fileId).includes(id);
+  filterOutFoldersBeingMoved(){
+    this.visibleFiles = this.visibleFiles.filter(f=>{return !this.filesState.getItemsBeingMoved().map(i => i.fileId).includes(f.fileId)});
   }
 
-  extractCleanParentPath(path:string){
-    let splitted = path.split("\\");
-    splitted.pop();
-    path = splitted.join("\\");
-    return Utils.constructFilePathForApi(Utils.cleanPath(path));
-  }
 
-  renameUpdation(f:File, data:any, i:number){
-    // THIS FN DOES NOT GURANTEE RENAME, ONLY IF f & data ids match
 
-    // f is stale file, data contains updated file, i is the index of file in filesInViewer
-    if (f.fileId==data.content.id as string) {
-      const file:File = {...f}; // copy stale file in its full form
-      file.fileName = data.content.val as string; //update file name property
 
-      const fullPath = file.filePath.split("\\");
-      fullPath[fullPath.length-1] = data.content.val as string;
-      file.filePath = fullPath.join("\\"); // update file path property w new name
 
-      // apply the changes
-      let files = this.filesState.getFilesInViewer();
-      files.splice(i, 1, file);
-      this.filesState.setFilesInViewer(files);
-      this.filesState.setRenaming(false);
-    }
-  }
-
+  /////////// XX loaders
   handleFolderLoaders(){
     const appUrl = this.appUrl;
+    // CRUMBS SET
     this.crumbs = Utils.obtainBreadCrumbs(appUrl);
     this.breadcrumbService.setBreadcrumbs(this.crumbs);
     this.loaderService.loadingStart();
@@ -376,6 +361,7 @@ export class ViewerComponent implements OnInit, OnDestroy{
             case "home":
               this.loadHomeFolder();
               break;
+              // CRUMBS SET
             case "gallery":
               this.loadMediaFiles();
               this.crumbs = ["Gallery"];
@@ -439,13 +425,72 @@ export class ViewerComponent implements OnInit, OnDestroy{
         break;
       case "searchFilter":
         this.breadcrumbService.setBreadcrumbs(["Search Results"]);
+        // CRUMBS SET
         this.crumbs = ["Search Results"];
         this.handleSearchOperation();
         break;
       case "shared":
-        this.breadcrumbService.setBreadcrumbs(["Loading..."]);
-        this.crumbs = ["Loading..."];
-        
+        // CRUMBS SET
+        this.breadcrumbService.setBreadcrumbs(["Shared", "Loading..."]);
+        this.crumbs = ["Shared", "Loading..."];
+
+        // Extract share ID and subject ID from URL
+        if (appUrl.length >= 3) {
+          const shareId = appUrl[1];
+          const subjectId = appUrl[2];
+
+          // Get sort order from localStorage like other bulk requests
+          const sortVal = localStorage.getItem("sort")?.toString();
+          let sortOrder = SortOrderOptions.DATEADDED_ASCENDING;
+          if (sortVal) {
+            // Convert string to SortOrderOptions enum
+            const enumValue = Object.values(SortOrderOptions).find(value => value === sortVal);
+            if (enumValue) {
+              sortOrder = enumValue as SortOrderOptions;
+            }
+          }
+
+          // Call public service to get shared content
+          this.publicService.fetchSharedContent(shareId, subjectId, sortOrder).subscribe({
+            next: (response) => {
+              // Check if response has files array
+              this.filesState.shared = true;
+              if (response.files && response.files.length > 0) {
+                this.filesState.setFilesInViewer(response.files);
+                this.filterOutFoldersBeingMoved();
+
+                // Process relative path for breadcrumbs
+                let breadcrumbs = ["Shared"];
+                if (response.relativePath) {
+                  // Split the relative path and add to breadcrumbs
+                  const pathParts = response.relativePath.split('\\').filter(part => part.length > 0);
+                  breadcrumbs = ["Shared", ...pathParts];
+                }
+
+                this.breadcrumbService.setBreadcrumbs(["Shared"]);
+                this.crumbs = breadcrumbs;
+              } else {
+                // No files returned, set basic breadcrumbs
+                this.breadcrumbService.setBreadcrumbs(["Shared"]);
+                this.crumbs = ["Shared"];
+              }
+            },
+            error: (error) => {
+              this.loaderService.loadingEnd();
+              console.error('Error fetching shared content:', error);
+            },
+            complete: () => {
+              this.loaderService.loadingEnd();
+              if (localStorage.getItem("list")=="Y"){
+                this.handleEmptyTxt();
+              }
+            }
+          });
+        } else {
+          // Invalid shared URL format
+          this.loaderService.loadingEnd();
+          this.router.navigate(["filter", "home"]);
+        }
         break;
       default:
         this.router.navigate(["filter", "home"]);
@@ -542,7 +587,30 @@ export class ViewerComponent implements OnInit, OnDestroy{
       }
     });
   }
+  handleSearchOperation(){
+    if (Utils.validString(this.searchQuery)){
+      this.loaderService.loadingStart();
+      this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
+        next: res => {
+          this.filesState.setFilesInViewer(res);
+          this.filterOutFoldersBeingMoved();
+        },
+        error: err => {
+          this.loaderService.loadingEnd();
+        },
+        complete: () => {
+          this.loaderService.loadingEnd();
+          this.handleEmptyTxt("No search results match "+this.searchQuery);
+        }
+      });
+    }
+  }
+  /////////// XX loaders
 
+
+
+
+  //////// XX IMPORTANT TASK METHODS
   createNewFolder() {
     if (this.anyItemRenaming){
       return;
@@ -566,26 +634,43 @@ export class ViewerComponent implements OnInit, OnDestroy{
     };
     this.filesState.setFilesInViewer([...this.filesState.getFilesInViewer(),folder]);
   }
+  renameUpdation(f:File, data:any, i:number){
+    // THIS FN DOES NOT GURANTEE RENAME, ONLY IF f & data ids match
 
-  handleSearchOperation(){
-    if (Utils.validString(this.searchQuery)){
-      this.loaderService.loadingStart();
-      this.foldersService.getFilteredFolders(this.searchQuery!).subscribe({
-        next: res => {
-          this.filesState.setFilesInViewer(res);
-          this.filterOutFoldersBeingMoved();
-        },
-        error: err => {
-          this.loaderService.loadingEnd();
-        },
-        complete: () => {
-          this.loaderService.loadingEnd();
-          this.handleEmptyTxt("No search results match "+this.searchQuery);
-        }
-      });
+    // f is stale file, data contains updated file, i is the index of file in filesInViewer
+    if (f.fileId==data.content.id as string) {
+      const file:File = {...f}; // copy stale file in its full form
+      file.fileName = data.content.val as string; //update file name property
+
+      const fullPath = file.filePath.split("\\");
+      fullPath[fullPath.length-1] = data.content.val as string;
+      file.filePath = fullPath.join("\\"); // update file path property w new name
+
+      // apply the changes
+      let files = this.filesState.getFilesInViewer();
+      files.splice(i, 1, file);
+      this.filesState.setFilesInViewer(files);
+      this.filesState.setRenaming(false);
     }
   }
+  //////// XX TASKS
 
+
+
+  ///// XX UTIL METHODS
+  containsId(id:string){
+    return this.visibleFiles.map(f=>f.fileId).includes(id);
+  }
+  extractCleanParentPath(path:string){
+    let splitted = path.split("\\");
+    splitted.pop();
+    path = splitted.join("\\");
+    return Utils.constructFilePathForApi(Utils.cleanPath(path));
+  }
+  ///// XX UTIL
+
+
+  ///// XX VIEWER/UI - BASED
   handleEmptyTxt(txt:string=this.emptyTxt){
     if (this.visibleFiles.length == 0) {
       this.emptyFolderTxtActive = true;
@@ -595,15 +680,14 @@ export class ViewerComponent implements OnInit, OnDestroy{
       this.emptyFolderTxtActive = false;
     }
   }
-
   fileFilterUpdates(f:File, event:boolean){
     event ? this.guidsHiddenDueToFileFilter.push(f.fileId) : this.guidsHiddenDueToFileFilter = this.guidsHiddenDueToFileFilter.filter((id) => id != f.fileId)
   }
-
   removeFile(i:number){
     this.visibleFiles.splice(i,1);
     this.filesState.setFilesInViewer(this.filesState.getFilesInViewer().filter(f=>!f.uncreated));
   }
+  ///// XX BASED
 
   protected readonly Utils = Utils;
   protected readonly document = document;

@@ -27,6 +27,7 @@ export class FilesStateService {
   fileOpened = false;
   outsideFilesAndFoldersMode = false;
   showSpaceUtilizedInNavDrawer = true;
+  shared = false;
 
   addSelectedItem(item: File){
     this.selectedItems.next([...this.selectedItems.value, item]);

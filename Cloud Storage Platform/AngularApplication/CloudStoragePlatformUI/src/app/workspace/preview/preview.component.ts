@@ -14,7 +14,7 @@ import {FilesStateService} from "../../services/StateManagementServices/files-st
   styleUrl: './preview.component.css'
 })
 export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
-  @Input() file?: File;
+  @Input() file!: File;
   @Input() publicfileurl?: string;
   @Input() publicdownloadurl?: string;
   @Input() publicfextension?: string;
