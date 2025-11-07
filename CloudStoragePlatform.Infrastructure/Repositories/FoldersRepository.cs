@@ -169,6 +169,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
                 foreach (Core.Domain.Entities.File file in folder.Files.ToList()) 
                 {
                     Utility.DisconnectAndDeleteMetadataAndSharing(_db, file);
+                    System.IO.File.Delete(Path.Combine(_uIdentification.PhysicalStoragePath, file.FileId.ToString()));
                     _db.Files.Remove(file);
                 }
             }

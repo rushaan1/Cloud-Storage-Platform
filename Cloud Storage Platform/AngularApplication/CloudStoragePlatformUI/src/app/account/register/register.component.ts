@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { AccountService, RegisterDTO } from '../../services/ApiServices/account.service';
+import { AccountService, RegisterDTO, EmailVerificationRequest, EmailVerificationDTO } from '../../services/ApiServices/account.service';
 import {Router} from "@angular/router";
 import {TokenMonitorService} from "../../services/ApiServices/token-monitor.service";
 import {SocialAuthService} from "@abacritt/angularx-social-login";
 import { phoneNumberValidator } from '../../Utils';
+import {formatDate} from "@angular/common";
 
 @Component({
   selector: 'app-register',
@@ -20,6 +21,12 @@ export class RegisterComponent implements OnInit {
     'Mexico', 'Russia', 'South Africa'
   ];
   showPassword = false;
+  showOtpVerification = false;
+  otpCode: string = '';
+  otpSentToEmail: string | null = null;
+  registrationSuccess = false;
+  otpError: string = '';
+  userIdAfterRegistrationBeforeVerification: string = '';
 
   constructor(private fb: FormBuilder, private accountService: AccountService, private router:Router, private tokenMonitor:TokenMonitorService, private socialAuthService:SocialAuthService) {}
 
@@ -74,34 +81,102 @@ export class RegisterComponent implements OnInit {
         confirmPassword: formValue.confirmPassword,
         personName: formValue.username,
         country: formValue.country,
-        phoneNumber: formValue.phoneNumber,
-        rememberMe: formValue.rememberMe
+        phoneNumber: formValue.phoneNumber
+        // Note: rememberMe is no longer sent to register endpoint
       };
+
       this.accountService.register(registerDTO).subscribe({
-        next: (res) => {
-          // this.router.navigate(['filter','home']);
-          console.log(res);
-          localStorage.setItem('rememberMe', this.registerForm.value.rememberMe.toString());
-          this.tokenMonitor.startMonitoring();
-          this.router.navigate(['/']);
-          this.accountService.getUser().subscribe({
-            next: (userRes) => {
-              if (userRes && userRes.personName) {
-                localStorage.setItem('name', userRes.personName);
-              }
-            },
-            error: () => {}
-          });
+        next: (res:any) => {
+          console.log('Registration successful', res);
+          this.registrationSuccess = true;
+          this.otpSentToEmail = formValue.email;
+          console.log("FrmValEmail: "+formValue.email);
+          this.userIdAfterRegistrationBeforeVerification = res.userId;
+          // Automatically send OTP after successful registration
+          this.startOtpVerification();
         },
         error: (err) => {
           console.error('Registration error', err);
           // Check if the error is specifically about email already being registered
           if (err.error.detail && typeof err.error.detail === 'string' &&
-              (err.error.detail.includes('already taken') || err.error.detail.includes('already exists') || err.error.detail.includes('already registered'))) {
+            (err.error.detail.includes('already taken') || err.error.detail.includes('already exists') || err.error.detail.includes('already registered'))) {
             this.emailAlreadyRegistered = true;
           }
         }
       });
     }
+  }
+
+  startOtpVerification(): void {
+    const emailControl = this.registerForm.get('email');
+    this.otpSentToEmail = (emailControl?.value || '').toString();
+    console.log("emailformcontrolval:", emailControl?.value);
+    if (!this.otpSentToEmail) {
+      this.otpError = 'Please enter an email address first';
+      return;
+    }
+
+    // Send OTP to the email
+    const request: EmailVerificationRequest = {
+      email: this.otpSentToEmail
+    };
+
+    this.accountService.sendVerificationOtp(request).subscribe({
+      next: (res) => {
+        this.showOtpVerification = true;
+        this.otpError = '';
+      },
+      error: (err) => {
+        console.error('Failed to send OTP', err);
+        this.otpError = err.error?.detail || 'Failed to send OTP. Please try again.';
+      }
+    });
+  }
+
+  verifyOtp(): void {
+    if (!this.otpCode.trim()) {
+      this.otpError = 'Please enter the OTP';
+      return;
+    }
+
+    const email = this.otpSentToEmail || this.registerForm.get('email')?.value;
+    const rememberMe = this.registerForm.get('rememberMe')?.value;
+
+    const request: EmailVerificationDTO = {
+      email: email,
+      otp: this.otpCode,
+      rememberMe: rememberMe,
+      userId: this.userIdAfterRegistrationBeforeVerification
+    };
+
+    this.accountService.verifyEmail(request).subscribe({
+      next: (res) => {
+        console.log('Email verified successfully', res);
+        localStorage.setItem('rememberMe', rememberMe.toString());
+        this.tokenMonitor.startMonitoring();
+        this.router.navigate(['/']);
+
+        this.accountService.getUser().subscribe({
+          next: (userRes) => {
+            if (userRes && userRes.personName) {
+              localStorage.setItem('name', userRes.personName);
+            }
+          },
+          error: () => {}
+        });
+      },
+      error: (err) => {
+        console.error('OTP verification failed', err);
+        this.otpError = err.error?.message || 'Invalid or expired OTP for this registration attempt. Please try again.';
+      }
+    });
+  }
+
+
+
+  backToRegister(): void {
+    this.showOtpVerification = false;
+    this.otpError = '';
+    this.otpCode = '';
   }
 }

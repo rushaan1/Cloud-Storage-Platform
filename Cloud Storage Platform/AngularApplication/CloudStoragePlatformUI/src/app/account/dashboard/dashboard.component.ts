@@ -179,7 +179,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.deleteConfirmMode = false;
   }
   onConfirmDelete() {
-    // TODO: Add actual delete logic here
+    this.accountService.deleteAccount().subscribe({
+      next:()=>{
+        alert("This account has been successfully deleted.");
+      },
+      error:()=>{
+        alert("Failed to delete the account because of an error.");
+      }
+    });
     this.deleteConfirmMode = false;
   }
 

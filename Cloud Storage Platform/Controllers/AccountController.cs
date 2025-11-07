@@ -1,5 +1,7 @@
-﻿using Castle.Core.Internal;
+﻿using Azure.Core;
+using Castle.Core.Internal;
 using Cloud_Storage_Platform.Filters;
+using CloudStoragePlatform.Core;
 using CloudStoragePlatform.Core.Domain.Entities;
 using CloudStoragePlatform.Core.Domain.IdentityEntites;
 using CloudStoragePlatform.Core.Domain.RepositoryContracts;
@@ -13,7 +15,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace Cloud_Storage_Platform.Controllers
 {
@@ -31,8 +36,9 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IFoldersModificationService _foldersModificationService;
         private readonly UserIdentification _ui;
         private readonly IFoldersRepository _foldersRepository;
+        private readonly UserBasicInfo _userBasicInfo;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService, IFoldersModificationService foldersModificationService, UserIdentification ui, IFoldersRepository foldersRepository)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IUserSessionsRepository userSessionsRepository, IConfiguration configuration, IBulkRetrievalService bulkRetrievalService, IFoldersModificationService foldersModificationService, UserIdentification ui, IFoldersRepository foldersRepository, UserBasicInfo userBasicInfo)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -43,6 +49,7 @@ namespace Cloud_Storage_Platform.Controllers
             _foldersModificationService = foldersModificationService;
             _ui = ui;
             _foldersRepository = foldersRepository;
+            _userBasicInfo = userBasicInfo;
         }
 
         private void SetCookie(string name, string value, DateTimeOffset? expires, bool shouldExpire, bool httponly)
@@ -58,7 +65,7 @@ namespace Cloud_Storage_Platform.Controllers
             Response.Cookies.Append(name, value, options);
         }
 
-        private async Task UserStorageLinking(ApplicationUser user) 
+        private async Task UserStorageLinking(ApplicationUser user)
         {
             _ui.User = user;
             FolderAddRequest homeReq = new FolderAddRequest()
@@ -79,6 +86,12 @@ namespace Cloud_Storage_Platform.Controllers
                 return Problem(errorMsg);
             }
 
+            var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
+            if (existingUser != null && existingUser.EmailConfirmed == false)
+            {
+                await _userManager.DeleteAsync(existingUser);
+            }
+
             ApplicationUser user = new ApplicationUser()
             {
                 Email = registerDTO.Email,
@@ -87,7 +100,7 @@ namespace Cloud_Storage_Platform.Controllers
                 Country = registerDTO.Country
             };
 
-            if (!string.IsNullOrEmpty(registerDTO.PhoneNumber)) 
+            if (!string.IsNullOrEmpty(registerDTO.PhoneNumber))
             {
                 user.PhoneNumber = registerDTO.PhoneNumber;
             }
@@ -95,12 +108,7 @@ namespace Cloud_Storage_Platform.Controllers
             IdentityResult result = await _userManager.CreateAsync(user, registerDTO.Password);
             if (result.Succeeded)
             {
-                await UserStorageLinking(user);
-                await _signInManager.SignInAsync(user, isPersistent: registerDTO.RememberMe);
-
-                AuthenticationResponse authenticationResponse = (await ProcessAfterLogin(user.Email, registerDTO.RememberMe, true, user)).ar;
-
-                return Ok(new { PersonName = authenticationResponse.PersonName, Email = authenticationResponse.Email });
+                return Ok(new { UserId = user.Id, PersonName = user.PersonName, Email = user.Email });
             }
             else
             {
@@ -109,33 +117,131 @@ namespace Cloud_Storage_Platform.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> IsEmailAlreadyRegistered(string email)
+        [HttpPost("send-verification-otp")]
+        public async Task<IActionResult> SendVerificationOtp([FromBody] EmailVerificationRequest request)
         {
-            ApplicationUser? user = await _userManager.FindByEmailAsync(email);
+            if (!ModelState.IsValid)
+            {
+                string errorMsg = string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                return BadRequest(errorMsg);
+            }
 
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return Ok(true);
+                return BadRequest("User not found");
             }
-            else
+
+            if (user.EmailConfirmed)
             {
-                return Ok(false);
+                return BadRequest("Email already verified");
+            }
+
+            try
+            {
+                // Generate OTP using Identity's built-in token provider
+                var OTP = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+                user.EmailVerificationOTP = OTP;
+                user.EmailVerificationOTPExpiresAt = DateTime.UtcNow.AddMinutes(20);
+                await _userManager.UpdateAsync(user);
+                var smtpClient = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential(_config["SMTPEmail"], _config["pwdsmtp"]),
+                    EnableSsl = true,
+                };
+                var body = $@"
+                   <h2>Email Verification</h2>
+                   <p>Your verification code is: <strong>{OTP}</strong></p>
+                   <p>This code will expire in 20 minutes.</p>
+                   <p>If you didn't request this code, please ignore this email.</p>
+                ";
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress("refreshdiscordacc@gmail.com"),
+                    Subject = "OTP Verification for cloud storage",
+                    Body = body,
+                    IsBodyHtml = true,
+                };
+                mailMessage.To.Add(user.Email);
+                await smtpClient.SendMailAsync(mailMessage);
+                Console.WriteLine("Email sent successfully!");
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Failed to send verification OTP: {ex.Message}");
             }
         }
 
-        private async Task<(AuthenticationResponse ar, float? homeFolderSize)> ProcessAfterLogin(string email, bool rememberMe, bool isRegisteredNow, ApplicationUser? user = null) 
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] EmailVerificationDTO request)
         {
-            if (user == null) 
+            if (!ModelState.IsValid)
+            {
+                string errorMsg = string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                return BadRequest(errorMsg);
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return BadRequest("Email already verified");
+            }
+            else if (user.Id != request.UserId)
+            {
+                return BadRequest("User not matching");
+            }
+
+            try
+            {
+                var verificationOTP = user.EmailVerificationOTP;
+
+                if (verificationOTP == request.OTP && DateTime.UtcNow <= user.EmailVerificationOTPExpiresAt)
+                {
+                    // Email verified successfully
+                    await UserStorageLinking(user);
+                    await _signInManager.SignInAsync(user, isPersistent: request.RememberMe);
+                    user.EmailConfirmed = true;
+                    await _userManager.UpdateAsync(user);
+
+                    AuthenticationResponse authenticationResponse = (await ProcessAfterLogin(user.Email, request.RememberMe, true, user)).ar;
+                    return Ok(new { PersonName = user.PersonName, Email = user.Email });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        message = "Invalid or expired OTP",
+                        verified = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Failed to verify email: {ex.Message}");
+            }
+        }
+
+
+        private async Task<(AuthenticationResponse ar, float? homeFolderSize)> ProcessAfterLogin(string email, bool rememberMe, bool isRegisteredNow, ApplicationUser? user = null)
+        {
+            if (user == null)
             {
                 user = await _userManager.FindByEmailAsync(email);
             }
 
             AuthenticationResponse authenticationResponse = _jwtService.CreateJwtToken(user!);
             float? homeFolderSize = null;
-            if (!isRegisteredNow) 
+            if (!isRegisteredNow)
             {
-                // Remove expired sessions
+                // Remove expired sessions & fetch size in this block
                 var sessions = await _userSessionsRepository.GetByUserIdAsync(user.Id);
                 var expiredSessions = sessions.Where(s => s.RefreshTokenExpirationDateTime < DateTime.UtcNow).ToList();
                 foreach (var expired in expiredSessions)
@@ -158,6 +264,8 @@ namespace Cloud_Storage_Platform.Controllers
             await _userSessionsRepository.AddSessionAsync(session);
             await _userSessionsRepository.SaveChangesAsync();
 
+            _userBasicInfo.SetUserSpaceUsed(user.Id, homeFolderSize ?? 0);
+            _userBasicInfo.SetUserPersonName(user.Id, user.PersonName ?? string.Empty);
             SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, rememberMe, true);
             SetCookie("refresh_token", authenticationResponse.RefreshToken!, authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, true);
             SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
@@ -212,39 +320,40 @@ namespace Cloud_Storage_Platform.Controllers
         }
 
         [HttpPost("google-login")]
-        public async Task<IActionResult> GoogleLogin([FromBody] string idToken) 
+        public async Task<IActionResult> GoogleLogin([FromBody] string idToken)
         {
             var setting = new GoogleJsonWebSignature.ValidationSettings
             {
                 Audience = new string[] { _config["Google_Auth_Client_ID"] }
             };
-            
+
             var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, setting);
-            
+
             if (payload == null) { return BadRequest(); }
-            
+
             ApplicationUser? user = await _userManager.FindByEmailAsync(payload.Email);
             (AuthenticationResponse ar, float? homeFolderSize) output;
-            
+
             if (user != null)
             {
                 await _signInManager.SignInAsync(user, true);
                 output = await ProcessAfterLogin(payload.Email, true, false, user);
             }
-            else 
+            else
             {
                 ApplicationUser createdUser = new ApplicationUser()
                 {
                     Email = payload.Email,
                     UserName = payload.Email,
-                    PersonName = payload.Name
+                    PersonName = payload.Name,
+                    EmailConfirmed = true
                 };
 
                 IdentityResult iResult = await _userManager.CreateAsync(createdUser);
                 await UserStorageLinking(createdUser);
                 output = await ProcessAfterLogin(createdUser.Email, true, true, createdUser);
             }
-            
+
             return Ok(new { PersonName = output.ar.PersonName, Email = output.ar.Email, output.homeFolderSize });
         }
 
@@ -252,12 +361,12 @@ namespace Cloud_Storage_Platform.Controllers
         public async Task<IActionResult> GenerateNewAccessToken([FromQuery] bool rememberMe)
         {
             string? refreshToken = Request.Cookies["refresh_token"];
-            if (string.IsNullOrEmpty(refreshToken)) 
+            if (string.IsNullOrEmpty(refreshToken))
             {
                 return BadRequest("No refresh token found");
             }
             var session = await _userSessionsRepository.GetByRefreshTokenAsync(refreshToken);
-            if (session == null) 
+            if (session == null)
             {
                 return BadRequest("No matching session with refresh token");
             }
@@ -278,7 +387,7 @@ namespace Cloud_Storage_Platform.Controllers
             SetCookie("access_token", authenticationResponse.Token!, authenticationResponse.Expiration, rememberMe, true);
             SetCookie("jwt_expiry", new DateTimeOffset(authenticationResponse.Expiration).ToUnixTimeSeconds().ToString(), authenticationResponse.RefreshTokenExpirationDateTime, rememberMe, false);
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("\nRefreshed at "+DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")+" !\n");
+            Console.WriteLine("\nRefreshed at " + DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss") + " !\n");
             return Ok();
         }
 
@@ -345,6 +454,7 @@ namespace Cloud_Storage_Platform.Controllers
             if (!string.IsNullOrWhiteSpace(dto.FullName) && dto.FullName != user.PersonName)
             {
                 user.PersonName = dto.FullName;
+                _userBasicInfo.SetUserPersonName(userId, dto.FullName);
                 updated = true;
             }
             if (!string.IsNullOrWhiteSpace(dto.Country) && dto.Country != user.Country)
@@ -387,9 +497,9 @@ namespace Cloud_Storage_Platform.Controllers
             return Ok(response);
         }
 
-        [HttpGet("get-user")]
+        [HttpDelete("delete-account")]
         [Authorize]
-        public async Task<IActionResult> GetUser()
+        public async Task<IActionResult> DeleteAccount()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
@@ -397,7 +507,63 @@ namespace Cloud_Storage_Platform.Controllers
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
                 return Unauthorized();
-            return Ok(new { personName = user.PersonName });
+
+            _ui.User = user;
+            foreach (var folder in user.Folders)
+            {
+                await _foldersModificationService.DeleteFolder(folder.FolderId);
+            } // Deleting every single folder ensures every single files (along with metadata n sharing) are deleted as well
+
+            foreach (var session in user.Sessions)
+            {
+                await _userSessionsRepository.RemoveSessionAsync(session);
+            }
+
+            await _userManager.DeleteAsync(user);
+            Response.Cookies.Delete("access_token");
+            Response.Cookies.Delete("refresh_token");
+            Response.Cookies.Delete("jwt_expiry");
+            Response.Cookies.Delete("refresh_expiry");
+            return Ok();
+        }
+
+        [HttpGet("get-user")]
+        [Authorize]
+        public async Task<IActionResult> GetUser()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+
+            string? personName = _userBasicInfo.GetUserPersonName(userId);
+            if (string.IsNullOrEmpty(personName))
+            {
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                if (user == null)
+                    return Unauthorized();
+                personName = user.PersonName;
+            }
+            return Ok(new { personName });
+        }
+
+        [HttpGet("get-user-space-used")]
+        [Authorize]
+        public async Task<IActionResult> GetUserSpace()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+
+            float? sizeInMB = _userBasicInfo.GetUserSpaceUsed(userId);
+            if (sizeInMB == null)
+            {
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                _ui.User = user;
+                var homeFolderPath = Path.Combine(_config["InitialPathForStorage"], "home");
+                var homeFolder = await _foldersRepository.GetFolderByFolderPath(homeFolderPath);
+                sizeInMB = homeFolder?.Size;
+            }
+            return Ok(new { sizeInMB });
         }
     }
 }

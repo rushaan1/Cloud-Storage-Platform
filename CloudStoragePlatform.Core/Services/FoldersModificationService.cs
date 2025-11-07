@@ -19,13 +19,15 @@ namespace CloudStoragePlatform.Core.Services
         private readonly IFoldersRepository _foldersRepository;
         private readonly IFilesRepository _filesRepository;
         private readonly SSE _sse;
+        private readonly UserBasicInfo _userBasicInfo;
         private readonly UserIdentification _ui;
         private readonly IConfiguration _config;
-        public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserIdentification ui, IConfiguration config) 
+        public FoldersModificationService(IFoldersRepository foldersRepository, IFilesRepository filesRepository, SSE sse, UserBasicInfo userBasicInfo, UserIdentification ui, IConfiguration config) 
         {
             _foldersRepository = foldersRepository;
             _filesRepository = filesRepository;
             _sse = sse;
+            _userBasicInfo = userBasicInfo;
             _ui = ui;
             _config = config;
         }
@@ -295,6 +297,10 @@ namespace CloudStoragePlatform.Core.Services
             {
                 await UpdateFolderSizesOnIncrease(folder.ParentFolder, sizeInMB);
             }
+            else if (folder.FolderPath==Path.Combine(_config["InitialPathForStorage"],"home")) 
+            {
+                _userBasicInfo.SetUserSpaceUsed(_ui.User.Id, folder.Size);
+            }
         }
 
         private async Task UpdateFolderSizesOnDecrease(Folder? folder, float sizeInMB)
@@ -315,7 +321,13 @@ namespace CloudStoragePlatform.Core.Services
             {
                 await UpdateFolderSizesOnDecrease(folder.ParentFolder, sizeInMB);
             }
+            else if (folder.FolderPath == Path.Combine(_config["InitialPathForStorage"], "home"))
+            {
+                _userBasicInfo.SetUserSpaceUsed(_ui.User.Id, folder.Size);
+            }
         }
+
+        #region Likely Redundant & outdated, not referenced outside of themselves
 
         private async Task UpdateFolderSizesOnAdd(Folder? folder, float sizeInMB)
         {
@@ -395,6 +407,8 @@ namespace CloudStoragePlatform.Core.Services
 
             await CalculateAndUpdateFolderSize(rootFolder);
         }
+        #endregion
+
         #endregion
     }
 }

@@ -1,4 +1,6 @@
+using Azure.Core;
 using Azure.Identity;
+using Cloud_Storage_Platform;
 using Cloud_Storage_Platform.CustomModelBinders;
 using Cloud_Storage_Platform.Filters;
 using CloudStoragePlatform.Core;
@@ -16,11 +18,10 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Azure.Core;
-using Cloud_Storage_Platform;
+using Microsoft.IdentityModel.Tokens;
+using System.Linq;
+using System.Text.Json;
 
 namespace CloudStoragePlatform.Web
 {
@@ -66,6 +67,7 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
             builder.Services.AddScoped<IUserSessionsRepository, UserSessionsRepository>();
             builder.Services.AddSingleton<SSE, SSE>();
+            builder.Services.AddSingleton<UserBasicInfo, UserBasicInfo>();
             builder.Services.AddScoped<IFoldersModificationService, FoldersModificationService>();
             builder.Services.AddScoped<IFoldersRetrievalService, FoldersRetrievalService>();
             builder.Services.AddScoped<IFoldersRepository, FoldersRepository>();
@@ -170,6 +172,20 @@ namespace CloudStoragePlatform.Web
                 }
                 await next();
             });
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var sp = scope.ServiceProvider;
+                var db = sp.GetRequiredService<ApplicationDbContext>();
+                var userBasicInfo = sp.GetRequiredService<UserBasicInfo>();
+                List<ApplicationUser> users = await db.Users.ToListAsync();
+                foreach (var u in users) 
+                {
+                    var folder = u.Folders.Where(f => f.FolderPath == Path.Combine(app.Configuration["InitialPathForStorage"], "home")).First();
+                    userBasicInfo.SetUserSpaceUsed(u.Id, folder.Size);
+                    userBasicInfo.SetUserPersonName(u.Id, u.PersonName ?? string.Empty);
+                }
+            }
 
             app.Run();
 

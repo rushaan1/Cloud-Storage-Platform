@@ -17,7 +17,7 @@ export class RequestInterceptor implements HttpInterceptor {
       request = req.clone({
         withCredentials: true
       });
-      const exceptions = ["account/regenerate-jwt-token","account/login", "account/logout", "account/register", "api/shared"];
+      const exceptions = ["account/regenerate-jwt-token","account/login", "account/logout", "account/register", "account/send-verification-otp", "account/verify-email", "api/shared"];
       // Check if the request is one of the exceptions
       if (exceptions.some(exception => request.url.toLowerCase().includes(exception))) {
         return next.handle(request);

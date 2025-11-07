@@ -121,6 +121,7 @@ namespace CloudStoragePlatform.Infrastructure.Repositories
             _db.MetaDatasets.Remove(file.Metadata);
 
             _db.Files.Remove(file);
+            System.IO.File.Delete(Path.Combine(_uIdentification.PhysicalStoragePath, file.FileId.ToString()));
             return await _db.SaveChangesAsync() > 0;
         }
     }

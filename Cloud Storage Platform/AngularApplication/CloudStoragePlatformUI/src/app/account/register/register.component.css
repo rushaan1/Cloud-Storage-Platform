@@ -91,6 +91,19 @@ input:focus-visible, select:focus-visible {
   margin-top: 0.25rem;
 }
 
+.error-message-otp {
+  color: #d9534f;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.otp-state-refreshwarning{
+  color: #d9534f;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  display: inline-block;
+}
+
 .submit-btn {
   width: 100%;
   padding: 0.75rem;
@@ -147,6 +160,25 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Responsive styles */
+.otp-note {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b6b6b;
+}
+
+.success-message {
+  background-color: #3574F0;
+  border: 1px solid #0060d1;
+  color: #d4edda;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.success-message p {
+  margin: 0;
+  font-size: 0.9rem;
+}
 @media (max-width: 1250px) {
   .auth-content {
     justify-content: center;

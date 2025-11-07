@@ -31,9 +31,13 @@ export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
     if (this.publicfileurl) {
       // For public files, use the provided URL
       this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.publicfileurl);
+      // TODO ENSURE no URI Component issues take place here, might as well check other similar components (similar to right below else case) to see URI component is properly encoded when needed
     } else if (this.file) {
       // For regular files, construct the preview URL
-      this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`${this.PRIVATE_PREVIEW_URL}?filePath=` + this.file.filePath);
+      this.trustedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+        `${this.PRIVATE_PREVIEW_URL}?filePath=`+encodeURIComponent(this.file.filePath)
+      );
+      console.log("URL: "+this.trustedUrl);
     }
   }
 
@@ -79,7 +83,7 @@ export class PreviewComponent implements AfterViewInit, OnDestroy, OnInit{
     } else if (this.file) {
       let url = this.PRIVATE_DOWNLOAD_URL;
       url = url+"?fileIds="+this.file.fileId;
-      url += "&name="+this.file.fileName;
+      url += "&name="+encodeURIComponent(this.file.fileName);
       window.open(url, "_blank");
     }
   }

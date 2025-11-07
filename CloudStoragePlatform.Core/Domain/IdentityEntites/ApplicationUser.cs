@@ -15,6 +15,8 @@ namespace CloudStoragePlatform.Core.Domain.IdentityEntites
         public string? PersonName { get; set; }
         public string? Country { get; set; }
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? EmailVerificationOTP { get; set; }
+        public DateTime? EmailVerificationOTPExpiresAt { get; set; }
         public virtual ICollection<UserSession> Sessions { get; set; } = new List<UserSession>();
         public virtual ICollection<Folder> Folders { get; set; }
         public virtual ICollection<File> Files { get; set; }

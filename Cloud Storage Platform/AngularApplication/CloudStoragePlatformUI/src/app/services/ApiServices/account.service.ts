@@ -9,7 +9,6 @@ export interface RegisterDTO {
   personName: string;
   country: string;
   phoneNumber?: string;
-  rememberMe: boolean;
 }
 
 export interface LoginDTO {
@@ -45,6 +44,17 @@ export interface UpdateAccountDTO {
   phoneNumber?: string | null;
   password?: string | null;
   confirmPassword?: string | null;
+}
+
+export interface EmailVerificationRequest {
+  email: string;
+}
+
+export interface EmailVerificationDTO {
+  email: string;
+  otp: string;
+  rememberMe: boolean;
+  userId: string;
 }
 
 @Injectable({
@@ -93,5 +103,21 @@ export class AccountService {
 
   getUser(): Observable<{ personName: string }> {
     return this.http.get<{ personName: string }>(`${this.API_URL}/get-user`);
+  }
+
+  getUserSpaceUsed(): Observable<{ sizeInMB: number }> {
+    return this.http.get<{ sizeInMB: number }>(`${this.API_URL}/get-user-space-used`);
+  }
+
+  sendVerificationOtp(request: EmailVerificationRequest): Observable<any> {
+    return this.http.post(`${this.API_URL}/send-verification-otp`, request);
+  }
+
+  verifyEmail(request: EmailVerificationDTO): Observable<any> {
+    return this.http.post(`${this.API_URL}/verify-email`, request);
+  }
+
+  deleteAccount(): Observable<any> {
+    return this.http.delete(`${this.API_URL}/delete-account`);
   }
 }
