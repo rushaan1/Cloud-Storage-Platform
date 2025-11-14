@@ -70,7 +70,7 @@ namespace CloudStoragePlatform.Core.Services
         }
 
         public async Task UpscaleDefault()
-        { // !brb ima restart pc discord aint openin
+        {
             string path = @"C:\Users\rusha\OneDrive\Pictures\who.png";
 
             // TODO move these details to config
