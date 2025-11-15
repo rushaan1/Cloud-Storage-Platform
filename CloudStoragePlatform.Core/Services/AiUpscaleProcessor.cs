@@ -9,9 +9,11 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using CloudStoragePlatform.Core.ServiceContracts;
+
 namespace CloudStoragePlatform.Core.Services
 {
-    public class AiUpscaleProcessor
+    public class AiUpscaleProcessor : IAiUpscaleProcessor
     {
         private readonly IConfiguration _config;
 
@@ -65,8 +67,12 @@ namespace CloudStoragePlatform.Core.Services
             string request = BuildRequestJson(b64);
             var content = new StringContent(request, Encoding.UTF8, "application/json");
             var response = await httpClient.PostAsync(url, content);
-            string b64_upscaled = await response.Content.ReadAsStringAsync();
-            System.IO.File.WriteAllBytes("C:\\Users\\rusha\\OneDrive\\Pictures\\chheese", Convert.FromBase64String(b64_upscaled));
+            var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            string b64_upscaled = json.RootElement
+                .GetProperty("predictions")[0]
+                .GetProperty("bytesBase64Encoded")
+                .GetString();
+            File.WriteAllBytes("C:\\Users\\rusha\\OneDrive\\Pictures\\chheese", Convert.FromBase64String(b64_upscaled));
         }
 
         public async Task UpscaleDefault()
@@ -77,7 +83,7 @@ namespace CloudStoragePlatform.Core.Services
             string projectID = "cloud-storage-platform-rushaan";
             string region = "us-central1";
             string publisher = "google";
-            string model = "imagegeneration@002";
+            string model = "imagen-4.0-upscale-preview";
             await UpscaleImageAsync(Convert.ToBase64String(File.ReadAllBytes(path)), projectID, region, publisher, model);
 
             // TODO most likely handle API ops in this fn
@@ -85,7 +91,7 @@ namespace CloudStoragePlatform.Core.Services
 
         private string BuildRequestJson(string b64, int count = 1, string factor = "x2") 
         {
-            return "{\r\n  \"instances\": [\r\n    {\r\n      \"prompt\": \"\",\r\n      \"image\": {\r\n        \"bytesBase64Encoded\": \""+b64+"\"\r\n      }\r\n    }\r\n  ],\r\n  \"parameters\": {\r\n    \"sampleCount\": "+count+",\r\n    \"mode\": \"upscale\",\r\n    \"upscaleConfig\": {\r\n      \"upscaleFactor\": \""+factor+"\"\r\n    }\r\n  }\r\n}\r\n";
+            return "{\r\n  \"instances\": [\r\n    {\r\n      \"prompt\": \"\",\r\n      \"image\": {\r\n        \"bytesBase64Encoded\": \"" + b64+"\"\r\n      }\r\n    }\r\n  ],\r\n  \"parameters\": {\r\n    \"sampleCount\": "+count+",\r\n    \"mode\": \"upscale\",\r\n    \"upscaleConfig\": {\r\n      \"upscaleFactor\": \""+factor+"\"\r\n    }\r\n  }\r\n}\r\n";
         }
     }
 }

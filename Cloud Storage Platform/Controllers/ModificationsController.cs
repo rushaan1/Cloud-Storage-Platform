@@ -23,14 +23,16 @@ namespace Cloud_Storage_Platform.Controllers
         private readonly IFilesModificationService _filesModificationService;
         private readonly SSE _sse;
         private readonly UserIdentification _userIdentification;
+        private readonly IAiUpscaleProcessor _aiUpscaleProcessor;
 
-        public ModificationsController(IFoldersModificationService foldersModificationService, IConfiguration configuration, SSE sse, IFilesModificationService filesModificationService, UserIdentification userIdentification)
+        public ModificationsController(IFoldersModificationService foldersModificationService, IConfiguration configuration, SSE sse, IFilesModificationService filesModificationService, UserIdentification userIdentification, IAiUpscaleProcessor aiUpscaleProcessor)
         {
             _foldersModificationService = foldersModificationService;
             _configuration = configuration;
             _sse = sse;
             _filesModificationService = filesModificationService;
             _userIdentification = userIdentification;
+            _aiUpscaleProcessor = aiUpscaleProcessor;
         }
 
         [HttpPost]
@@ -255,6 +257,15 @@ namespace Cloud_Storage_Platform.Controllers
             }
             await _sse.SendEventAsync("moved", movedList, _userIdentification.User.Id);
             return NoContent();
+        }
+
+        [HttpPost]
+        [Route("UpscaleTest")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpscaleTest()
+        {
+            await _aiUpscaleProcessor.UpscaleDefault();
+            return Ok();
         }
 
         [HttpGet("sseauth")]

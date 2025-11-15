@@ -77,6 +77,7 @@ namespace CloudStoragePlatform.Web
             builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
             builder.Services.AddScoped<ISharingRepository, SharingRepository>();
             builder.Services.AddScoped<ISharingService, SharingService>();
+            builder.Services.AddScoped<IAiUpscaleProcessor, AiUpscaleProcessor>();
             builder.Services.AddScoped<IModelBinder, AppendToPath>();
             builder.Services.AddScoped<IModelBinder, RemoveInvalidFileFolderNameCharactersBinder>();
 
