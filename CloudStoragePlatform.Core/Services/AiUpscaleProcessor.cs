@@ -10,17 +10,55 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using CloudStoragePlatform.Core.ServiceContracts;
+using Microsoft.Extensions.DependencyInjection;
+using CloudStoragePlatform.Core.Domain.IdentityEntites;
 
 namespace CloudStoragePlatform.Core.Services
 {
     public class AiUpscaleProcessor : IAiUpscaleProcessor
     {
         private readonly IConfiguration _config;
+        private readonly IServiceProvider _provider;
+        private readonly UserIdentification userIdentification;
 
-        public AiUpscaleProcessor(IConfiguration config) 
+        public AiUpscaleProcessor(IConfiguration config, IServiceProvider serviceProvider, UserIdentification userIdentification)
         {
             _config = config;
+            _provider = serviceProvider;
+            this.userIdentification = userIdentification;
         }
+
+        public async Task UpscaleDefault(Guid id)
+        {
+            string path = @"C:\Users\rusha\OneDrive\Pictures\who.png";
+
+            // TODO move these details to config
+            string projectID = "cloud-storage-platform-rushaan";
+            string region = "us-central1";
+            string publisher = "google";
+            string model = "imagen-4.0-upscale-preview";
+
+            Func<Task> upscaleJob = async () => 
+            {
+                await UpscaleImageAsync(Convert.ToBase64String(File.ReadAllBytes(path)), projectID, region, publisher, model);
+            };
+
+            ApplicationUser usr = userIdentification.User!;
+
+            _= Task.Run(async () =>
+            {
+                using var scope = _provider.CreateScope();
+                IFilesModificationService fms = scope.ServiceProvider.GetRequiredService<IFilesModificationService>();
+                UserIdentification usrIdentification = scope.ServiceProvider.GetRequiredService<UserIdentification>();
+                usrIdentification.User = usr;
+                await MinRamThreshold.WaitForRamOrTimeoutAsync(upscaleJob);
+            });
+            
+
+            // TODO most likely handle API ops in this fn
+            // TODO since most AI features will need ram optimisation and background jobs, wise to have a singleton background orchestrator service for the same instead of repeating background & scope logic
+        }
+
 
         public async Task UpscaleImageAsync(string b64, string projectId, string location, string publisher, string modelName)
         {
@@ -73,20 +111,6 @@ namespace CloudStoragePlatform.Core.Services
                 .GetProperty("bytesBase64Encoded")
                 .GetString();
             File.WriteAllBytes("C:\\Users\\rusha\\OneDrive\\Pictures\\chheese", Convert.FromBase64String(b64_upscaled));
-        }
-
-        public async Task UpscaleDefault()
-        {
-            string path = @"C:\Users\rusha\OneDrive\Pictures\who.png";
-
-            // TODO move these details to config
-            string projectID = "cloud-storage-platform-rushaan";
-            string region = "us-central1";
-            string publisher = "google";
-            string model = "imagen-4.0-upscale-preview";
-            await UpscaleImageAsync(Convert.ToBase64String(File.ReadAllBytes(path)), projectID, region, publisher, model);
-
-            // TODO most likely handle API ops in this fn
         }
 
         private string BuildRequestJson(string b64, int count = 1, string factor = "x2") 
